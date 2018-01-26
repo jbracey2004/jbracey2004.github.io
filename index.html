@@ -21,7 +21,9 @@
                 noCanvas();
                 console.log(aryStrfiles);
                 console.log(aryStrfiles.length + " File Lines Loaded");
-                var elementList = createElement("ul", "Examples");
+                var elementList = createElement("div", "");
+				elementList.style("display","flex");
+				elementList.style("flex-flow", "wrap");
                 for (var i = 0; i < aryStrfiles.length; i++) {
 					console.log("Reference"+i.toString());
                     var args = {};
@@ -41,13 +43,18 @@
                     args["toString"] = args["name"] + "\t" + args["date"] + "\t" + args["size"] + " bytes"
                     console.log(args);
 					intCount++;
-                    var elementListItem = createElement("li", "");
-                    elementListItem.style("list-style-type", "none");
+                    var elementListItem = createElement("div", "");
                     var elementButtonItem = createA(args["path"], "");
-                    var elementButton = createButton(args["name"]);
+                    var elementButton = createDiv(args["name"]);
+					elementButton.style("position", "absolute");
+					elementButton.style("border", "2px solid #000000FF")
+					elementButton.style("background-color", "#FFFFFFB0");
+					var elementPreview = createElement("iframe", args["name"]);
+					elementPreview.attribute("src", args["path"]);
                     elementButton.parent(elementButtonItem);
+					elementPreview.parent(elementButtonItem);
+					elementButtonItem.parent(elementListItem);
                     elementListItem.parent(elementList);
-                    elementButtonItem.parent(elementListItem);
                 }
 				console.log(intCount.toString() + " References Loaded")
             }
@@ -58,6 +65,7 @@
     <body>
         <div>
             <h1>Github Host - Site Index</h1>
+			<h2>Examples</h2>
         </div>
     </body>
 
