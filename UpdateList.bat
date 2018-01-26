@@ -1,0 +1,1 @@
+dir \b "Examples" | findstr /i ".html" > List.txt

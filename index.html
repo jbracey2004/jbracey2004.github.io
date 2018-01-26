@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+
+        <title>Local Host - Portfollio</title>
+        <script src="p5.js"></script>
+        <script src="p5.dom.js"></script>
+        <script>
+            var aryStrfiles;
+            var elementList;
+
+            function preload() {
+                aryStrfiles = loadStrings("List.txt");
+                console.log("Loading File References");
+            }
+
+            function setup() {
+				var intCount = 0;
+                noCanvas();
+                console.log(aryStrfiles);
+                console.log(aryStrfiles.length + " File Lines Loaded");
+                var elementList = createElement("ul", "Examples");
+                for (var i = 0; i < aryStrfiles.length; i++) {
+					console.log("Reference"+i.toString());
+                    var args = {};
+                    var str = aryStrfiles[i];
+					var strmatch = {};
+					strmatch = str.match(/\b\w+\.\w+/);
+					if (strmatch == null) { continue; }
+                    args["name"] = strmatch;
+                    str = str.replace(strmatch, "");
+					strmatch = str.match(/\b\d{2}\/\d{2}\/\d{4}\s+\d{2}\:\d{2}\s\w{2}/);
+					if (strmatch == null) { continue; }
+                    args["date"] = strmatch;
+                    str = str.replace(strmatch, "");
+                    args["date"] = new Date(args["date"]);
+                    args["path"] = "Examples/" + args["name"];
+                    args["size"] = parseFloat(str.match(/\b((\d+(\,)?))+\b/g).toString().replace(",", ""));
+                    args["toString"] = args["name"] + "\t" + args["date"] + "\t" + args["size"] + " bytes"
+                    console.log(args);
+					intCount++;
+                    var elementListItem = createElement("li", "");
+                    elementListItem.style("list-style-type", "none");
+                    var elementButtonItem = createA(args["path"], "");
+                    var elementButton = createButton(args["name"]);
+                    elementButton.parent(elementButtonItem);
+                    elementListItem.parent(elementList);
+                    elementButtonItem.parent(elementListItem);
+                }
+				console.log(intCount.toString() + " References Loaded")
+            }
+        </script>
+
+    </head>
+
+    <body>
+        <div>
+            <h1>Local Host - Site Index</h1>
+        </div>
+    </body>
+
+</html>

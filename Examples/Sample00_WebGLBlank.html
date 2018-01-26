@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" style="margin:0; height:99.6%">
+
+    <head>
+        <meta charset="utf-8">
+        <title>Portfollio - Sample00_Web3DBlank</title>
+		<script src="utility.js"></script>
+        <script>
+			var gl;
+			var intFrameCount;
+			function WebGLGood() { return !!gl; }
+            function load() 
+			{
+                canvasMain = document.getElementById("canvasMain");
+				gl = canvasMain.getContext("webgl2", { antialias: false });
+        		if(!WebGLGood()) 
+				{
+					console.log("Unable To Get WEBGL 2 Context");
+            		document.body.innerHTML = "WebGL 2 is not available.<br/>";
+					document.body.innerHTML += 'See <a href="https://www.khronos.org/webgl/wiki/Getting_a_WebGL_Implementation">How to get a WebGL 2 implementation</a>';
+            		return;
+        		}
+				console.log(gl);
+				intFrameCount = 0;
+				requestAnimationFrame(render);
+            }
+			function render()
+			{
+				if (!WebGLGood()) { return; }
+				resize();
+				gl.clearColor(0.0, 0.0, 0.0, 1.0);
+            	gl.clear(gl.COLOR_BUFFER_BIT);
+				intFrameCount++;
+				requestAnimationFrame(render);
+			}
+        </script>
+
+    </head>
+
+    <body onload="load()" style="padding:0; margin:0; height:100%">
+		<canvas id="canvasMain" style="width:100%; height:100%;"></canvas>
+    </body>
+
+</html>
