@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <title>Portfollio - P5 WebGL Primitive</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
+        <script>
+			var pt = 0;
+			var ct = 0;
+            function setup() {
+                createCanvas(windowWidth, windowHeight, WEBGL);
+            }
+
+            function draw() {
+				var tn = new Date(Date.now()).getTime()*0.001;
+				if (pt == 0) { pt = tn; }
+				var t = tn - pt;
+				ct += t;
+
+                background(64);
+				translate(0,0);
+				rotateY(ct*TAU*0.25);
+				var sw = 0.125*((windowWidth**2 + windowHeight**2)**0.5);
+				box(sw);
+				
+				pt = tn;
+            }
+
+            function windowResized() {
+                resizeCanvas(windowWidth, windowHeight);
+                console.log({
+                    Width: windowWidth,
+                    Height: windowHeight
+                });
+            }
+        </script>
+
+    </head>
+
+    <body style="margin: 0; display: flex; justify-content: center; align-items: center;">
+    </body>
+
+</html>

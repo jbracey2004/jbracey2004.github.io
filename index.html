@@ -51,6 +51,7 @@
 					elementButton.style("background-color", "#FFFFFFB0");
 					var elementPreview = createElement("iframe", args["name"]);
 					elementPreview.attribute("src", args["path"]);
+					elementPreview.attribute("href", args["path"]);
                     elementButton.parent(elementButtonItem);
 					elementPreview.parent(elementButtonItem);
 					elementButtonItem.parent(elementListItem);

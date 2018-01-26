@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <title>Portfollio - P5 WebGL Blankc</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
+        <script>
+            function setup() {
+                createCanvas(windowWidth, windowHeight, WEBGL);
+            }
+
+            function draw() {
+                background(64);
+            }
+
+            function windowResized() {
+                resizeCanvas(windowWidth, windowHeight);
+                console.log({
+                    Width: windowWidth,
+                    Height: windowHeight
+                });
+            }
+        </script>
+
+    </head>
+
+    <body style="margin: 0; display: flex; justify-content: center; align-items: center;">
+    </body>
+
+</html>
