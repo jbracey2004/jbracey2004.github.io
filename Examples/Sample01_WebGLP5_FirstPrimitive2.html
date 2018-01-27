@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <title>Portfollio - P5 WebGL Primitives</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
+        <script>
+			var pt = 0;
+			var ct = 0;
+            function setup() {
+                createCanvas(windowWidth, windowHeight, WEBGL);
+            }
+
+            function draw() {
+				var tn = new Date(Date.now()).getTime()*0.001;
+				if (pt == 0) { pt = tn; }
+				var t = tn - pt;
+				ct += t;
+
+                background(64);
+				var sw = (1/10) * ((windowWidth ** 2 + windowHeight ** 2) ** 0.5);
+				var sp = sw * 2;
+				normalMaterial();
+
+				push();
+				translate(-sp, -0.5 * sp);
+				rotateX(TAU*(-1/16));
+				rotateY(ct*TAU*0.5);
+				box(sw);
+				pop();
+
+				push();
+				translate(0, -0.5 * sp);
+				rotateY(TAU * (-1 / 16));
+				rotateX(ct * TAU * 0.25);
+				cone(sw*0.8,sw*1.2);
+				pop();
+
+				push();
+				translate(sp, -0.5 * sp);
+				rotateX(ct * TAU * 0.7);
+				rotateY(ct * TAU * 0.25);
+				ellipsoid(sw * 0.8, sw*0.9, sw * 0.7);
+				pop();
+
+				push();
+				translate(-sp, 0.5 * sp);
+				rotateX(ct * TAU * (1/16));
+				rotateY(ct * TAU * -0.25);
+				torus(sw * 0.6, sw * 0.25);
+				pop();
+
+				push();
+				translate(0, 0.5 * sp);
+				rotateY(ct * TAU * (1 / 2));
+				rotateZ(ct * TAU * (1 / 26));
+				cylinder(sw*0.5, sw*0.5);
+				pop();
+
+				push();
+				translate(sp, 0.5 * sp);
+				rotateX(ct * TAU * (1 / 7));
+				rotateY(ct * TAU * (1 / 2));
+				rotateZ(ct * TAU * (1 / 26));
+				box(sw, sw * 0.75, sw * 0.5);
+				pop();
+
+
+				pt = tn;
+            }
+
+            function windowResized() {
+                resizeCanvas(windowWidth, windowHeight);
+                console.log({
+                    Width: windowWidth,
+                    Height: windowHeight
+                });
+            }
+        </script>
+
+    </head>
+
+    <body style="margin: 0; display: flex; justify-content: center; align-items: center;">
+    </body>
+
+</html>
