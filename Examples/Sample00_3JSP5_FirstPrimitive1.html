@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <title>Portfollio - P5 Three.js Primitive</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.js"></script>
+		<script src="../controls/OrbitControls.js"></script>
+        <script>
+			var pt = 0;
+			var ct = 0;
+
+			var fxyAspect;
+			var canvasMain;
+			var t3jsRender;
+			var t3sceneMain;
+			var t3cameraMain;
+			var t3lightMain;
+			var t3OrbitControls;
+
+			var objCube;
+
+            function setup() {
+                var p5objCanvas = createCanvas(windowWidth, windowHeight, WEBGL);
+				fxyAspect = windowWidth / windowHeight;
+				canvasMain = document.getElementById(p5objCanvas.id());
+				t3jsRender = new THREE.WebGLRenderer({canvas: canvasMain, preserveDrawingBuffer: true});
+				t3jsRender.setSize(windowWidth, windowHeight);
+				t3sceneMain = new THREE.Scene();
+				t3cameraMain = new THREE.PerspectiveCamera(75, fxyAspect, 0.001, 10000);
+				t3cameraMain.position.set(0, 1, 2);
+				t3cameraMain.lookAt({x:0, y:0, z:0});
+				t3OrbitControls = new THREE.OrbitControls(t3cameraMain);
+				t3lightMain = new THREE.PointLight("#ffffff", 1, 100);
+				t3lightMain.position.set(10, 10, 10);
+				t3sceneMain.add(t3lightMain);
+				var geometry = new THREE.BoxGeometry(1, 1, 1);
+				var material = new THREE.MeshPhongMaterial({color: "#ff4000"});
+				objCube = new THREE.Mesh(geometry, material);
+				t3sceneMain.add(objCube);
+            }
+
+			function animate() {
+				var tn = new Date(Date.now()).getTime() * 0.001;
+				if (pt == 0) { pt = tn; }
+				var t = tn - pt;
+				ct += t;
+
+				t3lightMain.position.copy(t3cameraMain.position);
+				t3OrbitControls.update();
+
+				pt = tn;
+			}
+
+            function draw() {
+                background("#402010");
+				animate();
+				t3jsRender.render(t3sceneMain, t3cameraMain);
+            }
+
+            function windowResized() {
+				fxyAspect = windowWidth / windowHeight;
+                resizeCanvas(windowWidth, windowHeight);
+				t3jsRender.setSize(windowWidth, windowHeight);
+                console.log({Width: windowWidth, Height: windowHeight});
+            }
+        </script>
+
+    </head>
+
+    <body style="margin: 0; display: flex; justify-content: center; align-items: center;">
+    </body>
+
+</html>

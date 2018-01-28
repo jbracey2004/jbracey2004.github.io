@@ -4,12 +4,14 @@
     <head>
         <meta charset="utf-8">
         <title>Portfollio - P5 WebGL Primitives</title>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.9/p5.js"></script>
         <script>
+			var canvasMain;
 			var pt = 0;
 			var ct = 0;
             function setup() {
-                createCanvas(windowWidth, windowHeight, WEBGL);
+                var p5objCanvas = createCanvas(windowWidth, windowHeight, WEBGL);
+				canvasMain = document.getElementById(p5objCanvas.id());
             }
 
             function draw() {
@@ -25,14 +27,14 @@
 
 				push();
 				translate(-sp, -0.5 * sp);
-				rotateX(TAU*(-1/16));
+				rotateX(TAU * (1 / 16));
 				rotateY(ct*TAU*0.5);
 				box(sw);
 				pop();
 
 				push();
 				translate(0, -0.5 * sp);
-				rotateY(TAU * (-1 / 16));
+				rotateY(TAU * (1 / 16));
 				rotateX(ct * TAU * 0.25);
 				cone(sw*0.8,sw*1.2);
 				pop();
@@ -46,7 +48,7 @@
 
 				push();
 				translate(-sp, 0.5 * sp);
-				rotateX(ct * TAU * (1/16));
+				rotateX(ct * TAU * ( 1 / 16));
 				rotateY(ct * TAU * -0.25);
 				torus(sw * 0.6, sw * 0.25);
 				pop();
@@ -55,7 +57,7 @@
 				translate(0, 0.5 * sp);
 				rotateY(ct * TAU * (1 / 2));
 				rotateZ(ct * TAU * (1 / 26));
-				cylinder(sw*0.5, sw*0.5);
+				cylinder(sw*0.5, sw*1.2);
 				pop();
 
 				push();
@@ -65,7 +67,6 @@
 				rotateZ(ct * TAU * (1 / 26));
 				box(sw, sw * 0.75, sw * 0.5);
 				pop();
-
 
 				pt = tn;
             }

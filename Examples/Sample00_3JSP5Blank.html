@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+        <title>Portfollio - P5 Three.js Blank</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.js"></script>
+        <script>
+			var canvasMain;
+			var t3jsRender;
+            function setup() {
+                var p5objCanvas = createCanvas(windowWidth, windowHeight, WEBGL);
+				canvasMain = document.getElementById(p5objCanvas.id());
+				t3jsRender = new THREE.WebGLRenderer({canvas:canvasMain, preserveDrawingBuffer: true});
+            }
+
+            function draw() {
+                background(72,56,48);
+            }
+
+            function windowResized() {
+                resizeCanvas(windowWidth, windowHeight);
+				t3jsRender.setSize(windowWidth, windowHeight);
+                console.log({
+                    Width: windowWidth,
+                    Height: windowHeight
+                });
+            }
+        </script>
+
+    </head>
+
+    <body style="margin: 0; display: flex; justify-content: center; align-items: center;">
+    </body>
+
+</html>
