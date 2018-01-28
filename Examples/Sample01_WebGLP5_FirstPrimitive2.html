@@ -10,7 +10,7 @@
 			var pt = 0;
 			var ct = 0;
             function setup() {
-				document.body.addEventListener('touchstart', function (e) { e.preventDefault(); });
+				document.body.addEventListener('touchmove', function (e) { e.preventDefault(); e.stopPropagation();});
                 var p5objCanvas = createCanvas(windowWidth, windowHeight, WEBGL);
 				canvasMain = document.getElementById(p5objCanvas.id());
             }

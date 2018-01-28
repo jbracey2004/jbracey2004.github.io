@@ -22,7 +22,7 @@
 			var objCube;
 
             function setup() {
-				document.body.addEventListener('touchstart', function (e) { e.preventDefault(); });
+				document.body.addEventListener('touchmoe', function (e) { e.preventDefault(); e.stopPropagation();});
                 var p5objCanvas = createCanvas(windowWidth, windowHeight, WEBGL);
 				fxyAspect = windowWidth / windowHeight;
 				canvasMain = document.getElementById(p5objCanvas.id());
