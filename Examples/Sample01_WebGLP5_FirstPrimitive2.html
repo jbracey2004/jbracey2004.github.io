@@ -10,6 +10,7 @@
 			var pt = 0;
 			var ct = 0;
             function setup() {
+				document.body.addEventListener('touchstart', function (e) { e.preventDefault(); });
                 var p5objCanvas = createCanvas(windowWidth, windowHeight, WEBGL);
 				canvasMain = document.getElementById(p5objCanvas.id());
             }
@@ -82,7 +83,7 @@
 
     </head>
 
-    <body style="margin: 0; display: flex; justify-content: center; align-items: center;">
+    <body style="margin: 0; display: flex; justify-content: center; align-items: center; position: relative;">
     </body>
 
 </html>
