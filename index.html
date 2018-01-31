@@ -5,8 +5,8 @@
         <meta charset="utf-8">
 
         <title>Github Host - Portfollio</title>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/addons/p5.dom.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/addons/p5.dom.min.js"></script>
         <script>
             var aryStrfiles;
             var elementList;
@@ -39,21 +39,15 @@
                     str = str.replace(strmatch, "");
                     args["date"] = new Date(args["date"]);
                     args["path"] = "Examples/" + args["name"];
-                    args["size"] = parseFloat(str.match(/\b((\d+(\,)?))+\b/g).toString().replace(",", ""));
-                    args["toString"] = args["name"] + "\t" + args["date"] + "\t" + args["size"] + " bytes"
+                    args["size"] = parseFloat(str.match(/\b(\d+(\,)?)+\b/g).toString().replace(",", ""));
+                    args["toString"] = args["name"] +  String.fromCharCode(9) + args["date"] + String.fromCharCode(9) + args["size"] + " bytes"
                     console.log(args);
 					intCount++;
                     var elementListItem = createElement("div", "");
-                    var elementButtonItem = createA(args["path"], "");
-                    var elementButton = createDiv(args["name"]);
-					elementButton.style("position", "absolute");
-					elementButton.style("border", "2px solid #000000FF")
-					elementButton.style("background-color", "#FFFFFFB0");
-					var elementPreview = createElement("iframe", args["name"]);
-					elementPreview.attribute("src", args["path"]);
-					elementPreview.attribute("href", args["path"]);
+					elementListItem.style("padding","8px");
+                    var elementButtonItem = createA(args["path"].toString(), "");
+                    var elementButton = createButton(args["name"].toString());
                     elementButton.parent(elementButtonItem);
-					elementPreview.parent(elementButtonItem);
 					elementButtonItem.parent(elementListItem);
                     elementListItem.parent(elementList);
                 }

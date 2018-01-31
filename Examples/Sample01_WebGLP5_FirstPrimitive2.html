@@ -4,13 +4,12 @@
     <head>
         <meta charset="utf-8">
         <title>Portfollio - P5 WebGL Primitives</title>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.9/p5.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.9/p5.min.js"></script>
         <script>
 			var canvasMain;
 			var pt = 0;
 			var ct = 0;
             function setup() {
-				document.body.addEventListener('touchmove', function (e) { e.preventDefault(); e.stopPropagation();});
                 var p5objCanvas = createCanvas(windowWidth, windowHeight, WEBGL);
 				canvasMain = document.getElementById(p5objCanvas.id());
             }

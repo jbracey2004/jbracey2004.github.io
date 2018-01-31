@@ -4,8 +4,8 @@
     <head>
         <meta charset="utf-8">
         <title>Portfollio - P5 Three.js Primitive</title>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script>
 		<script src="../controls/OrbitControls.js"></script>
         <script>
 			var pt = 0;
@@ -17,22 +17,22 @@
 			var t3sceneMain;
 			var t3cameraMain;
 			var t3lightMain;
-			var t3OrbitControls;
+			var t3CamControls;
 
 			var objCube;
 
             function setup() {
-				document.body.addEventListener('touchmoe', function (e) { e.preventDefault(); e.stopPropagation();});
-                var p5objCanvas = createCanvas(windowWidth, windowHeight, WEBGL);
-				fxyAspect = windowWidth / windowHeight;
+				var szWin = sizeWindow();
+				console.log(szWin);
+                var p5objCanvas = createCanvas(szWin.width, szWin.height, WEBGL);
 				canvasMain = document.getElementById(p5objCanvas.id());
 				t3jsRender = new THREE.WebGLRenderer({canvas: canvasMain, preserveDrawingBuffer: true});
-				t3jsRender.setSize(windowWidth, windowHeight);
+				t3jsRender.setSize(szWin.width, szWin.height);
 				t3sceneMain = new THREE.Scene();
-				t3cameraMain = new THREE.PerspectiveCamera(75, fxyAspect, 0.001, 10000);
+				t3cameraMain = new THREE.PerspectiveCamera(75, szWin.aspect, 0.001, 10000);
 				t3cameraMain.position.set(0, 1, 2);
 				t3cameraMain.lookAt({x:0, y:0, z:0});
-				t3OrbitControls = new THREE.OrbitControls(t3cameraMain);
+				t3CamControls = new THREE.OrbitControls(t3cameraMain);
 				t3lightMain = new THREE.PointLight("#ffffff", 1, 100);
 				t3lightMain.position.set(10, 10, 10);
 				t3sceneMain.add(t3lightMain);
@@ -49,28 +49,37 @@
 				ct += t;
 
 				t3lightMain.position.copy(t3cameraMain.position);
-				t3OrbitControls.update();
+				t3CamControls.update();
 
 				pt = tn;
 			}
 
             function draw() {
-                background("#402010");
 				animate();
+				background("#402010");
 				t3jsRender.render(t3sceneMain, t3cameraMain);
             }
 
             function windowResized() {
-				fxyAspect = windowWidth / windowHeight;
-                resizeCanvas(windowWidth, windowHeight);
-				t3jsRender.setSize(windowWidth, windowHeight);
-                console.log({Width: windowWidth, Height: windowHeight});
+				var szWin = sizeWindow();
+				t3cameraMain.aspect = szWin.aspect;
+				t3cameraMain.updateProjectionMatrix();
+                resizeCanvas(szWin.width, szWin.height);
+				t3jsRender.setSize(szWin.width, szWin.height);
+                console.log(szWin);
             }
+
+			function sizeWindow() {
+				var w = windowWidth-16;
+				var h = windowHeight-16;
+				var a = w / h;
+				return { width:w, height:h, aspect:a };
+			}
         </script>
 
     </head>
 
-    <body style="margin: 0; display: flex; justify-content: center; align-items: center; position: relative;">
+    <body style="overflow: hidden;">
     </body>
 
 </html>
