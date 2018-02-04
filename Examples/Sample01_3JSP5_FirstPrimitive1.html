@@ -3,8 +3,8 @@
 
     <head>
         <meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-        <title>Portfollio - P5 Three.js Primitive</title>
+		<meta name="viewport" content="width=device-width, height=device-height, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+        <title>Portfolio - P5 Three.js Primitive</title>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script>
 		<script src="../controls/OrbitControls.js"></script>
@@ -12,7 +12,7 @@
 			var pt = 0;
 			var ct = 0;
 
-			var fxyAspect;
+			var p5objCanvas;
 			var canvasMain;
 			var t3jsRender;
 			var t3sceneMain;
@@ -25,7 +25,7 @@
             function setup() {
 				var szWin = sizeWindow();
 				console.log(szWin);
-                var p5objCanvas = createCanvas(szWin.width, szWin.height, WEBGL);
+                p5objCanvas = createCanvas(szWin.width, szWin.height, WEBGL);
 				canvasMain = document.getElementById(p5objCanvas.id());
 				t3jsRender = new THREE.WebGLRenderer({canvas: canvasMain, preserveDrawingBuffer: true});
 				t3jsRender.setSize(szWin.width, szWin.height);
@@ -38,7 +38,7 @@
 				t3lightMain.position.set(10, 10, 10);
 				t3sceneMain.add(t3lightMain);
 				var geometry = new THREE.BoxGeometry(1, 1, 1);
-				var material = new THREE.MeshPhongMaterial({color: "#ff4000"});
+				var material = new THREE.MeshPhongMaterial({color: "#ff2000"});
 				objCube = new THREE.Mesh(geometry, material);
 				t3sceneMain.add(objCube);
             }
