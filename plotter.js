@@ -11,6 +11,9 @@ function plotArea2D(parent)
 	this.PlotMaxY = -1;
 }
 
+function logab(a, x) { return (log(x))/(log(a));}
+function RectToPolar(pos) { var retAng = atan2(pos.Y, pos.X); while(retAng<0) {retAng+=TAU}; return {Dist: sqrt(pos.X*pos.X + pos.Y*pos.Y),Ang: retAng};}
+
 plotArea2D.prototype.X = function(setX) {
 	if (typeof(setX) === 'undefined') {
 		return this.uvX * this.ParentElement.width;
@@ -86,6 +89,19 @@ plotArea2D.prototype.Size = function (setSize) {
 		this.uvWidth = setSize.Width / this.ParentElement.width;
 		this.uvHeight = setSize.Height / this.ParentElement.height;
 		return { uvSize:{uvW:this.uvWidth, uvH:this.uvHeight}, Size:setSize };
+	}
+}
+plotArea2D.prototype.ClientArea = function(setArea) {
+	if (typeof (setArea) === 'undefined') {
+		var min = this.Pos();
+		var size = this.Size();
+		var max = {X:min.X + size.Width, Y:min.Y + size.Height};
+		return {Min:min, Max:max, Size:size};
+	}
+	else {
+		this.Pos(setArea.Min);
+		this.Size({Width:setArea.Max.X - setArea.Min.X, Height: setArea.Max.Y - setArea.Min.Y});
+		return { uvMin: this.uvPos(), uvSize: this.uvSize() };
 	}
 }
 
@@ -236,14 +252,32 @@ plotArea2D.prototype.ClientUnitToPlotUnit = function () {
 	return { X: (this.PlotWidth() / this.Width()), Y: (this.PlotHeight() / this.Height())};
 }
 
+plotArea2D.prototype.uvMousePointer = function() {
+	return this.MapClientToUV({ X: mouseX, Y: mouseY });
+}
+plotArea2D.prototype.PlotMousePointer = function() {
+	return this.MapUVToPlot(this.uvMousePointer());
+}
 plotArea2D.prototype.ContainsMousePointer = function() {
-	var UV = this.MapClientToUV({X:mouseX, Y:mouseY});
+	var UV = this.uvMousePointer();
 	return (UV.X>=0 && UV.X<=1 && UV.Y>=0 && UV.Y<=1);
 }
-
-plotArea2D.prototype.Update = function() {
-
+plotArea2D.prototype.RectFnxContainsMousePointer = function (fnx, thickness, OnMousePointerOnCurve) {
+	if (!(typeof (fnx) === 'function')) return false;
+	var bolRet = false;
+	var areaPlot = this.PlotArea();
+	var posThis = this.Pos();
+	var sizeThis = this.Size();
+	var resUnit = this.ClientUnitToPlotUnit();
+	var plotPointer = this.PlotMousePointer();
+	var pointerFy = fnx(plotPointer.X);
+	if (abs(plotPointer.Y - pointerFy) <= abs(thickness * resUnit.Y)) {
+		if (typeof (OnMousePointerOnCurve) === 'function') OnMousePointerOnCurve();
+		bolRet = true;
+	}
+	return bolRet;
 }
+
 plotArea2D.prototype.DrawBorder = function (color, thickness) {
 	stroke(color);
 	strokeWeight(thickness);
@@ -252,39 +286,130 @@ plotArea2D.prototype.DrawBorder = function (color, thickness) {
 	var sizeThis = this.Size();
 	rect(posThis.X, posThis.Y, sizeThis.Width, sizeThis.Height);
 }
-plotArea2D.prototype.DrawAxis_Rect = function(color,thickness,axisMarkLength,gridLength) {
-	stroke(color);
+plotArea2D.prototype.Fill = function(color) {
+	noStroke();
+	fill(color);
+	var posThis = this.Pos();
+	var sizeThis = this.Size();
+	rect(posThis.X, posThis.Y, sizeThis.Width, sizeThis.Height);
+}
+plotArea2D.prototype.DrawGrid_Rect = function (color, thickness, gridLength) {
 	var areaPlot = this.PlotArea();
-	var areaGrid = {X:areaPlot.Size.Width/gridLength, Y:areaPlot.Size.Height/gridLength};
+	var areaGrid = { X: areaPlot.Size.Width / gridLength.X, Y: areaPlot.Size.Height / gridLength.Y };
+	var posOrigin = this.MapPlotToClient({ X: 0, Y: 0 });
+	var posThis = this.Pos();
+	var sizeThis = this.Size();
+	stroke(color);
+	strokeWeight(thickness);
+	for (var gridI = areaPlot.Min.Y, gridCI = 0; gridCI <= gridLength.Y; gridI += areaGrid.Y, gridCI += 1) {
+		var gridIP = gridI - (gridI % areaGrid.Y);
+		var gridYi = this.MapPlotToClient({ Y: gridIP }).Y;
+		if (gridYi >= posThis.Y && gridYi <= posThis.Y + sizeThis.Height + 1) {
+			line(posThis.X, gridYi, posThis.X + sizeThis.Width, gridYi);
+		}
+	}
+	for (var gridI = areaPlot.Min.X, gridCI = 0; gridCI <= gridLength.X; gridI += areaGrid.X, gridCI += 1) {
+		var gridIP = gridI - (gridI % areaGrid.X);
+		var gridXi = this.MapPlotToClient({ X: gridIP }).X;
+		if (gridXi >= posThis.X && gridXi <= posThis.X + sizeThis.Width + 1) {
+			line(gridXi, posThis.Y, gridXi, posThis.Y + sizeThis.Height);
+		}
+	}
+}
+plotArea2D.prototype.DrawGrid_Polar = function (color, thickness, gridLength) {
+	var areaPlot = this.PlotArea();
+	var areaPlot_PolarCoords =	{	TopLeft: RectToPolar(areaPlot.Min), 
+									TopRight: RectToPolar({X:areaPlot.Max.X, Y:areaPlot.Min.Y}),
+									BottomLeft: RectToPolar({X:areaPlot.Min.X, Y:areaPlot.Max.Y}),
+									BottomRight: RectToPolar(areaPlot.Max)	};
+	var posOrigin = this.MapPlotToClient({ X: 0, Y: 0 });
+	var posThis = this.Pos();
+	var sizeThis = this.Size();
+	return areaPlot_PolarCoords;
+}
+plotArea2D.prototype.DrawAxis = function(colorAxis, colorMarks, thickness, axisMarkLength, gridLength) {
+	var areaPlot = this.PlotArea();
+	var areaGrid = {X:areaPlot.Size.Width/gridLength.X, Y:areaPlot.Size.Height/gridLength.Y};
 	var posOrigin = this.MapPlotToClient({X:0, Y:0});
 	var posThis = this.Pos();
 	var sizeThis = this.Size();
 	if (posOrigin.Y >= posThis.Y && posOrigin.Y <= posThis.Y + sizeThis.Height) {
+		stroke(colorAxis);
 		strokeWeight(thickness);
 		line(posThis.X, posOrigin.Y, posThis.X + sizeThis.Width, posOrigin.Y);
-		strokeWeight(1);
-		for (var gridI = areaPlot.Min.X, gridCI = 0; gridCI <= gridLength; gridI += areaGrid.X, gridCI += 1) {
-			var gridXi = this.MapPlotToClient({ X: gridI - (gridI % areaGrid.X)}).X;
-			if (gridXi >= posThis.X && gridXi <= posThis.X + sizeThis.Width) {
-				line(gridXi, max(posOrigin.Y - axisMarkLength,posThis.Y), gridXi, min(posOrigin.Y + axisMarkLength, posThis.Y + sizeThis.Height));
+		stroke(colorMarks);
+		for (var gridI = areaPlot.Min.X, gridCI = 0; gridCI <= gridLength.X; gridI += areaGrid.X, gridCI += 1) {
+			var gridIP = gridI - (gridI % areaGrid.X);
+			var gridXi = this.MapPlotToClient({ X: gridIP}).X;
+			var lengthMark = axisMarkLength;
+			strokeWeight(thickness * 0.5);
+			if (gridXi >= posThis.X && gridXi <= posThis.X + sizeThis.Width + 1) {
+				line(gridXi, max(posOrigin.Y - lengthMark, posThis.Y), gridXi, min(posOrigin.Y + lengthMark, posThis.Y + sizeThis.Height));
 			}
 		}
 	}
 	if (posOrigin.X >= posThis.X && posOrigin.X <= posThis.X + sizeThis.Width) {
+		stroke(colorAxis);
 		strokeWeight(thickness);
-		line(posOrigin.X,posThis.Y,posOrigin.X,posThis.Y + sizeThis.Height);
-		strokeWeight(1);
-		for (var gridI = areaPlot.Min.Y, gridCI = 0; gridCI <= gridLength; gridI += areaGrid.Y, gridCI += 1) {
-			var gridYi = this.MapPlotToClient({ Y: gridI - (gridI % areaGrid.Y) }).Y;
+		line(posOrigin.X,posThis.Y,posOrigin.X,posThis.Y + sizeThis.Height + 1);
+		stroke(colorMarks);
+		for (var gridI = areaPlot.Min.Y, gridCI = 0; gridCI <= gridLength.Y; gridI += areaGrid.Y, gridCI += 1) {
+			var gridIP = gridI - (gridI % areaGrid.Y);
+			var gridYi = this.MapPlotToClient({ Y: gridIP}).Y;
+			var lengthMark = axisMarkLength;
+			strokeWeight(thickness * 0.5);
 			if (gridYi >= posThis.Y && gridYi <= posThis.Y + sizeThis.Height) {
-				line(max(posOrigin.X - axisMarkLength, posThis.X), gridYi, min(posOrigin.X + axisMarkLength, posThis.X + sizeThis.Width), gridYi);
+				line(max(posOrigin.X - lengthMark, posThis.X), gridYi, min(posOrigin.X + lengthMark, posThis.X + sizeThis.Width), gridYi);
 			}
 		}
 	}
 }
-plotArea2D.prototype.DrawAxis_Polar = function (color, thickness) {
-
+plotArea2D.prototype.DrawCurve_RectFnx = function (fnx, color, thickness, samplesOfX) {
+	if (!(typeof (fnx) === 'function')) return 0;
+	var areaPlot = this.PlotArea();
+	var posThis = this.Pos();
+	var sizeThis = this.Size();
+	var resSample = areaPlot.Size.Width / samplesOfX;
+	noFill();
+	stroke(color);
+	strokeWeight(thickness);
+	beginShape();
+	for (var Xi = areaPlot.Min.X, Ni = 0; Ni <= samplesOfX; Xi += resSample, Ni ++ ) {
+		var Yi = fnx(Xi);
+		if (typeof (Yi) === 'undefined') { endShape(); beginShape(); continue; }
+		var PosI = this.MapPlotToClient({ X: Xi, Y: Yi });
+		if (PosI.Y >= posThis.Y-1 && PosI.Y <= posThis.Y + sizeThis.Height+1) {
+			vertex(PosI.X, PosI.Y);
+		} else {
+			endShape();
+			beginShape();
+		}
+	}
+	endShape();
 }
-plotArea2D.prototype.DrawCurve = function() {
-
+plotArea2D.prototype.DrawCurve_PolarFnx = function (fntr, color, thickness, ThetaStart, ThetaEnd, samplesOfTheta) {
+	if (!(typeof (fntr) === 'function')) return 0;
+	var areaPlot = this.PlotArea();
+	var posThis = this.Pos();
+	var sizeThis = this.Size();
+	var resSample = abs(ThetaEnd - ThetaStart) / samplesOfTheta;
+	noFill();
+	stroke(color);
+	strokeWeight(thickness);
+	beginShape();
+	for (var Ti = ThetaStart, Ni = 0; Ni <= samplesOfTheta; Ti += resSample, Ni++) {
+		var Ri = fntr(Ti);
+		if (typeof (Ri) === 'undefined') { endShape(); beginShape(); continue;}
+		var Xi = Ri * cos(Ti);
+		var Yi = Ri * sin(Ti);
+		var PosI = this.MapPlotToClient({ X: Xi, Y: Yi });
+		if (PosI.X >= posThis.X-1 && PosI.X <= posThis.X + sizeThis.Width+1 &&
+			PosI.Y >= posThis.Y-1 && PosI.Y <= posThis.Y + sizeThis.Height+1 ) {
+			vertex(PosI.X, PosI.Y);
+		} else {
+			endShape();
+			beginShape();
+		}
+	}
+	endShape();
 }

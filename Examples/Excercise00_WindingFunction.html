@@ -3,11 +3,8 @@
 
 	<head>
 		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, height=device-height, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<title>Portfolio - Winding Function</title>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.min.js"></script>
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script>
-		<script src="../controls/OrbitControls.js"></script>
 		<script src="../plotter.js"></script>
 		<script>
 			var pt = 0;
@@ -15,13 +12,15 @@
 
 			var p5objCanvas;
 			var canvasMain;
-			var t3jsRender;
-			var t3sceneMain;
-			var t3cameraMain;
-			var t3lightMain;
-			var t3CamControls;
 
 			var graphWaveform;
+			var graphWinding;
+			var graphSpectrum;
+			var freqWinding;
+			var segsWinding;
+
+			var fxnGraph;
+			var fxnGraphWind;
 
 			function setup() {
 				var szWin = sizeWindow();
@@ -29,6 +28,34 @@
 				p5objCanvas = createCanvas(szWin.width, szWin.height);
 				canvasMain = document.getElementById(p5objCanvas.id());
 				graphWaveform = new plotArea2D(canvasMain);
+				graphWaveform.uvHeight = 0.3;
+				graphWaveform.uvWidth = 0.995;
+				graphWaveform.uvY = 0.005;
+				graphWaveform.CenterWidthOnParent();
+				graphWaveform.PlotArea({Min:{X:0, Y:1.5}, Max:{X:4, Y:-1.5}});
+				graphWinding = new plotArea2D(canvasMain);
+				graphWinding.uvHeight = 0.5;
+				graphWinding.uvWidth = 0.3;
+				graphWinding.uvY = 0.4;
+				graphWinding.uvX = 0.01;
+				graphWinding.PlotArea({Min:{X:-1.5,Y:1.5}, Max:{X:1.5, Y:-1.5}});
+				graphSpectrum = new plotArea2D(canvasMain);
+				graphSpectrum.uvHeight = 0.5;
+				graphSpectrum.uvWidth = 0.64;
+				graphSpectrum.uvY = 0.4;
+				graphSpectrum.uvX = 0.35;
+				graphSpectrum.PlotArea({ Min: { X: 0, Y: 1 }, Max: { X: 8, Y: -1 } });
+				freqWinding = 3;
+				segsWinding = 256;
+				fxnGraph = function (x) { return sin(3 * TAU * x); };
+				fxnGraphWind = function (x) { return fxnGraph(x / (TAU * freqWinding)); };
+				fxnGraphWindSum = function (freq) { 
+												var sum = 0; 
+												for(Wi = 0; Wi <= segsWinding; Wi ++) {
+													var ang = Wi / segsWinding * 8 * TAU;
+													sum += (sin(ang) * fxnGraph(ang / (TAU * freq)))/segsWinding; 
+												}
+												return sum; };
 			}
 
 			function animate() {
@@ -36,6 +63,13 @@
 				if (pt == 0) { pt = tn; }
 				var t = tn - pt;
 				ct += t;
+
+				var mouseCurrent = { X: mouseX, Y: mouseY };
+				if (mouseIsPressed) {
+					if (graphSpectrum.ContainsMousePointer()) {
+						freqWinding = graphSpectrum.PlotMousePointer(mouseCurrent).X;
+					}
+				}
 
 				pt = tn;
 			}
@@ -45,23 +79,34 @@
 				var mouseCurrent = { X: mouseX, Y: mouseY };
 				var mousePrev = { X: pmouseX, Y: pmouseY };
 				var mouseMove = { X: mouseCurrent.X - mousePrev.X, Y: mouseCurrent.Y - mousePrev.Y };
-				if (mouseButton === LEFT) {
-					if (graphWaveform.ContainsMousePointer()) {
-						var pos = graphWaveform.PlotPosCenter();
-						var units = graphWaveform.ClientUnitToPlotUnit();
-						pos.X -= units.X * mouseMove.X;
-						pos.Y -= units.Y * mouseMove.Y;
-						graphWaveform.PlotPosCenter(pos);
-						return false;
-					}
-				}
+				
 			}
 
 			function draw() {
+				var posTmp;
+				var areaPlot;
+				var areaClient;
 				animate();
 				background("#102010");
-				graphWaveform.DrawAxis_Rect("#CCCCCCFF", 2, 8, 16);
-				graphWaveform.DrawBorder("#40FF4080", 4);
+				graphWaveform.DrawAxis("#FFFFFF", "#FFFF80", 2, 16, {X:16, Y:4});
+				graphWaveform.DrawCurve_RectFnx(fxnGraph, "#FFFF00CC", 2, 1024);
+				graphWinding.DrawGrid_Rect("#0000FF", 1, { X: 8, Y: 8 });
+				graphWinding.DrawAxis("#FFFFFF", "#8080FF", 2, 8, {X:8, Y:8});
+				graphWinding.DrawCurve_PolarFnx(fxnGraphWind, "#FFFF80CC", 1, 0, 5*TAU, 1024);
+				graphSpectrum.DrawAxis("#40FF40", "#80FF80", 2, 16, { X: 8, Y: 8 });
+				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum, "#FF4010", 2, 1024);
+				fill("#FF000080");
+				stroke("#FFFF80");
+				strokeWeight(1);
+				posTmp = graphSpectrum.MapPlotToClient({X: freqWinding, Y: fxnGraphWindSum(freqWinding)});
+				ellipse(posTmp.X, posTmp.Y, 8, 8);
+				areaPlot = graphWaveform.PlotArea();
+				areaClient = graphWaveform.ClientArea();
+				stroke("#606040CC");
+				for(var Xi = areaPlot.Min.X;  Xi <= areaPlot.Max.X; Xi += 1/freqWinding) {
+					var pos = graphWaveform.MapPlotToClient({X:Xi}).X;
+					line(pos, areaClient.Min.Y, pos, areaClient.Max.Y);
+				}
 			}
 
 			function windowResized() {
