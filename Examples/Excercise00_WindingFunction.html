@@ -35,7 +35,7 @@
 					}
 					return sum;
 				};
-			var fxnGraphWindSum_X = function(x) { return fxnGraphWindSum(x).X };
+			var fxnGraphWindSum_X = function (x) { return fxnGraphWindSum(x).X };
 			var fxnGraphWindSum_Y = function (x) { return fxnGraphWindSum(x).Y };
 			var fxnGraphWindSum_R = function (x) { return fxnGraphWindSum(x).R };
 
@@ -100,13 +100,13 @@
 				animate();
 				background("#102010");
 				graphWaveform.DrawAxis("#FFFFFF", "#FFFF80", 2, 16, {X:16, Y:4});
-				graphWaveform.DrawCurve_RectFnx(fxnGraph, "#FFFF00CC", 2, 1024);
+				graphWaveform.DrawCurve_RectFnx(fxnGraph, "#FFFF00CC", 2, 256);
 				graphWinding.DrawGrid_Rect("#0000FF", 1, { X: 8, Y: 8 });
 				graphWinding.DrawAxis("#FFFFFF", "#8080FF", 2, 8, {X:8, Y:8});
 				graphWinding.DrawCurve_PolarFnx(fxnGraphWind, "#FFFF80CC", 1, 0, 8*TAU, 1024);
 				graphSpectrum.DrawAxis("#40FF40", "#80FF80", 2, 16, { X: 8, Y: 8 });
-				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum_X, "#FF401080", 2, 1024);
-				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum_Y, "#10B0FF80", 2, 1024);
+				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum_X, "#FF401080", 2, 256);
+				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum_Y, "#10B0FF80", 2, 256);
 				fill("#FF000080");
 				stroke("#FFFF80");
 				strokeWeight(1);
@@ -121,8 +121,8 @@
 				fill("#FF800080");
 				stroke("#FF4000FF");
 				strokeWeight(1);
-				posTmp = graphWinding.MapPlotToClient(posFreqWindxy);
-				ellipse(posTmp.X, posTmp.Y, 8, 8);
+				var posWindingSum = graphWinding.MapPlotToClient(posFreqWindxy);
+				ellipse(posWindingSum.X, posWindingSum.Y, 8, 8);
 				areaPlot = graphWaveform.PlotArea();
 				areaClient = graphWaveform.ClientArea();
 				stroke("#606040CC");
@@ -130,10 +130,6 @@
 					var pos = graphWaveform.MapPlotToClient({X:Xi}).X;
 					line(pos, areaClient.Min.Y, pos, areaClient.Max.Y);
 				}
-				//stroke("#0000FF");
-				//areaPlot = graphWinding.PlotArea();
-				//areaClient = graphWinding.ClientArea();
-				//posCenterTmp = graphWinding.MapPlotToClient(graphWinding.PlotCenterPos());
 			}
 
 			function windowResized() {
