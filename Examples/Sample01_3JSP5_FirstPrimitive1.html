@@ -27,6 +27,7 @@
 				console.log(szWin);
                 p5objCanvas = createCanvas(szWin.width, szWin.height, WEBGL);
 				canvasMain = document.getElementById(p5objCanvas.id());
+				pixelDensity(1);
 				t3jsRender = new THREE.WebGLRenderer({canvas: canvasMain, preserveDrawingBuffer: true});
 				t3jsRender.setSize(szWin.width, szWin.height);
 				t3sceneMain = new THREE.Scene();
@@ -53,6 +54,10 @@
 				t3CamControls.update();
 
 				pt = tn;
+			}
+
+			function touchMove() {
+				return false;
 			}
 
             function draw() {

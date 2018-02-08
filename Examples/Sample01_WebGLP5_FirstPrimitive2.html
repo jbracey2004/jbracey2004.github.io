@@ -3,7 +3,7 @@
 
     <head>
         <meta charset="utf-8">
-        <title>Portfollio - P5 WebGL Primitives</title>
+        <title>Portfolio - P5 WebGL Primitives</title>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.5.9/p5.min.js"></script>
         <script>
 			var canvasMain;
@@ -12,6 +12,7 @@
             function setup() {
                 var p5objCanvas = createCanvas(windowWidth, windowHeight, WEBGL);
 				canvasMain = document.getElementById(p5objCanvas.id());
+				pixelDensity(1);
             }
 
             function draw() {

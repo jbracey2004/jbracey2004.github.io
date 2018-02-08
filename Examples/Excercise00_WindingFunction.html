@@ -20,9 +20,10 @@
 			var freqWinding;
 			var segsWinding;
 
-			var fxnGraph;
-			var fxnGraphWind;
-			var fxnGraphWindSum;
+			//var fxnGraph;
+			//var fxnGraphWind;
+			//var fxnGraphWindSum;
+			var fxnGraph = function (x) { return 0.5 + 0.5*cos(3 * TAU * x); };
 			var fxnGraphWind = function (x) { return fxnGraph(x / (TAU * freqWinding)); };
 			var fxnGraphWindSum = function (freq) {
 					var sum = { X: 0, Y: 0, R: 0};
@@ -50,22 +51,21 @@
 				graphWaveform.uvWidth = 0.995;
 				graphWaveform.uvY = 0.005;
 				graphWaveform.CenterWidthOnParent();
-				graphWaveform.PlotArea({Min:{X:0, Y:2.5}, Max:{X:4, Y:-0.5}});
+				graphWaveform.PlotArea({Min:{X:0, Y:1}, Max:{X:4, Y:-1}});
 				graphWinding = new plotArea2D(canvasMain);
 				graphWinding.uvHeight = 0.5;
 				graphWinding.uvWidth = 0.3;
 				graphWinding.uvY = 0.4;
 				graphWinding.uvX = 0.01;
-				graphWinding.PlotArea({Min:{X:-2.5,Y:2.5}, Max:{X:2.5, Y:-2.5}});
+				graphWinding.PlotArea({Min:{X:-1.25,Y:1.25}, Max:{X:1.25, Y:-1.25}});
 				graphSpectrum = new plotArea2D(canvasMain);
 				graphSpectrum.uvHeight = 0.5;
 				graphSpectrum.uvWidth = 0.64;
 				graphSpectrum.uvY = 0.4;
 				graphSpectrum.uvX = 0.35;
-				graphSpectrum.PlotArea({ Min: { X: 0, Y: 0.75 }, Max: { X: 8, Y: -0.75 } });
+				graphSpectrum.PlotArea({ Min: { X: 0, Y: 0.5 }, Max: { X: 8, Y: -0.25 } });
 				freqWinding = 3;
 				segsWinding = 256;
-				fxnGraph = function (x) { return 1 + cos(3 * TAU * x); };
 			}
 
 			function animate() {
@@ -92,6 +92,11 @@
 				
 			}
 
+			function touchMove()
+			{
+				return false;
+			}
+
 			function draw() {
 				var posTmp;
 				var posCenterTmp;
@@ -105,8 +110,8 @@
 				graphWinding.DrawAxis("#FFFFFF", "#8080FF", 2, 8, {X:8, Y:8});
 				graphWinding.DrawCurve_PolarFnx(fxnGraphWind, "#FFFF80CC", 1, 0, 8*TAU, 1024);
 				graphSpectrum.DrawAxis("#40FF40", "#80FF80", 2, 16, { X: 8, Y: 8 });
-				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum_X, "#FF401080", 2, 256);
-				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum_Y, "#10B0FF80", 2, 256);
+				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum_X, "#FF4010CC", 2, 256);
+				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum_Y, "#10B0FF60", 2, 256);
 				fill("#FF000080");
 				stroke("#FFFF80");
 				strokeWeight(1);
@@ -118,7 +123,7 @@
 				strokeWeight(1);
 				posTmp = graphSpectrum.MapPlotToClient({X: freqWinding, Y: posFreqWindxy.Y});
 				ellipse(posTmp.X, posTmp.Y, 8, 8);
-				fill("#FF800080");
+				fill("#FF8000FF");
 				stroke("#FF4000FF");
 				strokeWeight(1);
 				var posWindingSum = graphWinding.MapPlotToClient(posFreqWindxy);

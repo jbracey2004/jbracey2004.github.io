@@ -1,3 +1,62 @@
+var v_X = 0;
+var v_Y = 1;
+var v_Z = 2;
+var v_W = 3;
+function vecN()
+{
+	this.__proto__ = Array.__proto__;
+	for (var i = 0; i < arguments.length; i++) { this.push(arguments[i]);}
+}
+Object.defineProperty(vecN.prototype, "X", {
+    get: function getX() {
+		while (this.length <= v_X) {this.push(0);}
+        return this.entries[v_X];
+    },
+	set: function setX(value) {
+		while (this.length <= v_X) { this.push(0); }
+		this.entries[v_X] = value;
+	}
+});
+Object.defineProperty(vecN.prototype, "Y", {
+	get: function getX() {
+		while (this.length <= v_Y) { this.push(0); }
+		return this.entries[v_Y];
+	},
+	set: function setX(value) {
+		while (this.length <= v_Y) { this.push(0); }
+		this.v[v_Y] = value;
+	}
+});
+Object.defineProperty(vecN.prototype, "Z", {
+	get: function getX() {
+		while (this.length <= v_Z) { this.push(0); }
+		return this.entries[v_Z];
+	},
+	set: function setX(value) {
+		while (this.length <= v_Z) { this.push(0); }
+		this.entries[v_Z] = value;
+	}
+});
+Object.defineProperty(vecN.prototype, "W", {
+	get: function getX() {
+		while (this.length <= v_W) { this.push(0); }
+		return this.entries[v_W];
+	},
+	set: function setX(value) {
+		while (this.length <= v_W) { this.push(0); }
+		this.entries[v_W] = value;
+	}
+});
+vecN.prototype.toString = function() {
+	var strRet = "("; 
+	for(var i=0; i<this.components.length; i++){
+		strRet += this.components[i].toString();
+		if(i<this.components.length -1) {strRet+=", ";}
+		}
+	strRet += ")"; 
+	return strRet;
+}
+
 function splineNode(setDimensions, setPos, setTangentPre, setTangentPost)
 {
 	this.Dimensions = setDimensions;
@@ -10,8 +69,9 @@ function splineNode(setDimensions, setPos, setTangentPre, setTangentPost)
 		if (di < TanPost.length) { this.TanPost[di] = setTangentPost[di]; }
 	}
 }
+
 function spline(setDimensions, setNodes)
 {
-	this.Dimensions = setDimensions;
-	this.node = setNodes;
+	if (!(typeof(setDimensions) === 'undefined')) {this.Dimensions = setDimensions;} else {this.Dimensions = 1;}
+	if (!(typeof(setDimensions) === 'undefined')) {this.node = setNodes} else {this.node = []};
 }
