@@ -4,27 +4,28 @@ var v_Z = 2;
 var v_W = 3;
 function vecN()
 {
-	this.__proto__ = Array.__proto__;
-	for (var i = 0; i < arguments.length; i++) { this.push(arguments[i]);}
+	this.dimensions = arguments.length;
+	this.components = [arguments.length]
+	for (var i = 0; i < arguments.length; i++) { this.components.push(arguments[i]);}
 }
 Object.defineProperty(vecN.prototype, "X", {
     get: function getX() {
-		while (this.length <= v_X) {this.push(0);}
-        return this.entries[v_X];
+		while (this.components.length <= v_X) {this.components.push(0);}
+        return this.components[v_X];
     },
 	set: function setX(value) {
-		while (this.length <= v_X) { this.push(0); }
-		this.entries[v_X] = value;
+		while (this.components.length <= v_X) { this.push(0); }
+		this.components[v_X] = value;
 	}
 });
 Object.defineProperty(vecN.prototype, "Y", {
 	get: function getX() {
-		while (this.length <= v_Y) { this.push(0); }
-		return this.entries[v_Y];
+		while (this.components.length <= v_Y) { this.push(0); }
+		return this.components[v_Y];
 	},
 	set: function setX(value) {
-		while (this.length <= v_Y) { this.push(0); }
-		this.v[v_Y] = value;
+		while (this.components.length <= v_Y) { this.componentspush(0); }
+		this.components[v_Y] = value;
 	}
 });
 Object.defineProperty(vecN.prototype, "Z", {
