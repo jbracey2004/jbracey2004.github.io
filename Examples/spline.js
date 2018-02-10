@@ -8,6 +8,9 @@ function vecN()
 	this.dimensions = arguments.length;
 	this.components = new Array(...arguments);
 }
+function vec2(_x, _y) { vecN.call(this, _x, _y); }
+function vec3(_x, _y, _z) { vecN.call(this, _x, _y, _z); }
+function vec4(_x, _y, _z, _w) { vecN.call(this, _x, _y, _z, _w); }
 Object.defineProperty(vecN.__proto__, "X", {
 	get: function getX() { return vecN.cX(this); }, set: function setX(value) { vecN.cX(this, value);}
 });
@@ -142,24 +145,6 @@ vecN.prototype.toString = function() {
 		}
 	strRet += ")"; 
 	return strRet;
-}
-
-function vec2(_x, _y)
-{
-	vecN.call(this, _x, _y);
-	this.__proto__ = vecN.__proto__;
-}
-
-function vec3(_x, _y, _z) 
-{
-	vecN.call(this, _x, _y, _z);
-	this.__proto__ = vecN.__proto__;
-}
-
-function vec4(_x, _y, _z, _w) 
-{
-	vecN.call(this, _x, _y, _z, _w);
-	this.__proto__ = vecN.__proto__;
 }
 
 function splineNode(setDimensions, setPos, setTangentPre, setTangentPost)
