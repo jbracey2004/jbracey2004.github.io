@@ -7,6 +7,7 @@
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.min.js"></script>
 		<script src="plotter.js"></script>
 		<script src="spline.js"></script>
+		<script src="vector.js"></script>
 		<script>
 			var pt = 0;
 			var ct = 0;
@@ -20,15 +21,12 @@
 			var freqWinding;
 			var segsWinding;
 
-			//var fxnGraph;
-			//var fxnGraphWind;
-			//var fxnGraphWindSum;
 			var fxnGraph = function (x) { return 0.5 + 0.5*cos(3 * TAU * x); };
 			var fxnGraphWind = function (x) { return fxnGraph(x / (TAU * freqWinding)); };
 			var fxnGraphWindSum = function (freq) {
 					var sum = { X: 0, Y: 0, R: 0};
 					for (Wi = 0; Wi <= segsWinding; Wi++) {
-						var ang = Wi / segsWinding * 8 * TAU;
+						var ang = Wi / segsWinding * 4 * TAU;
 						var r = fxnGraph(ang / (TAU * freq)) / segsWinding;
 						sum.X += cos(ang) * r;
 						sum.Y += sin(ang) * r;
