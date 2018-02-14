@@ -31,15 +31,26 @@ Object.defineProperty(vecN.__proto__, "Dimensions", {
 	get: function getDimensions() { return vecN.dimLen(this); }, set: function setDimensions(value) { vecN.dimLen(this, value); }
 });
 vecN.cN = function (v, idxComponent, setValue) {
-	if (idxComponent >= 0 && idxComponent < v.components.length) {
-		if (typeof (setValue) === 'undefined') {
+	if (typeof (setValue) === 'undefined') {
+		if (idxComponent >= 0 && idxComponent < v.components.length) {
 			return v.components[idxComponent];
 		} else {
-			v.components[idxComponent] = setValue;
-			return v.components;
+			return 0;
 		}
 	} else {
-		return 0;
+		if (idxComponent >= 0 && idxComponent < v.components.length) {
+			v.components[idxComponent] = setValue;
+		} else {
+			if(idxComponent >= 0) {
+				vecN.dimLen(v, idxComponent);
+				v.components[idxComponent] = setValue;
+			} else {
+				for (var di = 0; di < v.componenta.length; di++) {
+					v.components[di] = setValue;
+				}
+			}
+		}
+		return v.components;
 	}
 }
 vecN.cX = function (v, setValue) { return vecN.cN(v, v_X, setValue); }
@@ -176,4 +187,63 @@ vec3.cross = function (a, b) {
 	ary[v_Y] = vecN.cZ(a) * vecN.cX(b) - vecN.cX(a) * vecN.cZ(b);
 	ary[v_z] = vecN.cX(a) * vecN.cY(b) - vecN.cY(a) * vecN.cX(b);
 	return new vecN(...ary);
+}
+
+function boxN(_min, _max) {
+	this.__proto__ = boxN.__proto__;
+	if(typeof(_min) === 'undefined') {this.Min = new vecN();} else {this.Min = _min;}
+	if(typeof(_max) === 'undefined') {this.Max = new vecN();} else {this.Max = _max;}
+}
+Object.defineProperty(boxN.__proto__, "Size", {
+	get: function getSize() { return boxN.size(this); }, set: function setSize(value) { boxN.size(this, value); }
+});
+Object.defineProperty(boxN.__proto__, "Center", {
+	get: function getCenter() { return boxN.center(this); }, set: function setCenter(value) { boxN.center(this, value); }
+});
+boxN.size = function (b, setSize) {
+	if (typeof (setSize) === 'undefined') {
+		return vecN.diff(b.Max, b.Min);
+	} else {
+		b.Max = vecN.sum(b.Min, setSize);
+		return {Min:b.Min, Max:b.Max};
+	}
+}
+boxN.center = function (b, setCenter) {
+	if (typeof (setCenter) === 'undefined') {
+		return vecN.scale(vecN.sum(b.Min, b.Max), 0.5);
+	} else {
+		var sz = boxN.size(b);
+		b.Min = vecN.sum(setCenter, vecN.scale(sz, -0.5));
+		b.Max = vecN.sum(setCenter, vecN.scale(sz, 0.5));
+		return { Min: b.Min, Max: b.Max };
+	}
+}
+boxN.intersects = function(a, b) {
+	dims = max(a.Min.components.length, a.Max.components.length, b.Min.components.length, b.Max.components.length);
+	var bolRet = true;
+	for(var di = 0; di < dims; di ++) {
+		var v1min = vecN.cN(a.Min, di); var v1max = vecN.cN(a.Max, di);
+		var v2min = vecN.cN(b.Min, di); var v2max = vecN.cN(b.Max, di);
+		if(!((v1min >= v2min && v1min <=v2max) || (v1max >= v2min && v1max <= v2max))) {
+			bolRet = false;
+			break;
+		}
+	}
+	return bolRet;
+}
+boxN.intersection = function (a, b) {
+	dims = max(a.Min.components.length, a.Max.components.length, b.Min.components.length, b.Max.components.length);
+	var vecRet = new boxN();
+	for (var di = 0; di < dims; di++) {
+		var v1min = vecN.cN(a.Min, di); var v1max = vecN.cN(a.Max, di);
+		var v2min = vecN.cN(b.Min, di); var v2max = vecN.cN(b.Max, di);
+		if ((v1min >= v2min && v1min <= v2max) || (v1max >= v2min && v1max <= v2max)) {
+			vecN.cN(vecRet.Min, di, max(v1min, v2min));
+			vecN.cN(vecRet.Max, di, min(v1max, v2max));
+		} else {
+			vecN.cN(vecRet.Min, di, NaN);
+			vecN.cN(vecRet.Max, di, NaN);
+		}
+	}
+	return vecRet;
 }

@@ -9,6 +9,7 @@ function splineNode(setPos, setTangentPre, setTangentPost)
 function spline(setNodes)
 {
 	this.nodes = [];
+	this.BoundingBox = {Min:new vecN(), Max:new vecN()};
 	if (!(typeof (setNodes) === 'undefined')) {
 		for (var i = 0; i < setNodes.length; i++) { this.nodes.push(setNodes[i]); }
 	}
@@ -38,10 +39,31 @@ spline.prototype.AdjustNodeIndexToEndBehaviour = function(nodeIndex, intSplineEn
 	return fIdx;
 }
 spline.prototype.addNodes = function(newNodes) {
-	for (var i = 0; i < setNodes.length; i++) { this.nodes.push(setNodes[i]); }
+	for (var i = 0; i < newNodes.length; i++) {
+		this.nodes.push(newNodes[i]);
+		this.calculateBounding(newNodes[i].Pos);
+	}
+}
+spline.prototype.calculateBounding = function(p) {
+	if(typeof(p) === 'undefined') {
+		this.BoundingBox = {Min:new vecN(), Max:new vecN()};
+		if(this.nodes.length > 0) this.calculateBounding(this.nodes[i].Pos);
+	} else {
+		for(var di = 0; di < p.Dimensions; di++) {
+			var vAdi = vecN.cN(p, di);
+			var vBdi = vecN.cN(this.BoundingBox.Min, di);
+			vecN.cN(this.BoundingBox.Min, di, min(vAdi, vBdi));
+			vBdi = vecN.cN(this.BoundingBox.Max, di);
+			vecN.cN(this.BoundingBox.Max, di, max(vAdi, vBdi));
+		}
+	}
 }
 spline.prototype.removeNodesAt = function(idxNode, intCount) {
 	this.nodes.splice(idxNode, intCount);
+	this.calculateBounding();
+}
+spline.prototype.tValuesInBounds = function (vecMin, vecMax) {
+	
 }
 spline.prototype.PosAt = function(fnodePos, intSplineEndBehaviour) {
 	var NLen = this.nodes.length;
@@ -63,20 +85,20 @@ spline.prototype.PosAt = function(fnodePos, intSplineEndBehaviour) {
 			case SplineEndBehaviour.ContinueTan:
 				var extrap = 0;
 				if (fPos < 0) {
-					extrap = int(-fPos);
+					extrap = -fPos;
 					vecRet = vecN.sum(this.nodes[0].Pos, vecN.scale(this.nodes[0].TanPre, extrap));
 				} else if (fPos > NLen - 1) {
-					extrap = int(fPos - (NLen - 1));
+					extrap = fPos - (NLen - 1);
 					vecRet = vecN.sum(this.nodes[NLen].Pos, vecN.scale(this.nodes[NLen].TanPost, extrap));
 				}
 				break;
 			case SplineEndBehaviour.ContinuePattern:
 				var extrap = 0;
 				if (fPos < 0) {
-					extrap = int(-fPos);
+					extrap = -floor(fPos)/NLen;
 					vecRet = vecN.sum(this.nodes[0].Pos, vecN.scale(this.NetDifference(), -extrap));
 				} else if (fPos > NLen - 1) {
-					extrap = int(fPos - (NLen - 1));
+					extrap = floor(fPos - (NLen - 1))/NLen;
 					vecRet = vecN.sum(this.nodes[NLen].Pos, vecN.scale(this.NetDifference(), extrap));
 				}
 				intSplineEndBehaviour = SplineEndBehaviour.Loop;

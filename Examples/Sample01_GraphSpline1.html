@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<title>Portfolio - Graphing Spline</title>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.min.js"></script>
+		<script src="plotter.js"></script>
+		<script src="spline.js"></script>
+		<script src="vector.js"></script>
+		<script>
+			var pt = 0;
+			var ct = 0;
+
+			var p5objCanvas;
+			var canvasMain;
+
+			var graphSpline;
+			var splineMain;
+
+			function setup() {
+				var szWin = sizeWindow();
+				console.log(szWin);
+				p5objCanvas = createCanvas(szWin.width, szWin.height);
+				canvasMain = document.getElementById(p5objCanvas.id());
+				pixelDensity(1);
+				graphSpline = new plotArea2D(canvasMain);
+				splineMain = new spline();
+				
+			}
+
+			function animate() {
+				var tn = new Date(Date.now()).getTime() * 0.001;
+				if (pt == 0) { pt = tn; }
+				var t = tn - pt;
+				ct += t;
+
+				var mouseCurrent = { X: mouseX, Y: mouseY };
+				if (mouseIsPressed) {
+					
+				}
+
+				pt = tn;
+			}
+
+			function mouseDragged()
+			{
+				var mouseCurrent = { X: mouseX, Y: mouseY };
+				var mousePrev = { X: pmouseX, Y: pmouseY };
+				var mouseMove = { X: mouseCurrent.X - mousePrev.X, Y: mouseCurrent.Y - mousePrev.Y };
+				
+			}
+
+			function touchMove()
+			{
+				return false;
+			}
+
+			function draw() {
+				var posTmp;
+				var posCenterTmp;
+				var areaPlot;
+				var areaClient;
+				animate();
+				background("#102010");
+				graphSpline.DrawAxis("#FFFFFF", "#FFFF80", 2, 16, {X:16, Y:16});
+				graphSpline.DrawGrid_Rect("#40404060", 1, { X: 16, Y: 16 });
+			}
+
+			function windowResized() {
+				var szWin = sizeWindow();
+				resizeCanvas(szWin.width, szWin.height);
+				console.log(szWin);
+			}
+
+			function sizeWindow() {
+				var w = windowWidth - 16;
+				var h = windowHeight - 16;
+				var a = w / h;
+				return { width: w, height: h, aspect: a };
+			}
+		</script>
+
+	</head>
+
+	<body scrolling="no" style="overflow: hidden;">
+	</body>
+
+</html>
