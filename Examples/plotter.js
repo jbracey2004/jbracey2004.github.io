@@ -387,22 +387,19 @@ plotArea2D.prototype.DrawCurve_RectFnx = function (fnx, color, thickness, sample
 	}
 	endShape();
 }
-plotArea2D.prototype.DrawCurve_PolarFnx = function (fntr, color, thickness, ThetaStart, ThetaEnd, samplesOfTheta) {
-	if (!(typeof (fntr) === 'function')) return 0;
+plotArea2D.prototype.DrawCurve_ParmetricFnx = function (fxnt, color, thickness, tStart, tEnd, tSamples) {
+	if (!(typeof (fxnt) === 'function')) return 0;
 	var areaPlot = this.PlotArea();
 	var posThis = this.Pos();
 	var sizeThis = this.Size();
-	var resSample = abs(ThetaEnd - ThetaStart) / samplesOfTheta;
+	var resSample = (tEnd - tStart) / tSamples;
 	noFill();
 	stroke(color);
 	strokeWeight(thickness);
 	beginShape();
-	for (var Ti = ThetaStart, Ni = 0; Ni <= samplesOfTheta; Ti += resSample, Ni++) {
-		var Ri = fntr(Ti);
-		if (typeof (Ri) === 'undefined') { endShape(); beginShape(); continue;}
-		var Xi = Ri * cos(Ti);
-		var Yi = Ri * sin(Ti);
-		var PosI = this.MapPlotToClient({ X: Xi, Y: Yi });
+	for (var Ti = tStart, Ni = 0; Ni <= tSamples; Ti += resSample, Ni++) {
+		var valXY = fxnt(Ti);
+		var PosI = this.MapPlotToClient({ X: valXY.X, Y: valXY.Y });
 		if (PosI.X >= posThis.X-1 && PosI.X <= posThis.X + sizeThis.Width+1 &&
 			PosI.Y >= posThis.Y-1 && PosI.Y <= posThis.Y + sizeThis.Height+1 ) {
 			vertex(PosI.X, PosI.Y);

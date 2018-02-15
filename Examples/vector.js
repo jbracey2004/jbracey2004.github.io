@@ -218,8 +218,21 @@ boxN.center = function (b, setCenter) {
 		return { Min: b.Min, Max: b.Max };
 	}
 }
+boxN.prototype.coInsides = function (b) {
+	var dims = max(this.Min.components.length, this.Max.components.length, b.Min.components.length, b.Max.components.length);
+	var bolRet = true;
+	for (var di = 0; di < dims; di++) {
+		var v1min = vecN.cN(this.Min, di); var v1max = vecN.cN(this.Max, di);
+		var v2min = vecN.cN(b.Min, di); var v2max = vecN.cN(b.Max, di);
+		if (!((v1min >= v2min && v1min <= v2max) && (v1max >= v2min && v1max <= v2max))) {
+			bolRet = false;
+			break;
+		}
+	}
+	return bolRet;
+}
 boxN.intersects = function(a, b) {
-	dims = max(a.Min.components.length, a.Max.components.length, b.Min.components.length, b.Max.components.length);
+	var dims = max(a.Min.components.length, a.Max.components.length, b.Min.components.length, b.Max.components.length);
 	var bolRet = true;
 	for(var di = 0; di < dims; di ++) {
 		var v1min = vecN.cN(a.Min, di); var v1max = vecN.cN(a.Max, di);
@@ -232,7 +245,7 @@ boxN.intersects = function(a, b) {
 	return bolRet;
 }
 boxN.intersection = function (a, b) {
-	dims = max(a.Min.components.length, a.Max.components.length, b.Min.components.length, b.Max.components.length);
+	var dims = max(a.Min.components.length, a.Max.components.length, b.Min.components.length, b.Max.components.length);
 	var vecRet = new boxN();
 	for (var di = 0; di < dims; di++) {
 		var v1min = vecN.cN(a.Min, di); var v1max = vecN.cN(a.Max, di);

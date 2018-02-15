@@ -22,18 +22,28 @@
 			var segsWinding;
 
 			var fxnGraph = function (x) { return 0.5 + 0.5*cos(3 * TAU * x); };
-			var fxnGraphWind = function (x) { return fxnGraph(x / (TAU * freqWinding)); };
+			var fxnGraphWind = function (x) {
+				var ret = {X:0, Y: 0, R: 0};
+				ret.R = fxnGraph(x);
+				ret.X = ret.R * cos(-x * freqWinding * TAU);
+				ret.Y = ret.R * sin(-x * freqWinding * TAU);
+				return ret;
+			};
 			var fxnGraphWindSum = function (freq) {
-					var sum = { X: 0, Y: 0, R: 0};
-					for (Wi = 0; Wi <= segsWinding; Wi++) {
-						var ang = Wi / segsWinding * 4 * TAU;
-						var r = fxnGraph(ang / (TAU * freq)) / segsWinding;
-						sum.X += cos(ang) * r;
-						sum.Y += sin(ang) * r;
-						sum.R += r;
-					}
-					return sum;
-				};
+				var sum = { X: 0, Y: 0, R: 0};
+				var segsInv = 1/segsWinding;
+				for (Wi = 0; Wi <= segsWinding; Wi++) {
+					var ang = (Wi * segsInv) * 4;
+					var samp = {R:0, X:0, Y:0};
+					samp.R = fxnGraph(ang);
+					samp.X = samp.R * cos(-ang * freq * TAU);
+					samp.Y = samp.R * sin(-ang * freq * TAU);
+					sum.R += samp.R * segsInv;
+					sum.X += samp.X * segsInv;
+					sum.Y += samp.Y * segsInv;
+				}
+				return sum;
+			};
 			var fxnGraphWindSum_X = function (x) { return fxnGraphWindSum(x).X };
 			var fxnGraphWindSum_Y = function (x) { return fxnGraphWindSum(x).Y };
 			var fxnGraphWindSum_R = function (x) { return fxnGraphWindSum(x).R };
@@ -61,7 +71,7 @@
 				graphSpectrum.uvWidth = 0.64;
 				graphSpectrum.uvY = 0.4;
 				graphSpectrum.uvX = 0.35;
-				graphSpectrum.PlotArea({ Min: { X: 0, Y: 0.5 }, Max: { X: 8, Y: -0.25 } });
+				graphSpectrum.PlotArea({ Min: { X: 0, Y: 0.6 }, Max: { X: 8, Y: -0.4 } });
 				freqWinding = 3;
 				segsWinding = 256;
 			}
@@ -106,7 +116,7 @@
 				graphWaveform.DrawCurve_RectFnx(fxnGraph, "#FFFF00CC", 2, 256);
 				graphWinding.DrawGrid_Rect("#0000FF", 1, { X: 8, Y: 8 });
 				graphWinding.DrawAxis("#FFFFFF", "#8080FF", 2, 8, {X:8, Y:8});
-				graphWinding.DrawCurve_PolarFnx(fxnGraphWind, "#FFFF80CC", 1, 0, 8*TAU, 1024);
+				graphWinding.DrawCurve_ParmetricFnx(fxnGraphWind, "#FFFF80CC", 1, 0, 4, 1024);
 				graphSpectrum.DrawAxis("#40FF40", "#80FF80", 2, 16, { X: 8, Y: 8 });
 				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum_X, "#FF4010CC", 2, 256);
 				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum_Y, "#10B0FF60", 2, 256);
