@@ -11,12 +11,15 @@
 		<script>
 			var pt = 0;
 			var ct = 0;
+			var pTouches = [];
 
 			var p5objCanvas;
 			var canvasMain;
 
 			var graphSpline;
 			var splineMain;
+			var splinenodeGrabbed;
+			var fxnTest = function(x) {return 0};
 
 			function setup() {
 				var szWin = sizeWindow();
@@ -26,7 +29,22 @@
 				pixelDensity(1);
 				graphSpline = new plotArea2D(canvasMain);
 				splineMain = new spline();
-				
+				fxnTest = function(x) {return 0.5* sin(x * TAU)};
+			}
+
+			function mouseProperties() {
+				var posNow = { X: mouseX, Y: mouseY };
+				var posPrev = { X: pmouseX, Y: pmouseY };
+				var posMove = { X: posNow.X - posPrev.X, Y: posNow.Y - posPrev.Y };
+				return { Now: posNow, Prev: posPrev, Move: posMove };
+			}
+			function MovePlotCenter(graph, mov) {
+				var clU = graph.ClientUnitToPlotUnit();
+				var posCenterMove = { X: mov.X * clU.X, Y: mov.Y * clU.Y };
+				var posCenterNew = graph.PlotPosCenter();
+				posCenterNew.X -= posCenterMove.X;
+				posCenterNew.Y -= posCenterMove.Y;
+				graph.PlotPosCenter(posCenterNew);
 			}
 
 			function animate() {
@@ -35,7 +53,7 @@
 				var t = tn - pt;
 				ct += t;
 
-				var mouseCurrent = { X: mouseX, Y: mouseY };
+				var Mouse = mouseProperties();
 				if (mouseIsPressed) {
 					
 				}
@@ -45,14 +63,42 @@
 
 			function mouseDragged()
 			{
-				var mouseCurrent = { X: mouseX, Y: mouseY };
-				var mousePrev = { X: pmouseX, Y: pmouseY };
-				var mouseMove = { X: mouseCurrent.X - mousePrev.X, Y: mouseCurrent.Y - mousePrev.Y };
-				
+				var Mouse = mouseProperties();
+				if (graphSpline.ContainsMousePointer()) {
+					if(splinenodeGrabbed == null) {
+						MovePlotCenter(graphSpline, Mouse.Move);
+					}
+				}
 			}
 
-			function touchMove()
-			{
+			function mouseWheel(event) {
+				console.log(event);
+				return false;
+			}
+
+			function touchStarted() {
+				pTouches = touches;
+				return false;
+			}
+			function touchMoved() {
+				var Mouse = mouseProperties();
+				var aryTouches = touches;
+				var arypTouches = pTouches;
+				if(aryTouches.length > 1) {
+					var sz = graphSpline.PlotSize();
+					var t1 = new vecN(aryTouches[0].x, aryTouches[0].y);
+					var t2 = new vecN(aryTouches[1].x, aryTouches[1].y);
+					var diff1 = vecN.dist(t1, t2);
+					t1 = new vecN(arypTouches[0].x, arypTouches[0].y);
+					t2 = new vecN(arypTouches[1].x, arypTouches[1].y);
+					var diff2 = vecN.dist(t1, t2);
+					var rescale = diff1/diff2;
+					graphSpline.PlotSizeOnCenter({Width:sz.Width * rescale, Height:sz.Height * rescale});
+					console.log(graphSpline.PlotArea());
+				} else {
+					MovePlotCenter(graphSpline, Mouse.Move);
+				}
+				pTouches = touches;
 				return false;
 			}
 
@@ -63,8 +109,9 @@
 				var areaClient;
 				animate();
 				background("#102010");
-				graphSpline.DrawAxis("#FFFFFF", "#FFFF80", 2, 16, {X:16, Y:16});
-				graphSpline.DrawGrid_Rect("#40404060", 1, { X: 16, Y: 16 });
+				graphSpline.DrawAxis("#FFFFFF", "#FFFF80", 2, 16, {X:1/4, Y:1/4});
+				graphSpline.DrawGrid_Rect("#40404060", 1, {X:1/4, Y:1/4});
+				graphSpline.DrawCurve_RectFnx(fxnTest, "#FF600080", 2.5, 512);
 			}
 
 			function windowResized() {

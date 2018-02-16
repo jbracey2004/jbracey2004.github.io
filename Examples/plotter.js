@@ -12,6 +12,7 @@ function plotArea2D(parent)
 }
 
 function logab(a, x) { return (log(x))/(log(a));}
+function sign(x) { if(x > 0) {return 1;} else if (x < 0) { return -1;} else {return 0;} }
 function RectToPolar(pos) { var retAng = atan2(pos.Y, pos.X); while(retAng<0) {retAng+=TAU}; return {Dist: sqrt(pos.X*pos.X + pos.Y*pos.Y),Ang: retAng};}
 
 plotArea2D.prototype.X = function(setX) {
@@ -152,7 +153,7 @@ plotArea2D.prototype.PlotPosCenter = function (setPos) {
 }
 plotArea2D.prototype.PlotSizeOnCenter = function (setSize) {
 	if (typeof (setSize) === 'undefined') {
-		return { X: (this.PlotMaxX + this.PlotMinX) * 0.5, Y: (this.PlotMaxY + this.PlotMinY) * 0.5 };
+		return { With: (this.PlotMaxX - this.PlotMinX) , Height: (this.PlotMaxY - this.PlotMinY) };
 	}
 	else {
 		var p = this.PlotPosCenter();
@@ -295,24 +296,24 @@ plotArea2D.prototype.Fill = function(color) {
 }
 plotArea2D.prototype.DrawGrid_Rect = function (color, thickness, gridLength) {
 	var areaPlot = this.PlotArea();
-	var areaGrid = { X: areaPlot.Size.Width / gridLength.X, Y: areaPlot.Size.Height / gridLength.Y };
-	var posOrigin = this.MapPlotToClient({ X: 0, Y: 0 });
+	var gridCount = { X: 1 + abs(areaPlot.Size.Width / gridLength.X), Y: 1 + abs(areaPlot.Size.Height / gridLength.Y) };
+	var gridTick = { X: sign(areaPlot.Size.Width) * abs(gridLength.X), Y: sign(areaPlot.Size.Height) * abs(gridLength.Y) };
 	var posThis = this.Pos();
 	var sizeThis = this.Size();
 	stroke(color);
 	strokeWeight(thickness);
-	for (var gridI = areaPlot.Min.Y, gridCI = 0; gridCI <= gridLength.Y; gridI += areaGrid.Y, gridCI += 1) {
-		var gridIP = gridI - (gridI % areaGrid.Y);
-		var gridYi = this.MapPlotToClient({ Y: gridIP }).Y;
-		if (gridYi >= posThis.Y && gridYi <= posThis.Y + sizeThis.Height + 1) {
-			line(posThis.X, gridYi, posThis.X + sizeThis.Width, gridYi);
-		}
-	}
-	for (var gridI = areaPlot.Min.X, gridCI = 0; gridCI <= gridLength.X; gridI += areaGrid.X, gridCI += 1) {
-		var gridIP = gridI - (gridI % areaGrid.X);
+	for (var gridI = areaPlot.Min.X, gridCI = 0; gridCI <= gridCount.X; gridI += gridTick.X, gridCI ++ ) {
+		var gridIP = gridI - (gridI % gridTick.X);
 		var gridXi = this.MapPlotToClient({ X: gridIP }).X;
 		if (gridXi >= posThis.X && gridXi <= posThis.X + sizeThis.Width + 1) {
 			line(gridXi, posThis.Y, gridXi, posThis.Y + sizeThis.Height);
+		}
+	}
+	for (var gridI = areaPlot.Min.Y, gridCI = 0; gridCI <= gridCount.Y; gridI += gridTick.Y, gridCI ++ ) {
+		var gridIP = gridI - (gridI % gridTick.Y);
+		var gridYi = this.MapPlotToClient({ Y: gridIP }).Y;
+		if (gridYi >= posThis.Y && gridYi <= posThis.Y + sizeThis.Height + 1) {
+			line(posThis.X, gridYi, posThis.X + sizeThis.Width, gridYi);
 		}
 	}
 }
@@ -329,7 +330,8 @@ plotArea2D.prototype.DrawGrid_Polar = function (color, thickness, gridLength) {
 }
 plotArea2D.prototype.DrawAxis = function(colorAxis, colorMarks, thickness, axisMarkLength, gridLength) {
 	var areaPlot = this.PlotArea();
-	var areaGrid = {X:areaPlot.Size.Width/gridLength.X, Y:areaPlot.Size.Height/gridLength.Y};
+	var gridCount = { X: 1 + abs(areaPlot.Size.Width / gridLength.X), Y: 1 + abs(areaPlot.Size.Height / gridLength.Y) };
+	var gridTick = { X: sign(areaPlot.Size.Width) * abs(gridLength.X), Y: sign(areaPlot.Size.Height) * abs(gridLength.Y) };
 	var posOrigin = this.MapPlotToClient({X:0, Y:0});
 	var posThis = this.Pos();
 	var sizeThis = this.Size();
@@ -338,9 +340,9 @@ plotArea2D.prototype.DrawAxis = function(colorAxis, colorMarks, thickness, axisM
 		strokeWeight(thickness);
 		line(posThis.X, posOrigin.Y, posThis.X + sizeThis.Width, posOrigin.Y);
 		stroke(colorMarks);
-		for (var gridI = areaPlot.Min.X, gridCI = 0; gridCI <= gridLength.X; gridI += areaGrid.X, gridCI += 1) {
-			var gridIP = gridI - (gridI % areaGrid.X);
-			var gridXi = this.MapPlotToClient({ X: gridIP}).X;
+		for (var gridI = areaPlot.Min.X, gridCI = 0; gridCI <= gridCount.X; gridI += gridTick.X, gridCI++) {
+			var gridIP = gridI - (gridI % gridTick.X);
+			var gridXi = this.MapPlotToClient({ X: gridIP }).X;
 			var lengthMark = axisMarkLength;
 			strokeWeight(thickness * 0.5);
 			if (gridXi >= posThis.X && gridXi <= posThis.X + sizeThis.Width + 1) {
@@ -353,12 +355,12 @@ plotArea2D.prototype.DrawAxis = function(colorAxis, colorMarks, thickness, axisM
 		strokeWeight(thickness);
 		line(posOrigin.X,posThis.Y,posOrigin.X,posThis.Y + sizeThis.Height + 1);
 		stroke(colorMarks);
-		for (var gridI = areaPlot.Min.Y, gridCI = 0; gridCI <= gridLength.Y; gridI += areaGrid.Y, gridCI += 1) {
-			var gridIP = gridI - (gridI % areaGrid.Y);
-			var gridYi = this.MapPlotToClient({ Y: gridIP}).Y;
+		for (var gridI = areaPlot.Min.Y, gridCI = 0; gridCI <= gridCount.Y; gridI += gridTick.Y, gridCI++) {
+			var gridIP = gridI - (gridI % gridTick.Y);
+			var gridYi = this.MapPlotToClient({ Y: gridIP }).Y;
 			var lengthMark = axisMarkLength;
 			strokeWeight(thickness * 0.5);
-			if (gridYi >= posThis.Y && gridYi <= posThis.Y + sizeThis.Height) {
+			if (gridYi >= posThis.Y && gridYi <= posThis.Y + sizeThis.Height + 1) {
 				line(max(posOrigin.X - lengthMark, posThis.X), gridYi, min(posOrigin.X + lengthMark, posThis.X + sizeThis.Width), gridYi);
 			}
 		}

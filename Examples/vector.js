@@ -145,8 +145,8 @@ vecN.diff = function (a, b) {
 vecN.dist = function (a, b) {
 	var vecTmp = vecN.diff(a, b);
 	var ret = 0;
-	for (var i = 0; i < vecTmp.length; i++) {
-		ret += vecTmp[i] ** 2;
+	for (var i = 0; i < vecTmp.components.length; i++) {
+		ret += vecTmp.components[i] ** 2;
 	}
 	return ret ** 0.5;
 }

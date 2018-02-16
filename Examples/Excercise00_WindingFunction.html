@@ -106,18 +106,22 @@
 			}
 
 			function draw() {
+				var sz;
 				var posTmp;
 				var posCenterTmp;
 				var areaPlot;
 				var areaClient;
 				animate();
 				background("#102010");
-				graphWaveform.DrawAxis("#FFFFFF", "#FFFF80", 2, 16, {X:16, Y:4});
+				sz = graphWaveform.PlotArea().Size;
+				graphWaveform.DrawAxis("#FFFFFF", "#FFFF80", 2, 16, {X:abs(sz.Width)/16, Y:abs(sz.Height)/4});
 				graphWaveform.DrawCurve_RectFnx(fxnGraph, "#FFFF00CC", 2, 256);
-				graphWinding.DrawGrid_Rect("#0000FF", 1, { X: 8, Y: 8 });
-				graphWinding.DrawAxis("#FFFFFF", "#8080FF", 2, 8, {X:8, Y:8});
+				sz = graphWinding.PlotArea().Size;
+				graphWinding.DrawGrid_Rect("#0000FF", 1, { X: abs(sz.Width)/8, Y: abs(sz.Height)/8 });
+				graphWinding.DrawAxis("#FFFFFF", "#8080FF", 2, 8, {X:abs(sz.Width)/8, Y:abs(sz.Height)/8});
 				graphWinding.DrawCurve_ParmetricFnx(fxnGraphWind, "#FFFF80CC", 1, 0, 4, 1024);
-				graphSpectrum.DrawAxis("#40FF40", "#80FF80", 2, 16, { X: 8, Y: 8 });
+				sz = graphSpectrum.PlotArea().Size;
+				graphSpectrum.DrawAxis("#40FF40", "#80FF80", 2, 16, { X: abs(sz.Width)/8, Y: abs(sz.Height)/8 });
 				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum_X, "#FF4010CC", 2, 256);
 				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum_Y, "#10B0FF60", 2, 256);
 				fill("#FF000080");
@@ -139,7 +143,7 @@
 				areaPlot = graphWaveform.PlotArea();
 				areaClient = graphWaveform.ClientArea();
 				stroke("#606040CC");
-				for(var Xi = areaPlot.Min.X;  Xi <= areaPlot.Max.X; Xi += 1/freqWinding) {
+				for(var Xi = areaPlot.Min.X;  Xi <= areaPlot.Max.X; Xi += abs(1/freqWinding)) {
 					var pos = graphWaveform.MapPlotToClient({X:Xi}).X;
 					line(pos, areaClient.Min.Y, pos, areaClient.Max.Y);
 				}
