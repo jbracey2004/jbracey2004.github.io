@@ -231,6 +231,19 @@ boxN.prototype.coInsides = function (b) {
 	}
 	return bolRet;
 }
+boxN.prototype.containsVec = function (p) {
+	var dims = max(this.Min.components.length, this.Max.components.length, b.Min.components.length, b.Max.components.length);
+	var bolRet = true;
+	for(var di = 0; di < dims; di ++) {
+		var pn = vecN.cN(p, di);
+		var bmin = vecN.cN(this.Min, di); var bmax = vecN.cN(this.Max, di);
+		if(!(pn >= bmin && pn <= bmax)) {
+			bolRet = false;
+			break;
+		}
+	}
+	return bolRet;
+}
 boxN.intersects = function(a, b) {
 	var dims = max(a.Min.components.length, a.Max.components.length, b.Min.components.length, b.Max.components.length);
 	var bolRet = true;

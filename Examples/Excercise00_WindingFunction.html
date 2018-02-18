@@ -38,10 +38,10 @@
 					samp.R = fxnGraph(ang);
 					samp.X = samp.R * cos(-ang * freq * TAU);
 					samp.Y = samp.R * sin(-ang * freq * TAU);
-					sum.R += samp.R * segsInv;
 					sum.X += samp.X * segsInv;
 					sum.Y += samp.Y * segsInv;
 				}
+				sum.R = ((sum.X ** 2 + sum.Y ** 2) ** 0.5);
 				return sum;
 			};
 			var fxnGraphWindSum_X = function (x) { return fxnGraphWindSum(x).X };
@@ -122,8 +122,9 @@
 				graphWinding.DrawCurve_ParmetricFnx(fxnGraphWind, "#FFFF80CC", 1, 0, 4, 1024);
 				sz = graphSpectrum.PlotArea().Size;
 				graphSpectrum.DrawAxis("#40FF40", "#80FF80", 2, 16, { X: abs(sz.Width)/8, Y: abs(sz.Height)/8 });
-				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum_X, "#FF4010CC", 2, 256);
-				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum_Y, "#10B0FF60", 2, 256);
+				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum_X, "#FF401040", 2, 256);
+				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum_Y, "#10B0FF40", 2, 256);
+				graphSpectrum.DrawCurve_RectFnx(fxnGraphWindSum_R, "#10FF2040", 2, 256);
 				fill("#FF000080");
 				stroke("#FFFF80");
 				strokeWeight(1);

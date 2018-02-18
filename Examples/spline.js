@@ -1,15 +1,14 @@
 var SplineEndBehaviour = {Halt: 0, Loop: 1, ContinueTan: 2, ContinuePattern: 3};
 function splineNode(setPos, setTangentPre, setTangentPost)
 {
-	this.Pos = setPos;
-	this.TanPre = setTangentPre;
-	this.TanPost = setTangentPost;
+	this.Pos = (typeof(setPos) === 'undefined') ? new vecN() : setPos;
+	this.TanPre = (typeof(setTangentPre) === 'undefined') ? new vecN() : setTangentPre;
+	this.TanPost = (typeof(settangentPost) === 'undefined') ? new vecN() : setTangentPost;
 }
 
 function spline(setNodes)
 {
 	this.nodes = [];
-	this.BoundingBox = {Min:new vecN(), Max:new vecN()};
 	if (!(typeof (setNodes) === 'undefined')) {
 		for (var i = 0; i < setNodes.length; i++) { this.nodes.push(setNodes[i]); }
 	}
@@ -41,29 +40,61 @@ spline.prototype.AdjustNodeIndexToEndBehaviour = function(nodeIndex, intSplineEn
 spline.prototype.addNodes = function(newNodes) {
 	for (var i = 0; i < newNodes.length; i++) {
 		this.nodes.push(newNodes[i]);
-		this.calculateBounding(newNodes[i].Pos);
-	}
-}
-spline.prototype.calculateBounding = function(p) {
-	if(typeof(p) === 'undefined') {
-		this.BoundingBox = {Min:new vecN(), Max:new vecN()};
-		if(this.nodes.length > 0) this.calculateBounding(this.nodes[i].Pos);
-	} else {
-		for(var di = 0; di < p.Dimensions; di++) {
-			var vAdi = vecN.cN(p, di);
-			var vBdi = vecN.cN(this.BoundingBox.Min, di);
-			vecN.cN(this.BoundingBox.Min, di, min(vAdi, vBdi));
-			vBdi = vecN.cN(this.BoundingBox.Max, di);
-			vecN.cN(this.BoundingBox.Max, di, max(vAdi, vBdi));
-		}
 	}
 }
 spline.prototype.removeNodesAt = function(idxNode, intCount) {
 	this.nodes.splice(idxNode, intCount);
-	this.calculateBounding();
+}
+spline.prototype.BoundingBox = function () {
+	var boxRet = {Min: new vecN(), Max: new vecN()};
+	var dims = this.nodes.reduce((a, b) => max(a.Pos.components.length, b.Pos.components.length));
+	for (var di = 0; di < dims; di++) {
+		vecN.cN(boxRet.Min, di, this.nodes.reduce((a, b) => min(vecN.cN(a.Pos, di), vecN.cN(b.Pos, di))));
+		vecN.cN(boxRet.Max, di, this.nodes.reduce((a, b) => max(vecN.cN(a.Pos, di), vecN.cN(b.Pos, di))));
+	}
+	return boxRet;
+}
+spline.prototype.findNodesAtBound = function (axis) {
+	if(typeof(axis) === 'undefined') {
+		var dims = this.nodes.reduce((a, b) => max(a.Pos.components.length, b.Pos.components.length));
+		var aryRet = [];
+		for(var di = 0; di < dims; di ++) {
+			var ptMin, ptMax;
+			ptMin = this.nodes.reduce((a, b) => (vecN.cN(a.Pos, di) < vecN.cN(b.Pos, di)) ? a : b);
+			ptMax = this.nodes.reduce((a, b) => (vecN.cN(a.Pos, di) > vecN.cN(b.Pos, di)) ? a : b);
+			aryRet.push({ Min: ptMin, Max: ptMax });
+		}
+		return aryRet;
+	} else {
+		var ptMin, ptMax;
+		ptMin = this.nodes.reduce((a, b) => (vecN.cN(a.Pos, axis) < vecN.cN(b.Pos, axis)) ? a : b);
+		ptMax = this.nodes.reduce((a, b) => (vecN.cN(a.Pos, axis) > vecN.cN(b.Pos, axis)) ? a : b);
+		return {Min: ptMin, Max: ptMax};
+	}
 }
 spline.prototype.tValuesInBounds = function (vecMin, vecMax) {
-	
+	var boxQ = new boxN(vecMin, vecMax);
+	var boxThis = this.BoundingBox();
+	var pointIntersect;
+	var ret = [];
+	if(boxN.intersects(boxQ, boxThis)) {
+		if(boxQ.coInsides(boxThis)) {
+			ret.push({Min:0, Max:1});
+		} else {
+			pointIntersect = boxThis.containsVec(this.nodes[0].Pos);
+			for(var i = 1; i < this.nodes.length; i++) {
+				var pt = this.nodes[i].Pos;
+				var ptIntersect = boxThis.containsVec(pt);
+				if(pointIntersect !== ptIntersect) {
+
+				}
+				pointIntersect = ptIntersect;
+			}
+		}
+	} else {
+
+	}
+	return ret;
 }
 spline.prototype.PosAt = function(fnodePos, intSplineEndBehaviour) {
 	var NLen = this.nodes.length;
