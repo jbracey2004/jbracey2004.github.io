@@ -92,7 +92,7 @@
 			function mouseWheel(event) {
 				var objMouse = mouseProperties();
 				var sz = graphSpline.PlotSize();
-				var rescale = 1.025**event.delta;
+				var rescale = 1.025**sign(event.delta);
 				var cp = graphSpline.MapClientToPlot(objMouse.Now);
 				graphSpline.PlotSizeOnPos({Width:sz.Width * rescale, Height:sz.Height * rescale}, cp);
 				return false;
