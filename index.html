@@ -29,7 +29,7 @@
 					var strmatch = {};
 					strmatch = str.match(/\b\w+\.\w+/);
 					if (strmatch == null) { continue; }
-                    args["name"] = strmatch;
+                    args["name"] = strmatch[0];
                     str = str.replace(strmatch, "");
 					strmatch = str.match(/\b\d{2}\/\d{2}\/\d{4}\s+\d{2}\:\d{2}\s\w{2}/);
 					if (strmatch == null) { continue; }

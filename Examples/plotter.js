@@ -153,10 +153,22 @@ plotArea2D.prototype.PlotPosCenter = function (setPos) {
 }
 plotArea2D.prototype.PlotSizeOnCenter = function (setSize) {
 	if (typeof (setSize) === 'undefined') {
-		return { With: (this.PlotMaxX - this.PlotMinX) , Height: (this.PlotMaxY - this.PlotMinY) };
+		return { Width: (this.PlotMaxX - this.PlotMinX) , Height: (this.PlotMaxY - this.PlotMinY) };
 	}
 	else {
-		var p = this.PlotPosCenter();
+		return  this.PlotSizeOnPos(setSize, this.PlotPosCenter());
+	}
+}
+plotArea2D.prototype.PlotSizeOnPos = function (setSize, pos) {
+	if (typeof(pos) === 'undefined') {pos = this.PlotPosCenter();}
+	if (typeof(setSize) === 'undefined') {
+		return { Width: (this.PlotMaxX - this.PlotMinX), Height: (this.PlotMaxY - this.PlotMinY) };
+	}
+	else {
+		var cp = this.PlotPosCenter();
+		var sz = this.PlotSize();
+		var psz = {X:setSize.Width/sz.Width, Y:setSize.Height/sz.Height};
+		var p = {X:cp.X*psz.X + pos.X*(1 - psz.X), Y:cp.Y*psz.Y + pos.Y*(1 - psz.Y)};
 		this.PlotMinX = p.X - setSize.Width * 0.5;
 		this.PlotMinY = p.Y - setSize.Height * 0.5;
 		this.PlotMaxX = p.X + setSize.Width * 0.5;
@@ -228,7 +240,10 @@ plotArea2D.prototype.MapUVToClient = function (UV) {
 plotArea2D.prototype.MapClientToUV = function(Pos) {
 	return this.MapPosUVToUV(this.MapClientToPosUV(Pos));
 }
-plotArea2D.prototype.MapClientToPosUV = function (Pos) {
+plotArea2D.prototype.MapClientToPlot = function(Pos) {
+	return this.MapUVToPlot(this.MapClientToUV(Pos));
+}
+plotArea2D.prototype.MapClientToPosUV = function(Pos) {
 	return { X: (Pos.X / this.ParentElement.width), Y: (Pos.Y / this.ParentElement.height) };
 }
 plotArea2D.prototype.MapUVToPlot = function(UV) {
