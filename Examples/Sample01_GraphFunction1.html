@@ -21,7 +21,8 @@
 			var splineMain;
 			var splinenodeGrabbed;
 			var txtFunction;
-			var fxnTest = function(x) {return 0};
+			var lblFunctionError;
+			var fxnTest = function(x) {return 0;};
 
 			function setup() {
 				var szWin = sizeWindow();
@@ -31,21 +32,36 @@
 				pixelDensity(1);
 				graphSpline = new plotArea2D(canvasMain);
 				splineMain = new spline();
+				lblFunctionError = createP("");
+				lblFunctionError.position(16, 48);
+				lblFunctionError.style("background-color", "#00000000");
+				lblFunctionError.style("color", "#FF0000FF");
+				lblFunctionError.html("");
 				txtFunction = createInput("txtFunction");
 				txtFunction.position(16, 16);
 				txtFunction.style("width", "40%");
 				txtFunction.style("background-color", "#00000000");
-				txtFunction.style("color","#FF6000FF");
+				txtFunction.style("color","#FFA000FF");
 				txtFunction.style("font-size", "24px");
 				txtFunction.value("0.5 * sin(x * TAU)");
-				txtFunction.changed(txtFunction_OnChanged);
+				txtFunction.input(txtFunction_OnChanged);
 				txtFunction_OnChanged();
 			}
 
 			function txtFunction_OnChanged() {
-				console.log(txtFunction.value());
-				fxnTest = new Function("x", "return " + txtFunction.value());
-				return true;
+				var pfxn = fxnTest;
+				try {
+					fxnTest = new Function("x", "return " + txtFunction.value() + ";");
+					var txt = fxnTest(0);
+					console.log(txtFunction.value());
+					lblFunctionError.html("");
+					return true;
+				} catch (err) {
+					console.log(err.message);
+					lblFunctionError.html(err.message);
+					fxnTest = pfxn;
+					return false;
+				}
 			}
 
 			function mouseProperties() {
@@ -135,7 +151,7 @@
 				graphSpline.DrawAxis("#FFFFFF", "#FFFF80", 3, 16, {X:1, Y:1});
 				graphSpline.DrawGrid_Rect("#40404060", 1, {X:1/4, Y:1/4});
 				graphSpline.DrawGrid_Rect("#80806060", 2, {X:1, Y:1});
-				graphSpline.DrawCurve_RectFnx(fxnTest, "#FF600080", 2.5, 2048);
+				graphSpline.DrawCurve_RectFnx(fxnTest, "#FFA00080", 2.5, 2048);
 				areaPlot = graphSpline.PlotArea();
 				areaClient = graphSpline.ClientArea();
 				textSize(16);

@@ -9,11 +9,14 @@ function plotArea2D(parent)
 	this.PlotMinY = 1;
 	this.PlotMaxX = 1;
 	this.PlotMaxY = -1;
+	this.isClipping = false;
 }
 
 function logab(a, x) { return (log(x))/(log(a));}
 function sign(x) { if(x > 0) {return 1;} else if (x < 0) { return -1;} else {return 0;} }
-function RectToPolar(pos) { var retAng = atan2(pos.Y, pos.X); while(retAng<0) {retAng+=TAU}; return {Dist: sqrt(pos.X*pos.X + pos.Y*pos.Y),Ang: retAng};}
+function RectToPolar(pos) { var retAng = atan2(pos.Y, pos.X); 
+							if (retAng < 0) { retAng += TAU * (int(abs(retAng) / TAU) + 1); }; 
+							return {Dist: sqrt(pos.X*pos.X + pos.Y*pos.Y),Ang: retAng}; }
 
 plotArea2D.prototype.X = function(setX) {
 	if (typeof(setX) === 'undefined') {
@@ -125,6 +128,15 @@ plotArea2D.prototype.PlotArea = function(setArea) {
 		return this.PlotArea();
 	}
 }
+plotArea2D.prototype.PlotAreaPolar = function () {
+	var areaPlot = this.PlotArea();
+	return {
+		TopLeft: RectToPolar(areaPlot.Min),
+		TopRight: RectToPolar({ X: areaPlot.Max.X, Y: areaPlot.Min.Y }),
+		BottomLeft: RectToPolar({ X: areaPlot.Min.X, Y: areaPlot.Max.Y }),
+		BottomRight: RectToPolar(areaPlot.Max)
+	};
+};
 plotArea2D.prototype.PlotPos = function (setPos) {
 	if (typeof (setPos) === 'undefined') {
 		return { X: this.PlotMinX, Y: this.PlotMinY };
@@ -334,15 +346,33 @@ plotArea2D.prototype.DrawGrid_Rect = function (color, thickness, gridLength) {
 }
 plotArea2D.prototype.DrawGrid_Polar = function (color, thickness, gridLength) {
 	var areaPlot = this.PlotArea();
-	var areaPlot_PolarCoords =	{	TopLeft: RectToPolar(areaPlot.Min), 
-									TopRight: RectToPolar({X:areaPlot.Max.X, Y:areaPlot.Min.Y}),
-									BottomLeft: RectToPolar({X:areaPlot.Min.X, Y:areaPlot.Max.Y}),
-									BottomRight: RectToPolar(areaPlot.Max)	};
+	var areaSize = areaPlot.Size;
+	var gridCount = { X: int(abs(areaSize.Width / gridLength)) * 2, Y: int(abs(areaSize.Height / gridLength)) * 2 };
+	var gridInvCount = {X:1/gridCount.X, Y:1/gridCount.Y};
+	var areaMaxDist = -Infinity;
+	var areaMinDist = Infinity;
+	for (var Xi = -1; Xi <= gridCount.X + 1; Xi++) {
+		for (var Yi = -1; Yi <= gridCount.Y + 1; Yi++) {
+			var posRect = {	X:areaPlot.Min.X + Xi*gridInvCount.X*areaSize.Width, 
+							Y:areaPlot.Min.Y + Yi*gridInvCount.Y*areaSize.Height };
+			var posPolar = RectToPolar(posRect);
+			areaMaxDist = max(posPolar.Dist, areaMaxDist);
+			areaMinDist = min(posPolar.Dist, areaMinDist);
+		}
+	}
 	var posOrigin = this.MapPlotToClient({ X: 0, Y: 0 });
-	var posThis = this.Pos();
-	var sizeThis = this.Size();
-	return areaPlot_PolarCoords;
+	this.BeginClipping();
+	noFill();
+	stroke(color);
+	strokeWeight(thickness);
+	for (var gridI = areaMinDist; gridI <= areaMaxDist; gridI += gridLength) {
+		var gridIP = gridI - (gridI % gridLength);
+		var gridII = this.MapPlotToClient({ X: gridIP, Y: gridIP });
+		ellipse(posOrigin.X, posOrigin.Y, (gridII.X - posOrigin.X) * 2, (gridII.Y - posOrigin.Y) * 2);
+	}
+	this.EndClipping();
 }
+var intpItr;
 plotArea2D.prototype.DrawAxis = function(colorAxis, colorMarks, thickness, axisMarkLength, gridLength) {
 	var areaPlot = this.PlotArea();
 	var gridCount = { X: 1 + abs(areaPlot.Size.Width / gridLength.X), Y: 1 + abs(areaPlot.Size.Height / gridLength.Y) };
@@ -387,6 +417,7 @@ plotArea2D.prototype.DrawCurve_RectFnx = function (fnx, color, thickness, sample
 	var posThis = this.Pos();
 	var sizeThis = this.Size();
 	var resSample = areaPlot.Size.Width / samplesOfX;
+	this.BeginClipping();
 	noFill();
 	stroke(color);
 	strokeWeight(thickness);
@@ -395,14 +426,10 @@ plotArea2D.prototype.DrawCurve_RectFnx = function (fnx, color, thickness, sample
 		var Yi = fnx(Xi);
 		if (typeof (Yi) === 'undefined') { endShape(); beginShape(); continue; }
 		var PosI = this.MapPlotToClient({ X: Xi, Y: Yi });
-		if (PosI.Y >= posThis.Y-1 && PosI.Y <= posThis.Y + sizeThis.Height+1) {
-			vertex(PosI.X, PosI.Y);
-		} else {
-			endShape();
-			beginShape();
-		}
+		vertex(PosI.X, PosI.Y);
 	}
 	endShape();
+	this.EndClipping();
 }
 plotArea2D.prototype.DrawCurve_ParmetricFnx = function (fxnt, color, thickness, tStart, tEnd, tSamples) {
 	if (!(typeof (fxnt) === 'function')) return 0;
@@ -410,6 +437,7 @@ plotArea2D.prototype.DrawCurve_ParmetricFnx = function (fxnt, color, thickness, 
 	var posThis = this.Pos();
 	var sizeThis = this.Size();
 	var resSample = (tEnd - tStart) / tSamples;
+	this.BeginClipping();
 	noFill();
 	stroke(color);
 	strokeWeight(thickness);
@@ -417,13 +445,35 @@ plotArea2D.prototype.DrawCurve_ParmetricFnx = function (fxnt, color, thickness, 
 	for (var Ti = tStart, Ni = 0; Ni <= tSamples; Ti += resSample, Ni++) {
 		var valXY = fxnt(Ti);
 		var PosI = this.MapPlotToClient({ X: valXY.X, Y: valXY.Y });
-		if (PosI.X >= posThis.X-1 && PosI.X <= posThis.X + sizeThis.Width+1 &&
-			PosI.Y >= posThis.Y-1 && PosI.Y <= posThis.Y + sizeThis.Height+1 ) {
-			vertex(PosI.X, PosI.Y);
-		} else {
-			endShape();
-			beginShape();
-		}
+		vertex(PosI.X, PosI.Y);
 	}
 	endShape();
+	this.EndClipping();
+}
+plotArea2D.prototype.DrawClipped = function(sub) {
+	this.BeginClipping();
+	sub();
+	this.EndClipping();
+}
+plotArea2D.prototype.BeginClipping = function() {
+	var parent = this.ParentElement;
+	if (typeof(parent) === 'undefined') {return false;}
+	var contextDraw2D = parent.getContext("2d");
+	if (typeof(contextDraw2D) === 'undefined') {return false;}
+	var areaClient = this.ClientArea();
+	contextDraw2D.save();
+	contextDraw2D.rect(areaClient.Min.X, areaClient.Min.Y, areaClient.Size.Width, areaClient.Size.Height);
+	contextDraw2D.clip();
+	this.isClipping = true;
+	return true;
+}
+plotArea2D.prototype.EndClipping = function() {
+	if(!this.isClipping) {return false;}
+	var parent = this.ParentElement;
+	if (typeof (parent) === 'undefined') { return false; }
+	var contextDraw2D = parent.getContext("2d");
+	if (typeof (contextDraw2D) === 'undefined') { return false; }
+	contextDraw2D.restore();
+	this.isClipping = false;
+	return true;
 }
