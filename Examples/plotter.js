@@ -16,7 +16,7 @@ function logab(a, x) { return (log(x))/(log(a));}
 function sign(x) { if(x > 0) {return 1;} else if (x < 0) { return -1;} else {return 0;} }
 function RectToPolar(pos) { var retAng = atan2(pos.Y, pos.X); 
 							if (retAng < 0) { retAng += TAU * (int(abs(retAng) / TAU) + 1); }; 
-							return {Dist: sqrt(pos.X*pos.X + pos.Y*pos.Y),Ang: retAng}; }
+							return {Dist: sqrt(pos.X*pos.X + pos.Y*pos.Y), Ang: retAng}; }
 
 plotArea2D.prototype.X = function(setX) {
 	if (typeof(setX) === 'undefined') {
@@ -344,13 +344,15 @@ plotArea2D.prototype.DrawGrid_Rect = function (color, thickness, gridLength) {
 		}
 	}
 }
-plotArea2D.prototype.DrawGrid_Polar = function (color, thickness, gridLength) {
+plotArea2D.prototype.DrawGrid_Polar = function (color, thickness, gridLength, sectorColor, sectorThickness, sectorLength) {
 	var areaPlot = this.PlotArea();
 	var areaSize = areaPlot.Size;
 	var gridCount = { X: int(abs(areaSize.Width / gridLength)) * 2, Y: int(abs(areaSize.Height / gridLength)) * 2 };
 	var gridInvCount = {X:1/gridCount.X, Y:1/gridCount.Y};
 	var areaMaxDist = -Infinity;
 	var areaMinDist = Infinity;
+	var areaMaxAngle = -Infinity;
+	var areaMinAngle = Infinity;
 	for (var Xi = -1; Xi <= gridCount.X + 1; Xi++) {
 		for (var Yi = -1; Yi <= gridCount.Y + 1; Yi++) {
 			var posRect = {	X:areaPlot.Min.X + Xi*gridInvCount.X*areaSize.Width, 
@@ -358,6 +360,8 @@ plotArea2D.prototype.DrawGrid_Polar = function (color, thickness, gridLength) {
 			var posPolar = RectToPolar(posRect);
 			areaMaxDist = max(posPolar.Dist, areaMaxDist);
 			areaMinDist = min(posPolar.Dist, areaMinDist);
+			areaMaxAngle = max(posPolar.Ang, areaMaxAngle);
+			areaMinAngle = min(posPolar.Ang, areaMinAngle);
 		}
 	}
 	var posOrigin = this.MapPlotToClient({ X: 0, Y: 0 });
@@ -369,6 +373,16 @@ plotArea2D.prototype.DrawGrid_Polar = function (color, thickness, gridLength) {
 		var gridIP = gridI - (gridI % gridLength);
 		var gridII = this.MapPlotToClient({ X: gridIP, Y: gridIP });
 		ellipse(posOrigin.X, posOrigin.Y, (gridII.X - posOrigin.X) * 2, (gridII.Y - posOrigin.Y) * 2);
+	}
+	if(sectorColor && sectorThickness && sectorLength) {
+		var sectorLengthRad = sectorLength*TAU;
+		stroke(sectorColor);
+		strokeWeight(sectorThickness);
+		for (var gridI = areaMinAngle; gridI <= areaMaxAngle; gridI += sectorLengthRad) {
+			var gridIP = gridI - (gridI % sectorLengthRad);
+			var gridII = this.MapPlotToClient({ X: cos(gridIP) * areaMaxDist, Y: sin(gridIP) * areaMaxDist });
+			line(posOrigin.X, posOrigin.Y, gridII.X , gridII.Y );
+		}
 	}
 	this.EndClipping();
 }
