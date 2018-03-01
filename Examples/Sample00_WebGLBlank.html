@@ -33,6 +33,13 @@
 				intFrameCount++;
 				requestAnimationFrame(render);
 			}
+
+			function resize() 
+			{
+				canvasMain.width = canvasMain.clientWidth;
+				canvasMain.height = canvasMain.clientHeight;
+				gl.viewport(0,0, canvasMain.width, canvasMain.height);
+			}
         </script>
 
     </head>
