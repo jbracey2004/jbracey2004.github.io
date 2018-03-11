@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, height=device-height, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<title>Earth - Stars Visual</title>
+		<script src="../libref/p5/p5.min.js"></script>
+		<script src="../libref/threejs/three.min.js"></script>
+		<script src="../libref/threejs/OrbitControls.js"></script>
+		<script>
+			var pt = 0;
+			var ct = 0;
+
+			var p5objCanvas;
+			var canvasMain;
+			var t3jsRender;
+			var t3sceneMain;
+			var t3cameraMain;
+			var t3cameraModel;
+			var t3cameraView;
+			var t3CamControls;
+
+			var objCube;
+
+			function setup() {
+				var szWin = sizeWindow();
+				console.log(szWin);
+				p5objCanvas = createCanvas(szWin.width, szWin.height, WEBGL);
+				canvasMain = document.getElementById(p5objCanvas.id());
+				pixelDensity(1);
+				t3jsRender = new THREE.WebGLRenderer({ canvas: canvasMain, logarithmicDepthBuffer: true, preserveDrawingBuffer: true });
+				t3jsRender.setSize(szWin.width, szWin.height);
+				t3sceneMain = new THREE.Scene();
+				t3cameraModel = new THREE.PerspectiveCamera(75, szWin.aspect, 0.01, 100000);
+				t3cameraModel.bounds = new THREE.Vector4(0,0,1/3, 1);
+				t3cameraModel.position.set(0, 1, 2);
+				t3cameraModel.lookAt({ x: 0, y: 0, z: 0 });
+				t3cameraView = new THREE.PerspectiveCamera(75, szWin.aspect, 0.01, 100000);
+				t3cameraView.bounds = new THREE.Vector4(1/3,0,2/3, 1);
+				t3cameraView.position.set(0, 0, 2);
+				t3cameraView.lookAt({ x: 0, y: 0, z: 0 });
+				t3cameraMain = new THREE.ArrayCamera([t3cameraModel, t3cameraView]);
+				t3CamControls = new THREE.OrbitControls(t3cameraModel, canvasMain);
+				var geometryStars = new THREE.Geometry();
+				for (var i = 0; i < 10000; i++) {
+					var vertex = new THREE.Vector3();
+					vertex.x = THREE.Math.randFloatSpread(50000);
+					vertex.y = THREE.Math.randFloatSpread(50000);
+					vertex.z = THREE.Math.randFloatSpread(50000);
+					geometryStars.vertices.push(vertex);
+				}
+				var particlesStars = new THREE.Points(geometryStars, new THREE.PointsMaterial({ color: 0x888888 }));
+				t3sceneMain.add(particlesStars);
+			}
+
+			function animate() {
+				var tn = new Date(Date.now()).getTime() * 0.001;
+				if (pt == 0) { pt = tn; }
+				var t = tn - pt;
+				ct += t;
+
+				t3CamControls.update();
+
+				pt = tn;
+			}
+
+			function touchMove() {
+				return false;
+			}
+
+			function draw() {
+				animate();
+				background("#080402");
+				t3jsRender.render(t3sceneMain, t3cameraMain);
+			}
+
+			function windowResized() {
+				var szWin = sizeWindow();
+				t3cameraMain.aspect = szWin.aspect; 
+				t3cameraMain.updateProjectionMatrix();
+				resizeCanvas(szWin.width, szWin.height);
+				t3jsRender.setSize(szWin.width, szWin.height);
+				console.log(szWin);
+			}
+
+			function sizeWindow() {
+				var w = windowWidth - 16;
+				var h = windowHeight - 16;
+				var a = w / h;
+				return { width: w, height: h, aspect: a };
+			}
+		</script>
+
+	</head>
+
+	<body scrolling="no" style="overflow: hidden;">
+	</body>
+
+</html>

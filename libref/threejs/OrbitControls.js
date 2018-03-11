@@ -13,9 +13,9 @@
 //    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
 //    Pan - right mouse, or arrow keys / touch: three finger swipe
 
-THREE.OrbitControls = function ( object, domElement ) {
+THREE.OrbitControls = function ( camobject, domElement ) {
 
-	this.object = object;
+	this.object = camobject;
 
 	this.domElement = ( domElement !== undefined ) ? domElement : document;
 
@@ -35,8 +35,8 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 	// How far you can orbit vertically, upper and lower limits.
 	// Range is 0 to Math.PI radians.
-	this.minPolarAngle = 0; // radians
-	this.maxPolarAngle = Math.PI; // radians
+	this.minPolarAngle = -2*Math.PI; // radians
+	this.maxPolarAngle = 2*Math.PI; // radians
 
 	// How far you can orbit horizontally, upper and lower limits.
 	// If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
@@ -125,7 +125,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 		var offset = new THREE.Vector3();
 
 		// so camera.up is the orbit axis
-		var quat = new THREE.Quaternion().setFromUnitVectors( object.up, new THREE.Vector3( 0, 1, 0 ) );
+		var quat = new THREE.Quaternion().setFromUnitVectors( camobject.up, new THREE.Vector3( 0, 1, 0 ) );
 		var quatInverse = quat.clone().inverse();
 
 		var lastPosition = new THREE.Vector3();
@@ -152,6 +152,9 @@ THREE.OrbitControls = function ( object, domElement ) {
 			spherical.theta += sphericalDelta.theta;
 			spherical.phi += sphericalDelta.phi;
 
+			if (spherical.phi > Math.PI) { spherical.phi -= Math.PI * (int(abs(spherical.phi) / Math.PI) + 1);  }
+			if (spherical.phi < 0) { spherical.phi += Math.PI * (int(abs(spherical.phi) / Math.PI) + 1); }
+
 			// restrict theta to be between desired limits
 			spherical.theta = Math.max( scope.minAzimuthAngle, Math.min( scope.maxAzimuthAngle, spherical.theta ) );
 
@@ -176,6 +179,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 			position.copy( scope.target ).add( offset );
 
+			//scope.object.position.copy(position);
 			scope.object.lookAt( scope.target );
 
 			if ( scope.enableDamping === true ) {
@@ -451,9 +455,11 @@ THREE.OrbitControls = function ( object, domElement ) {
 		// rotating up and down along whole screen attempts to go 360, but limited to 180
 		rotateUp( 2 * Math.PI * rotateDelta.y / element.clientHeight * scope.rotateSpeed );
 
+		scope.update();
+
 		rotateStart.copy( rotateEnd );
 
-		scope.update();
+		
 
 	}
 
