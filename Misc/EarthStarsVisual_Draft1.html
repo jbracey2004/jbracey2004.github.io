@@ -24,8 +24,7 @@
 			var t3CamControlsModel;
 			var t3Raycaster;
 			var objEarth;
-
-			var objCube;
+			var mouseMove = {X:0, Y:0};
 
 			function setup() {
 				var szWin = sizeWindow();
@@ -37,18 +36,18 @@
 				t3jsRender.setSize(szWin.width, szWin.height);
 				t3jsRender.autoClear = false;
 				t3sceneMain = new THREE.Scene();
-				t3cameraModel = new THREE.PerspectiveCamera(75, szWin.aspect, 0.01, 1000000);
+				t3cameraModel = new THREE.PerspectiveCamera(75, szWin.aspect, 0.001, 1000000);
 				t3cameraModel.bounds = new THREE.Vector4(0,0,1/3, 1);
-				t3cameraView = new THREE.PerspectiveCamera(50, szWin.aspect, 0.01, 1000000);
+				t3cameraView = new THREE.PerspectiveCamera(50, szWin.aspect, 0.001, 1000000);
 				t3cameraView.bounds = new THREE.Vector4(1/3,0,2/3, 1);
 				t3cameraMain = new THREE.ArrayCamera([t3cameraModel, t3cameraView]);
 				t3CamControlsModel = new THREE.OrbitControls(t3cameraModel);	
-				t3cameraModel.position.set(0, 1, 2);
+				t3cameraModel.position.set(0, 0, 2);
 				t3cameraModel.lookAt(new THREE.Vector3(0, 0, 0));
-				t3cameraView.position.set(0, 1, 0);
+				t3cameraView.position.set(0, 1.01, 0);
 				t3cameraView.lookAt(new THREE.Vector3(0, 1, 1));
 				var geometryStars = new THREE.Geometry();
-				for (var i = 0; i < 100000; i++) {
+				for (var i = 0; i < 10000; i++) {
 					var vertex = new THREE.Vector3();
 					vertex.x = (random(2) - 1);
 					vertex.y = (random(2) - 1);
@@ -60,7 +59,7 @@
 				var particlesStars = new THREE.Points(geometryStars, new THREE.PointsMaterial({ color: 0x888888 }));
 				t3sceneMain.add(particlesStars);
 				var geometry = new THREE.SphereBufferGeometry(1, 64, 64);
-				var material = new THREE.MeshBasicMaterial({ color: "#0000FF", wireframe: true });
+				var material = new THREE.MeshNormalMaterial({side:THREE.DoubleSide});
 				objEarth = new THREE.Mesh(geometry, material);
 				objEarth.rotateX(22.5 * PI/180);
 				t3sceneMain.add(objEarth);
@@ -77,19 +76,31 @@
 				ct += t;
 
 				var mouseCurrent = { X: mouseX, Y: mouseY };
-				var mousePrev = { X: pmouseX, Y: pmouseY };
-				var mouseMove = { X: mouseCurrent.X - mousePrev.X, Y: mouseCurrent.Y - mousePrev.Y };
 				objEarth.rotateOnAxis(new THREE.Vector3(0,1,0), 15 * t * PI/180);
 				if(mouseCurrent.X  < windowWidth*(1/3)) {
-					t3CamControlsModel.enabled = true;
-					t3CamControlsModel.update();
+					var t3mouse = {x:(mouseCurrent.X/(windowWidth*(1/3)))*2 - 1, y:-(mouseCurrent.Y/windowHeight)*2 + 1}
+					t3Raycaster.setFromCamera(t3mouse, t3cameraModel);
+					var intersects = t3Raycaster.intersectObject(objEarth);
+					if(intersects.length > 0) {
+						t3CamControlsModel.enabled = false;
+						if (mouseIsPressed) {
+							objEarth.updateMatrix();
+							var pos = intersects[0].point;
+							var matx = new THREE.Matrix4().getInverse(objEarth.matrixWorld);
+							pos.applyMatrix4(matx);
+							t3cameraView.position.copy(pos);
+						}
+					} else {
+						t3CamControlsModel.enabled = true;
+						t3CamControlsModel.update();
+					}
 				} else {
 					t3CamControlsModel.enabled = false;
 					if(mouseIsPressed) {
 						t3cameraView.rotateX(16 * mouseMove.Y * t * PI / 180);
 						var diffmid = {X:mouseCurrent.X - windowWidth*(2/3), Y:mouseCurrent.Y - windowHeight*(1/2)};
 						var diffdist = (diffmid.X**2 + diffmid.Y**2)**0.5;
-						if(diffdist <= windowWidth*(1/6)) {
+						if(diffdist <= windowWidth*(1/4)) {
 							t3cameraView.rotateY(16 * mouseMove.X * t * PI / 180);
 						} else {
 							t3cameraView.rotateZ(-4 * mouseMove.X * t * PI / 180);
@@ -97,8 +108,15 @@
 					}
 				}
 				t3meshCamera.update();
+				mouseMove = {X:0, Y:0};
 
 				pt = tn;
+			}
+
+			function mouseDragged() {
+				var mouseCurrent = { X: mouseX, Y: mouseY };
+				var mousePrev = { X: pmouseX, Y: pmouseY };
+				mouseMove = { X: mouseCurrent.X - mousePrev.X, Y: mouseCurrent.Y - mousePrev.Y };
 			}
 
 			function touchMove() {
