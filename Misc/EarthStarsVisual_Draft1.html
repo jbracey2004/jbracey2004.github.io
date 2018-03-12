@@ -8,6 +8,7 @@
 		<script src="../libref/p5/p5.min.js"></script>
 		<script src="../libref/threejs/three.min.js"></script>
 		<script src="../libref/threejs/OrbitControls.js"></script>
+		<script src="../libref/threejs/TrackballControls.js"></script>
 		<script>
 			var pt = 0;
 			var ct = 0;
@@ -19,7 +20,10 @@
 			var t3cameraMain;
 			var t3cameraModel;
 			var t3cameraView;
-			var t3CamControls;
+			var t3meshCamera;
+			var t3CamControlsModel;
+			var t3Raycaster;
+			var objEarth;
 
 			var objCube;
 
@@ -31,27 +35,39 @@
 				pixelDensity(1);
 				t3jsRender = new THREE.WebGLRenderer({ canvas: canvasMain, logarithmicDepthBuffer: true, preserveDrawingBuffer: true });
 				t3jsRender.setSize(szWin.width, szWin.height);
+				t3jsRender.autoClear = false;
 				t3sceneMain = new THREE.Scene();
-				t3cameraModel = new THREE.PerspectiveCamera(75, szWin.aspect, 0.01, 100000);
+				t3cameraModel = new THREE.PerspectiveCamera(75, szWin.aspect, 0.01, 1000000);
 				t3cameraModel.bounds = new THREE.Vector4(0,0,1/3, 1);
-				t3cameraModel.position.set(0, 1, 2);
-				t3cameraModel.lookAt({ x: 0, y: 0, z: 0 });
-				t3cameraView = new THREE.PerspectiveCamera(75, szWin.aspect, 0.01, 100000);
+				t3cameraView = new THREE.PerspectiveCamera(50, szWin.aspect, 0.01, 1000000);
 				t3cameraView.bounds = new THREE.Vector4(1/3,0,2/3, 1);
-				t3cameraView.position.set(0, 0, 2);
-				t3cameraView.lookAt({ x: 0, y: 0, z: 0 });
 				t3cameraMain = new THREE.ArrayCamera([t3cameraModel, t3cameraView]);
-				t3CamControls = new THREE.OrbitControls(t3cameraModel, canvasMain);
+				t3CamControlsModel = new THREE.OrbitControls(t3cameraModel);	
+				t3cameraModel.position.set(0, 1, 2);
+				t3cameraModel.lookAt(new THREE.Vector3(0, 0, 0));
+				t3cameraView.position.set(0, 1, 0);
+				t3cameraView.lookAt(new THREE.Vector3(0, 1, 1));
 				var geometryStars = new THREE.Geometry();
-				for (var i = 0; i < 10000; i++) {
+				for (var i = 0; i < 100000; i++) {
 					var vertex = new THREE.Vector3();
-					vertex.x = THREE.Math.randFloatSpread(50000);
-					vertex.y = THREE.Math.randFloatSpread(50000);
-					vertex.z = THREE.Math.randFloatSpread(50000);
+					vertex.x = (random(2) - 1);
+					vertex.y = (random(2) - 1);
+					vertex.z = (random(2) - 1);
+					vertex.normalize();
+					vertex.multiplyScalar(random(10000) + 40000);
 					geometryStars.vertices.push(vertex);
 				}
 				var particlesStars = new THREE.Points(geometryStars, new THREE.PointsMaterial({ color: 0x888888 }));
 				t3sceneMain.add(particlesStars);
+				var geometry = new THREE.SphereBufferGeometry(1, 64, 64);
+				var material = new THREE.MeshBasicMaterial({ color: "#0000FF", wireframe: true });
+				objEarth = new THREE.Mesh(geometry, material);
+				objEarth.rotateX(22.5 * PI/180);
+				t3sceneMain.add(objEarth);
+				t3meshCamera = new THREE.CameraHelper(t3cameraView);
+				t3sceneMain.add(t3meshCamera);
+				objEarth.add(t3cameraView);
+				t3Raycaster = new THREE.Raycaster();
 			}
 
 			function animate() {
@@ -60,7 +76,27 @@
 				var t = tn - pt;
 				ct += t;
 
-				t3CamControls.update();
+				var mouseCurrent = { X: mouseX, Y: mouseY };
+				var mousePrev = { X: pmouseX, Y: pmouseY };
+				var mouseMove = { X: mouseCurrent.X - mousePrev.X, Y: mouseCurrent.Y - mousePrev.Y };
+				objEarth.rotateOnAxis(new THREE.Vector3(0,1,0), 15 * t * PI/180);
+				if(mouseCurrent.X  < windowWidth*(1/3)) {
+					t3CamControlsModel.enabled = true;
+					t3CamControlsModel.update();
+				} else {
+					t3CamControlsModel.enabled = false;
+					if(mouseIsPressed) {
+						t3cameraView.rotateX(16 * mouseMove.Y * t * PI / 180);
+						var diffmid = {X:mouseCurrent.X - windowWidth*(2/3), Y:mouseCurrent.Y - windowHeight*(1/2)};
+						var diffdist = (diffmid.X**2 + diffmid.Y**2)**0.5;
+						if(diffdist <= windowWidth*(1/6)) {
+							t3cameraView.rotateY(16 * mouseMove.X * t * PI / 180);
+						} else {
+							t3cameraView.rotateZ(-4 * mouseMove.X * t * PI / 180);
+						}
+					}
+				}
+				t3meshCamera.update();
 
 				pt = tn;
 			}
@@ -70,16 +106,21 @@
 			}
 
 			function draw() {
+				var szWin = sizeWindow();
 				animate();
 				background("#080402");
-				t3jsRender.render(t3sceneMain, t3cameraMain);
+				t3jsRender.clear();
+				t3jsRender.setViewport(szWin.width * (1 / 3), 0, szWin.width * (2 / 3), szWin.height);
+				t3jsRender.render(t3sceneMain, t3cameraView);
+				t3jsRender.setViewport(0, 0, szWin.width * (1 / 3), szWin.height);
+				t3jsRender.render(t3sceneMain, t3cameraModel);
+				//t3jsRender.render(t3sceneMain, t3cameraMain);
 			}
 
 			function windowResized() {
 				var szWin = sizeWindow();
-				t3cameraMain.aspect = szWin.aspect; 
-				t3cameraMain.updateProjectionMatrix();
 				resizeCanvas(szWin.width, szWin.height);
+				for(var cam of t3cameraMain.cameras) {cam.aspect = szWin.aspect; cam.updateProjectionMatrix();}
 				t3jsRender.setSize(szWin.width, szWin.height);
 				console.log(szWin);
 			}

@@ -152,8 +152,8 @@ THREE.OrbitControls = function ( camobject, domElement ) {
 			spherical.theta += sphericalDelta.theta;
 			spherical.phi += sphericalDelta.phi;
 
-			if (spherical.phi > Math.PI) { spherical.phi -= Math.PI * (int(abs(spherical.phi) / Math.PI) + 1);  }
-			if (spherical.phi < 0) { spherical.phi += Math.PI * (int(abs(spherical.phi) / Math.PI) + 1); }
+			if (spherical.phi > Math.PI) { spherical.phi -= Math.PI * (Math.floor(Math.abs(spherical.phi) / Math.PI) + 1);  }
+			if (spherical.phi < 0) { spherical.phi += Math.PI * (Math.floor(Math.abs(spherical.phi) / Math.PI) + 1); }
 
 			// restrict theta to be between desired limits
 			spherical.theta = Math.max( scope.minAzimuthAngle, Math.min( scope.maxAzimuthAngle, spherical.theta ) );
