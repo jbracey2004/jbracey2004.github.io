@@ -13,6 +13,28 @@
 //    Zoom - middle mouse, or mousewheel / touch: two finger spread or squish
 //    Pan - right mouse, or arrow keys / touch: three finger swipe
 
+THREE.lVal = function(a, b, loop) {
+	var i = 0;
+	if(loop) {
+		i = Math.floor(Math.abs(a) / b) * Math.sign(a);
+	} else {
+		i = Math.floor(a / b);
+	}
+	return a - (i * b);
+}
+THREE.Adjust6DOF = function(vecRot) {
+	var rotZ = 0;
+	var vecRet = vecRot;
+	var Val = THREE.lVal(vecRet.x, Math.PI*2, true);
+	if(Math.abs(Val) > Math.PI*0.5 && Math.abs(Val) < Math.PI*1.5) {
+		rotZ = vecRet.z;
+	} else {
+		rotZ = vecRet.z;
+	}
+	vecRet.z = rotZ;
+	return vecRet;
+}
+
 THREE.OrbitControls = function ( camobject, domElement ) {
 
 	this.object = camobject;
@@ -35,8 +57,8 @@ THREE.OrbitControls = function ( camobject, domElement ) {
 
 	// How far you can orbit vertically, upper and lower limits.
 	// Range is 0 to Math.PI radians.
-	this.minPolarAngle = -2*Math.PI; // radians
-	this.maxPolarAngle = 2*Math.PI; // radians
+	this.minPolarAngle = - Infinity; // radians
+	this.maxPolarAngle = Infinity; // radians
 
 	// How far you can orbit horizontally, upper and lower limits.
 	// If set, must be a sub-interval of the interval [ - Math.PI, Math.PI ].
@@ -138,7 +160,7 @@ THREE.OrbitControls = function ( camobject, domElement ) {
 			offset.copy( position ).sub( scope.target );
 
 			// rotate offset to "y-axis-is-up" space
-			offset.applyQuaternion( quat );
+			//offset.applyQuaternion( quat );
 
 			// angle from z-axis around y-axis
 			spherical.setFromVector3( offset );
@@ -152,16 +174,22 @@ THREE.OrbitControls = function ( camobject, domElement ) {
 			spherical.theta += sphericalDelta.theta;
 			spherical.phi += sphericalDelta.phi;
 
-			if (spherical.phi > Math.PI) { spherical.phi -= Math.PI * (Math.floor(Math.abs(spherical.phi) / Math.PI) + 1);  }
-			if (spherical.phi < 0) { spherical.phi += Math.PI * (Math.floor(Math.abs(spherical.phi) / Math.PI) + 1); }
+			//if (spherical.phi > Math.PI) { 
+				//spherical.phi -= -Math.PI * (Math.floor(Math.abs(spherical.phi) / Math.PI) ); 
+				//spherical.theta += Math.PI;
+			//}
+			//if (spherical.phi < 0) { 
+			//	spherical.phi += Math.PI * (Math.floor(Math.abs(spherical.phi) / Math.PI) + 1); 
+			//	spherical.theta += Math.PI*1.5;
+			//}
 
 			// restrict theta to be between desired limits
 			spherical.theta = Math.max( scope.minAzimuthAngle, Math.min( scope.maxAzimuthAngle, spherical.theta ) );
 
 			// restrict phi to be between desired limits
-			spherical.phi = Math.max( scope.minPolarAngle, Math.min( scope.maxPolarAngle, spherical.phi ) );
+			//spherical.phi = Math.max( scope.minPolarAngle, Math.min( scope.maxPolarAngle, spherical.phi ) );
 
-			spherical.makeSafe();
+			//spherical.makeSafe();
 
 
 			spherical.radius *= scale;
@@ -175,12 +203,14 @@ THREE.OrbitControls = function ( camobject, domElement ) {
 			offset.setFromSpherical( spherical );
 
 			// rotate offset back to "camera-up-vector-is-up" space
-			offset.applyQuaternion( quatInverse );
+			//offset.applyQuaternion( quatInverse );
 
 			position.copy( scope.target ).add( offset );
 
 			//scope.object.position.copy(position);
 			scope.object.lookAt( scope.target );
+
+			//scope.object.rotation = THREE.Adjust6DOF(scope.object.rotation);
 
 			if ( scope.enableDamping === true ) {
 
@@ -204,7 +234,7 @@ THREE.OrbitControls = function ( camobject, domElement ) {
 				lastPosition.distanceToSquared( scope.object.position ) > EPS ||
 				8 * ( 1 - lastQuaternion.dot( scope.object.quaternion ) ) > EPS ) {
 
-				scope.dispatchEvent( changeEvent );
+				//scope.dispatchEvent( changeEvent );
 
 				lastPosition.copy( scope.object.position );
 				lastQuaternion.copy( scope.object.quaternion );

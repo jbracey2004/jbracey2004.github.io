@@ -75,15 +75,4 @@
         xhr.send();
     };
 
-	window.resize = function() 
-	{
-		var width = gl.canvas.clientWidth;
-		var height = gl.canvas.clientHeight;
-		if (gl.canvas.width != width || gl.canvas.height != height) 
-		{
-			gl.canvas.width = width;
-			gl.canvas.height = height;
-			gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-		}
-	}
 })();
