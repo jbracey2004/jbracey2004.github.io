@@ -134,7 +134,7 @@
 							var area = areaCameraViewport(t3cameraView);
 							var diffmid = { X: mouseCurrent.X - area.MidX, Y: mouseCurrent.Y - area.MidY };
 							var diffdist = (diffmid.X ** 2 + diffmid.Y ** 2) ** 0.5;
-							if (diffdist <= (area.Width+area.Height)*0.5 * (4 / 5)) {
+							if (diffdist <= (area.Width+area.Height)*0.25 * (4 / 5)) {
 								t3cameraView.rotateX(16 * mouseMove.Y * t * PI / 180);
 								t3cameraView.rotateY(16 * mouseMove.X * t * PI / 180);
 							} else {
