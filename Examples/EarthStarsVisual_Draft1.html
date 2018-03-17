@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, height=device-height, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<title>Earth - Stars Visual</title>
+		<script src="../libref/p5/p5.min.js"></script>
+		<script src="../libref/utility.js"></script>
+		<script src="../libref/threejs/three.min.js"></script>
+		<script src="../libref/threejs/OrbitControls.js"></script>
+		<script src="../libref/threejs/TrackballControls.js"></script>
+		<script>
+			var pt = 0;
+			var ct = 0;
+
+			var p5objCanvas;
+			var canvasMain;
+			var t3jsRender;
+			var t3sceneMain;
+			var t3cameraMain;
+			var t3cameraModel;
+			var t3cameraView;
+			var t3meshCamera;
+			var t3CamControlsModel;
+			var t3Raycaster;
+			var objEarth;
+			var particlesStars;
+			var mouseoverStars = [];
+			var mouseMove = {X:0, Y:0};
+
+			function setup() {
+				var szWin = sizeWindow();
+				console.log(szWin);
+				p5objCanvas = createCanvas(szWin.width, szWin.height, WEBGL);
+				canvasMain = document.getElementById(p5objCanvas.id());
+				pixelDensity(1);
+				t3jsRender = new THREE.WebGLRenderer({ canvas: canvasMain, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
+				t3jsRender.setSize(szWin.width, szWin.height);
+				t3jsRender.autoClear = false;
+				t3sceneMain = new THREE.Scene();
+				t3cameraModel = new THREE.PerspectiveCamera(75, 1, 0.001, 1000000);
+				t3cameraView = new THREE.PerspectiveCamera(50, 1, 0.001, 1000000);
+				UpdateCameraBounds();
+				t3cameraMain = new THREE.ArrayCamera([t3cameraModel, t3cameraView]);
+				t3CamControlsModel = new THREE.TrackballControls(t3cameraModel);	
+				t3cameraModel.position.set(4, 0, 0);
+				t3cameraModel.lookAt(new THREE.Vector3(0, 0, 0));
+				t3cameraView.position.set(0, 1, 0);
+				t3cameraView.lookAt(new THREE.Vector3(0, 1, 1));
+				var geometry = new THREE.SphereBufferGeometry(1, 24, 24);
+				var material = new THREE.MeshNormalMaterial({side:THREE.DoubleSide});
+				objEarth = new THREE.Mesh(geometry, material);
+				objEarth.rotateX(-22.5 * PI/180);
+				objEarth.updateMatrix();
+				t3sceneMain.add(objEarth);
+				geometry = new THREE.EdgesGeometry(objEarth.geometry);
+				material = new THREE.LineBasicMaterial({ color: "#000000", linewidth: 2, transparent: true, opacity: 0.5 });
+				objEarth_wireframe = new THREE.LineSegments(geometry, material);
+				objEarth.add(objEarth_wireframe);
+				geometry = new THREE.Geometry();
+				geometry.vertices.push(new THREE.Vector3(0,-50000,0)); 
+				geometry.vertices.push(new THREE.Vector3(0,0,0));
+				geometry.vertices.push(new THREE.Vector3(0,50000,0));
+				material = new THREE.LineBasicMaterial({color:"#FFCC00", linewidth: 2});
+				var objEarth_Axis = new THREE.Line(geometry, material);
+				objEarth.add(objEarth_Axis);
+				var geometryStars = new THREE.Geometry();
+				for (var i = 0; i < 2000; i++) {
+					var vertex = new THREE.Vector3();
+					vertex.x = (random(2) - 1);
+					vertex.y = (random(2) - 1);
+					vertex.z = (random(2) - 1);
+					vertex.normalize();
+					vertex.multiplyScalar(random(10000) + 40000);
+					geometryStars.vertices.push(vertex);
+				}
+				var vecStarMain = new THREE.Vector3(0,50000,0);
+				vecStarMain.applyMatrix4(objEarth.matrix);
+				geometryStars.vertices.push(vecStarMain);
+				geometryStars.computeBoundingBox();
+				particlesStars = new THREE.Points(geometryStars,
+					new THREE.PointsMaterial({ color: "#FFFFFF", sizeAttenuation: false, size: 2 }));
+				t3sceneMain.add(particlesStars);
+				t3meshCamera = new THREE.CameraHelper(t3cameraView);
+				t3sceneMain.add(t3meshCamera);
+				objEarth.add(t3cameraView);
+				t3Raycaster = new THREE.Raycaster();
+				t3Raycaster.params.Points.threshold = 500;
+			}
+
+			function animate() {
+				var tn = new Date(Date.now()).getTime() * 0.001;
+				if (pt == 0) { pt = tn; }
+				var t = tn - pt;
+				ct += t;
+
+				objEarth.rotateOnAxis(new THREE.Vector3(0,1,0), 15 * t * PI/180);
+
+				mouseoverStars = [];
+				var mouseCurrent = { X: mouseX, Y: mouseY };
+				var mousePrev = { X:pmouseX, Y:pmouseY };
+				var CameraWithMouse = FindCameraViewportWithPoint(t3cameraMain.cameras, mouseCurrent);
+				if(CameraWithMouse == t3cameraModel) {
+					var t3mouse = mapClientToCameraViewport(t3cameraModel, mouseCurrent);
+					t3Raycaster.setFromCamera(t3mouse, t3cameraModel);
+					var intersects = t3Raycaster.intersectObject(objEarth);
+					if(intersects.length > 0) {
+						t3CamControlsModel.enabled = false;
+						if (mouseIsPressed) {
+							objEarth.updateMatrix();
+							var pos = intersects[0].point;
+							var matx = new THREE.Matrix4().getInverse(objEarth.matrixWorld);
+							pos.applyMatrix4(matx);
+							t3cameraView.position.copy(pos);
+						}
+					} else {
+						t3CamControlsModel.enabled = true;
+						t3CamControlsModel.update();
+					}
+				} 
+				if(CameraWithMouse == t3cameraView) {
+					var t3mouse = mapClientToCameraViewport(t3cameraView, mouseCurrent);
+					t3CamControlsModel.enabled = false;
+					if(mouseMove.X == 0 && mouseMove.Y == 0 ) {
+						t3cameraView.updateMatrixWorld();
+						t3Raycaster.setFromCamera(t3mouse, t3cameraView);
+						var intersects = t3Raycaster.intersectObject(particlesStars);
+						for(var objIntcpt of intersects) {
+							mouseoverStars.push(objIntcpt);
+						}
+					} else {
+						if (mouseIsPressed) {
+							var area = areaCameraViewport(t3cameraView);
+							var diffmid = { X: mouseCurrent.X - area.MidX, Y: mouseCurrent.Y - area.MidY };
+							var diffdist = (diffmid.X ** 2 + diffmid.Y ** 2) ** 0.5;
+							if (diffdist <= (area.Width+area.Height)*0.25 * (4 / 5)) {
+								t3cameraView.rotateX(16 * mouseMove.Y * t * PI / 180);
+								t3cameraView.rotateY(16 * mouseMove.X * t * PI / 180);
+							} else {
+								var angP = Math.atan2(mousePrev.Y - area.MidY, mousePrev.X - area.MidX);
+								angP = THREE.lVal(angP, Math.PI*2, true);
+								var angC = Math.atan2(mouseCurrent.Y - area.MidY, mouseCurrent.X - area.MidX);
+								angC = THREE.lVal(angC, Math.PI*2, true);
+								var ang = angC - angP;
+								t3cameraView.rotateZ(90 * ang * t);
+							}
+						}
+					}
+				}
+				t3meshCamera.update();
+				mouseMove = {X:0, Y:0};
+
+				pt = tn;
+			}
+
+			function mouseDragged() {
+				var mouseCurrent = { X: mouseX, Y: mouseY };
+				var mousePrev = { X: pmouseX, Y: pmouseY };
+				mouseMove = { X: mouseCurrent.X - mousePrev.X, Y: mouseCurrent.Y - mousePrev.Y };
+			}
+
+			function touchMove() {
+				return false;
+			}
+
+			function draw() {
+				animate();
+				background("#080402");
+				t3jsRender.clear();
+				SetCameraViewport(t3jsRender, t3cameraView);
+				t3jsRender.render(t3sceneMain, t3cameraView);
+				SetCameraViewport(t3jsRender, t3cameraModel);
+				t3jsRender.render(t3sceneMain, t3cameraModel);
+				//t3jsRender.render(t3sceneMain, t3cameraMain);
+			}
+
+			function UpdateCameraBounds() {
+				if(t3cameraModel && t3cameraView) {
+					if(windowWidth >= windowHeight) {
+						t3cameraModel.bounds = new THREE.Vector4(0, 0, 1 / 3, 1);
+						t3cameraView.bounds = new THREE.Vector4(1 / 3, 0, 2 / 3, 1);
+					} else {
+						t3cameraModel.bounds = new THREE.Vector4(0, 0, 1, 2/5);
+						t3cameraView.bounds = new THREE.Vector4(0, 2/5, 1, 3/5);
+					}
+					t3cameraModel.aspect = areaCameraViewport(t3cameraModel).Aspect;
+					t3cameraView.aspect = areaCameraViewport(t3cameraView).Aspect;
+					t3cameraModel.updateProjectionMatrix();
+					t3cameraView.updateProjectionMatrix();
+				}
+			}
+			function SetCameraViewport(render, cam) {
+				var areaCam = areaCameraViewport(cam);
+				render.setViewport(areaCam.X, areaCam.Y, areaCam.Width, areaCam.Height);
+			}
+			function windowResized() {
+				var szWin = sizeWindow();
+				resizeCanvas(szWin.width, szWin.height);
+				UpdateCameraBounds();
+				t3jsRender.setSize(szWin.width, szWin.height);
+				console.log(szWin);
+			}
+
+			function areaCameraViewport(Cam) {
+				var ret;
+				var sz = sizeWindow()
+				if(Cam) {
+					if(Cam.bounds) {
+						ret = { X: sz.width * Cam.bounds.x, 
+								Y: sz.height * Cam.bounds.y, 
+								Width: sz.width * Cam.bounds.z, 
+								Height: sz.height * Cam.bounds.w};
+					}
+				}
+				if (!ret) {
+					ret = {X:0, Y:0, Width: sz.width, Height: sz.height};
+				}
+				ret.Aspect = ret.Width/ret.Height;
+				ret.Left = ret.X;
+				ret.Top = ret.Y;
+				ret.Right = ret.X + ret.Width;
+				ret.Bottom = ret.Y + ret.Height;
+				ret.MidX = ret.X + ret.Width*0.5;
+				ret.MidY = ret.Y + ret.Height*0.5;
+				return ret;
+			}
+			function mapClientToCameraViewport(camera, pos) {
+				var areaCam = areaCameraViewport(camera);
+				return {x: ((pos.X - areaCam.X) / areaCam.Width) * 2 - 1, y: -((pos.Y - areaCam.Y) / areaCam.Height) * 2 + 1};
+			}
+			function mapCameraPointToClient(camera, pos) {
+				var areaCam = areaCameraViewport(camera);
+				var vector3D = new THREE.Vector3();
+				vector3D.set(pos.x, pos.y, pos.z);
+        		var vector2D = vector3D.project(camera);
+        		vector2D.x = areaCam.Left + ((vector2D.x + 1) * 0.5 * areaCam.Width);
+        		vector2D.y = areaCam.Top - ((vector2D.y - 1) * 0.5  * areaCam.Height);
+        		return vector2D;
+    		}
+			function CameraViewportContainsPoint(camera, pos) {
+				var areaCam = areaCameraViewport(camera);
+				return ((pos.X >= areaCam.Left && pos.X <= areaCam.Right) && (pos.Y >= areaCam.Top && pos.Y <= areaCam.Bottom));
+			}
+			function FindCameraViewportWithPoint(aryCameras, pos) {
+				var ret;
+				for(var Cam of aryCameras) {
+					var areaCam = areaCameraViewport(Cam);
+					if(CameraViewportContainsPoint(Cam, pos)) {ret = Cam;}
+				}
+				return ret;
+			}
+
+			function sizeWindow() {
+				var w = windowWidth - 16;
+				var h = windowHeight - 16;
+				var a = w / h;
+				return { width: w, height: h, aspect: a };
+			}
+		</script>
+
+	</head>
+
+	<body scrolling="no" style="overflow: hidden;">
+	</body>
+
+</html>
