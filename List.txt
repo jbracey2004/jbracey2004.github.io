@@ -1,4 +1,5 @@
-03/16/2018  11:41 PM             9,543 EarthStarsVisual_Draft1.html
+03/17/2018  08:53 AM            10,016 EarthStarsVisual_Draft1.html
+03/18/2018  06:08 AM            10,675 EarthStarsVisual_Draft2.html
 03/12/2018  02:12 AM             5,681 Excercise00_WindingFunction.html
 03/04/2018  07:28 AM             1,130 Sample00_3JSP5Blank.html
 03/04/2018  07:28 AM               816 Sample00_Blank.html
