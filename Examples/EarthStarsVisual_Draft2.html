@@ -42,6 +42,7 @@
 			var objEarth;
 			var objSun;
 			var objMoon;
+			var lightMain;
 			var particlesStars;
 			var mouseoverStars = [];
 			var mouseMove = {X:0, Y:0};
@@ -52,12 +53,12 @@
 				p5objCanvas = createCanvas(szWin.width, szWin.height, WEBGL);
 				canvasMain = document.getElementById(p5objCanvas.id());
 				pixelDensity(1);
-				t3jsRender = new THREE.WebGLRenderer({ canvas: canvasMain, logarithmicDepthBuffer: true, preserveDrawingBuffer: true });
+				t3jsRender = new THREE.WebGLRenderer({ canvas: canvasMain, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
 				t3jsRender.setSize(szWin.width, szWin.height);
 				t3jsRender.autoClear = false;
 				t3sceneMain = new THREE.Scene();
-				t3cameraModel = new THREE.PerspectiveCamera(75, 1, 0.01, 1e20);
-				t3cameraView = new THREE.PerspectiveCamera(50, 1, 0.01, 1e14);
+				t3cameraModel = new THREE.PerspectiveCamera(75, 1, 1e-2, 1e20);
+				t3cameraView = new THREE.PerspectiveCamera(50, 1, 1e-2, 1e14);
 				UpdateCameraBounds();
 				t3cameraMain = new THREE.ArrayCamera([t3cameraModel, t3cameraView]);
 				t3CamControlsModel = new THREE.TrackballControls(t3cameraModel);	
@@ -65,7 +66,11 @@
 				t3cameraModel.lookAt(new THREE.Vector3(0, 0, 0));
 				t3cameraView.position.set(0, 1, 0);
 				t3cameraView.lookAt(new THREE.Vector3(0, 1, 1));
+				lightMain = new THREE.DirectionalLight("#FFFFFF", 1);
+				lightMain.position.set(100, 100, 100);
+				t3sceneMain.add(lightMain);
 				var geometrySphere = new THREE.SphereBufferGeometry(1, 48, 48);
+				//MeshPhongMaterial
 				var material = new THREE.MeshNormalMaterial({side:THREE.DoubleSide});
 				objEarth = new THREE.Mesh(geometrySphere, material);
 				objEarth.rotateX(-22.5 * PI/180);
@@ -131,6 +136,8 @@
 				objEarth.position.set(EARTHToSUN*cos(periodSolar), 0, 0.8*EARTHToSUN*sin(periodSolar));
 				t3CamControlsModel.target.copy(objEarth.position);
 				t3cameraModel.position.addVectors(objEarth.position, offset);
+				lightMain.position = offset;
+				lightMain.position.multiplyScalar(-1);
 				var periodLunar = -(SIMULATION_RATE * SECONDS_LUNAR) * SIMULATION_Time * TAU;
 				offset = new THREE.Vector3(EARTHToMoon * cos(periodLunar), 0, EARTHToMoon * sin(periodLunar));
 				offset.applyMatrix4(new THREE.Matrix4().makeRotationX(-22.5 * PI/180));
