@@ -14,17 +14,19 @@
 			var pt = 0;
 			var ct = 0;
 
+			var SIMULATION_Time = 0;
 			var SIMULATION_RATE = 60*60;
 			var SECONDS_MINUTE = 1/60;
 			var SECONDS_HOUR = SECONDS_MINUTE/60;
 			var SECONDS_DAY = SECONDS_HOUR/24;
+			var SECONDS_LUNAR = SECONDS_DAY/27;
 			var SECONDS_YEAR = SECONDS_DAY/364.25;
-			var EARTH_RADIUS = 6e3;
+			var EARTH_RADIUS = 6.371e6;
 			var EARTHToSUN = 149.6e9;
-			var EARTHToMoon = 384.4e3;
+			var EARTHToMoon = 384.4e6;
 			var EARTHToPolaris = 4.104e15;
 			var EARTHToNearStar = 40.14e12;
-			var MOON_RADIUS = 1.737e3;
+			var MOON_RADIUS = 1.737e6;
 			var SUN_RADIUS = 695.7e6;
 
 			var p5objCanvas;
@@ -38,6 +40,8 @@
 			var t3CamControlsModel;
 			var t3Raycaster;
 			var objEarth;
+			var objSun;
+			var objMoon;
 			var particlesStars;
 			var mouseoverStars = [];
 			var mouseMove = {X:0, Y:0};
@@ -61,7 +65,7 @@
 				t3cameraModel.lookAt(new THREE.Vector3(0, 0, 0));
 				t3cameraView.position.set(0, 1, 0);
 				t3cameraView.lookAt(new THREE.Vector3(0, 1, 1));
-				var geometrySphere = new THREE.SphereBufferGeometry(1, 24, 24);
+				var geometrySphere = new THREE.SphereBufferGeometry(1, 48, 48);
 				var material = new THREE.MeshNormalMaterial({side:THREE.DoubleSide});
 				objEarth = new THREE.Mesh(geometrySphere, material);
 				objEarth.rotateX(-22.5 * PI/180);
@@ -97,10 +101,16 @@
 				t3sceneMain.add(particlesStars);
 				geometry = new THREE.EdgesGeometry(geometrySphere);
 				material = new THREE.LineBasicMaterial({ color: "#FFFF40", linewidth: 4});
-				var objSun = new THREE.LineSegments(geometry, material);
+				objSun = new THREE.LineSegments(geometry, material);
 				objSun.scale.multiplyScalar(SUN_RADIUS);
 				objSun.updateMatrix();
-				t3sceneMain.add(objSun); 
+				t3sceneMain.add(objSun);
+				geometry = new THREE.EdgesGeometry(geometrySphere);
+				material = new THREE.LineBasicMaterial({ color: "#808080", linewidth: 2});
+				objMoon = new THREE.LineSegments(geometry, material);
+				objMoon.scale.multiplyScalar(MOON_RADIUS);
+				objMoon.updateMatrix();
+				t3sceneMain.add(objMoon);
 				t3meshCamera = new THREE.CameraHelper(t3cameraView);
 				t3sceneMain.add(t3meshCamera);
 				objEarth.add(t3cameraView);
@@ -114,12 +124,18 @@
 				var t = tn - pt;
 				ct += t;
 
+				SIMULATION_Time += t;
 				objEarth.rotateOnAxis(new THREE.Vector3(0,1,0), (SIMULATION_RATE * SECONDS_DAY) * 360 * t * PI/180);
-				var periodSolar = (SIMULATION_RATE * SECONDS_YEAR) * tn * TAU;
+				var periodSolar = (SIMULATION_RATE * SECONDS_YEAR) * SIMULATION_Time * TAU;
 				var offset = new THREE.Vector3().subVectors(t3cameraModel.position, objEarth.position);
 				objEarth.position.set(EARTHToSUN*cos(periodSolar), 0, 0.8*EARTHToSUN*sin(periodSolar));
 				t3CamControlsModel.target.copy(objEarth.position);
 				t3cameraModel.position.addVectors(objEarth.position, offset);
+				var periodLunar = -(SIMULATION_RATE * SECONDS_LUNAR) * SIMULATION_Time * TAU;
+				offset = new THREE.Vector3(EARTHToMoon * cos(periodLunar), 0, EARTHToMoon * sin(periodLunar));
+				offset.applyMatrix4(new THREE.Matrix4().makeRotationX(-22.5 * PI/180));
+				offset.add(objEarth.position);
+				objMoon.position.copy(offset);
 
 				mouseoverStars = [];
 				var mouseCurrent = { X: mouseX, Y: mouseY };
