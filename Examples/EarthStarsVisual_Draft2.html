@@ -70,7 +70,7 @@
 				lightMain = new THREE.DirectionalLight("#FFFFFF", 1);
 				lightMain.position.set(100, 100, 100);
 				t3sceneMain.add(lightMain);
-				var geometrySphere = new THREE.SphereBufferGeometry(1, 48, 48);
+				var geometrySphere = new THREE.SphereBufferGeometry(1, 64, 64);
 				var material = new THREE.MeshLambertMaterial({color: "#0000FF", side:THREE.DoubleSide});
 				objEarth = new THREE.Mesh(geometrySphere, material);
 				objEarth.rotateX(-22.5 * PI/180);
