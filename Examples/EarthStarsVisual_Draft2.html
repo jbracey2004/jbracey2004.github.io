@@ -77,10 +77,10 @@
 				objEarth.scale.multiplyScalar(EARTH_RADIUS);
 				objEarth.updateMatrix();
 				t3sceneMain.add(objEarth);
-				//geometry = new THREE.EdgesGeometry(geometrySphere);
-				//material = new THREE.LineBasicMaterial({ color: "#000000", linewidth: 2, transparent: true, opacity: 0.5 });
-				//objEarth_wireframe = new THREE.LineSegments(geometry, material);
-				//objEarth.add(objEarth_wireframe);
+				geometry = new THREE.EdgesGeometry(geometrySphere);
+				material = new THREE.LineBasicMaterial({ color: "#000000", linewidth: 2, transparent: true, opacity: 0.5 });
+				objEarth_wireframe = new THREE.LineSegments(geometry, material);
+				objEarth.add(objEarth_wireframe);
 				geometry = new THREE.Geometry();
 				geometry.vertices.push(new THREE.Vector3(0,-EARTHToPolaris,0)); 
 				geometry.vertices.push(new THREE.Vector3(0,0,0));
@@ -136,8 +136,8 @@
 				objEarth.position.set(EARTHToSUN*cos(periodSolar), 0, 0.8*EARTHToSUN*sin(periodSolar));
 				t3CamControlsModel.target.copy(objEarth.position);
 				t3cameraModel.position.addVectors(objEarth.position, offset);
-				lightMain.position = offset;
-				lightMain.position.multiplyScalar(-1);
+				lightMain.position.copy(offset);
+				//lightMain.position.multiplyScalar(-1);
 				var periodLunar = -(SIMULATION_RATE * SECONDS_LUNAR) * SIMULATION_Time * TAU;
 				offset = new THREE.Vector3(EARTHToMoon * cos(periodLunar), 0, EARTHToMoon * sin(periodLunar));
 				offset.applyMatrix4(new THREE.Matrix4().makeRotationX(-22.5 * PI/180));
