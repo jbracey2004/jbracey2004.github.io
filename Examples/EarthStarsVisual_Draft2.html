@@ -7,6 +7,7 @@
 		<title>Earth - Stars Visual - Representing Scale</title>
 		<script src="../libref/p5/p5.min.js"></script>
 		<script src="../libref/utility.js"></script>
+		<script src="../libref/datguijs/dat.gui.min.js"></script>
 		<script src="../libref/threejs/three.min.js"></script>
 		<script src="../libref/threejs/OrbitControls.js"></script>
 		<script src="../libref/threejs/TrackballControls.js"></script>
@@ -15,12 +16,26 @@
 			var ct = 0;
 
 			var SIMULATION_Time = 0;
-			var SIMULATION_RATE = 60*60;
 			var SECONDS_MINUTE = 1/60;
 			var SECONDS_HOUR = SECONDS_MINUTE/60;
 			var SECONDS_DAY = SECONDS_HOUR/24;
+			var SECONDS_WEEK = SECONDS_DAY/7;
 			var SECONDS_LUNAR = SECONDS_DAY/27;
 			var SECONDS_YEAR = SECONDS_DAY/364.25;
+			var SECONDS_SEASON = SECONDS_YEAR*4;
+			var unitsSECOND = {
+				"Seconds" : 1,
+				"Minutes" : 1/SECONDS_MINUTE,
+				"Hours" : 1/SECONDS_HOUR,
+				"Days" : 1/SECONDS_DAY,
+				"Weeks" : 1/SECONDS_WEEK,
+				"Lunars" : 1/SECONDS_LUNAR,
+				"Seasons" : 1/SECONDS_SEASON,
+				"Years" : 1/SECONDS_YEAR
+			}
+			var SIMULATION_VALUE = 1;
+			var SIMULATION_UNIT = 1 / SECONDS_HOUR;
+			var SIMULATION_RATE = function() {return SIMULATION_VALUE*SIMULATION_UNIT;};
 			var EARTH_RADIUS = 6.371e6;
 			var EARTHToSUN = 149.6e9;
 			var EARTHToMoon = 384.4e6;
@@ -53,7 +68,10 @@
 				p5objCanvas = createCanvas(szWin.width, szWin.height, WEBGL);
 				canvasMain = document.getElementById(p5objCanvas.id());
 				pixelDensity(1);
-				t3jsRender = new THREE.WebGLRenderer({ canvas: canvasMain, logarithmicDepthBuffer: true, preserveDrawingBuffer: true });
+				t3jsRender = new THREE.WebGLRenderer({ canvas: canvasMain, 
+														antialias: true,
+														logarithmicDepthBuffer: true, 
+														preserveDrawingBuffer: true });
 				t3jsRender.setPixelRatio( window.devicePixelRatio );
 				t3jsRender.setSize(szWin.width, szWin.height);
 				t3jsRender.autoClear = false;
@@ -123,6 +141,13 @@
 				objEarth.add(t3cameraView);
 				t3Raycaster = new THREE.Raycaster();
 				t3Raycaster.params.Points.threshold = 500;
+				var guiParams = {"One Second" : SIMULATION_VALUE, "Time Unit" : SIMULATION_UNIT};
+				var guiMain = new dat.GUI();
+				var guiMain_SimRate = guiMain.addFolder("Simulation Rate");
+				var guiMain_SimRate_SecEquals = guiMain_SimRate.add(guiParams,"One Second");
+				var guiMain_SimRate_SecUnit = guiMain_SimRate.add(guiParams,"Time Unit", unitsSECOND);
+				guiMain_SimRate_SecEquals.onChange(function (value) { SIMULATION_VALUE = value; });
+				guiMain_SimRate_SecUnit.onChange(function (value) { SIMULATION_UNIT = value; });
 			}
 
 			function animate() {
@@ -132,15 +157,16 @@
 				ct += t;
 
 				SIMULATION_Time += t;
-				objEarth.rotateOnAxis(new THREE.Vector3(0,1,0), (SIMULATION_RATE * SECONDS_DAY) * 360 * t * PI/180);
-				var periodSolar = (SIMULATION_RATE * SECONDS_YEAR) * SIMULATION_Time * TAU;
+				var SimRate = SIMULATION_RATE();
+				objEarth.rotateOnAxis(new THREE.Vector3(0,1,0), (SimRate * SECONDS_DAY) * 360 * t * PI/180);
+				var periodSolar = (SimRate * SECONDS_YEAR) * SIMULATION_Time * TAU;
 				var offset = new THREE.Vector3().subVectors(t3cameraModel.position, objEarth.position);
 				objEarth.position.set(EARTHToSUN*cos(periodSolar), 0, 0.8*EARTHToSUN*sin(periodSolar));
 				t3CamControlsModel.target.copy(objEarth.position);
 				t3cameraModel.position.addVectors(objEarth.position, offset);
 				lightMain.position.copy(offset);
 				//lightMain.position.multiplyScalar(-1);
-				var periodLunar = -(SIMULATION_RATE * SECONDS_LUNAR) * SIMULATION_Time * TAU;
+				var periodLunar = -(SimRate * SECONDS_LUNAR) * SIMULATION_Time * TAU;
 				offset = new THREE.Vector3(EARTHToMoon * cos(periodLunar), 0, EARTHToMoon * sin(periodLunar));
 				offset.applyMatrix4(new THREE.Matrix4().makeRotationX(-22.5 * PI/180));
 				offset.add(objEarth.position);
