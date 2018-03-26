@@ -58,7 +58,7 @@
 				t3jsRender.setSize(szWin.width, szWin.height);
 				t3jsRender.autoClear = false;
 				t3sceneMain = new THREE.Scene();
-				t3cameraModel = new THREE.PerspectiveCamera(75, 1, 1e-3, 1e20);
+				t3cameraModel = new THREE.PerspectiveCamera(75, 1, 1e-4, 1e20);
 				t3cameraView = new THREE.PerspectiveCamera(50, 1, 1e-2, 1e14);
 				UpdateCameraBounds();
 				t3cameraMain = new THREE.ArrayCamera([t3cameraModel, t3cameraView]);
@@ -70,22 +70,24 @@
 				lightMain = new THREE.DirectionalLight("#FFFFFF", 1);
 				lightMain.position.set(100, 100, 100);
 				t3sceneMain.add(lightMain);
-				var geometrySphere = new THREE.SphereBufferGeometry(1, 64, 64);
+				var geometrySphere = new THREE.SphereBufferGeometry(1, 48, 48);
+				var geometryWireSphere = new THREE.SphereBufferGeometry(1, 48, 48);
 				var material = new THREE.MeshLambertMaterial({color: "#0000FF", side:THREE.DoubleSide});
 				objEarth = new THREE.Mesh(geometrySphere, material);
 				objEarth.rotateX(-22.5 * PI/180);
 				objEarth.scale.multiplyScalar(EARTH_RADIUS);
 				objEarth.updateMatrix();
 				t3sceneMain.add(objEarth);
-				geometry = new THREE.EdgesGeometry(geometrySphere);
-				material = new THREE.LineBasicMaterial({ color: "#000000", linewidth: 2, transparent: true, opacity: 0.5 });
+				geometry = new THREE.EdgesGeometry(geometryWireSphere);
+				material = new THREE.LineBasicMaterial({ color:"#FFFFFF", linewidth: 4 });
 				objEarth_wireframe = new THREE.LineSegments(geometry, material);
+				//objEarth_wireframe.scale.multiplyScalar(1.005);
 				objEarth.add(objEarth_wireframe);
 				geometry = new THREE.Geometry();
 				geometry.vertices.push(new THREE.Vector3(0,-EARTHToPolaris,0)); 
 				geometry.vertices.push(new THREE.Vector3(0,0,0));
 				geometry.vertices.push(new THREE.Vector3(0, EARTHToPolaris,0));
-				material = new THREE.LineBasicMaterial({color:"#FFCC00", linewidth: 2});
+				material = new THREE.LineBasicMaterial({ color:"#FFCC00", linewidth: 4 });
 				var objEarth_Axis = new THREE.Line(geometry, material);
 				objEarth.add(objEarth_Axis);
 				var geometryStars = new THREE.Geometry();
@@ -105,13 +107,13 @@
 					new THREE.PointsMaterial({ color: "#FFFFFF", sizeAttenuation: false, size: 2 }));
 				t3sceneMain.add(particlesStars);
 				geometry = new THREE.EdgesGeometry(geometrySphere);
-				material = new THREE.LineBasicMaterial({ color: "#FFFF40", linewidth: 4});
+				material = new THREE.LineBasicMaterial({ color: "#FFFF40", linewidth: 4 });
 				objSun = new THREE.LineSegments(geometry, material);
 				objSun.scale.multiplyScalar(SUN_RADIUS);
 				objSun.updateMatrix();
 				t3sceneMain.add(objSun);
 				geometry = new THREE.EdgesGeometry(geometrySphere);
-				material = new THREE.LineBasicMaterial({ color: "#808080", linewidth: 2});
+				material = new THREE.LineBasicMaterial({ color: "#808080", linewidth: 4 });
 				objMoon = new THREE.LineSegments(geometry, material);
 				objMoon.scale.multiplyScalar(MOON_RADIUS);
 				objMoon.updateMatrix();
@@ -184,7 +186,7 @@
 							var diffdist = (diffmid.X ** 2 + diffmid.Y ** 2) ** 0.5;
 							if (diffdist <= (area.Width+area.Height)*0.25 * (4 / 5)) {
 								t3cameraView.rotateX(16 * mouseMove.Y * t * PI / 180);
-								t3cameraView.rotateY(16 * mouseMove.X * t * PI / 180);
+								t3cameraView.rotateY(-16 * mouseMove.X * t * PI / 180);
 							} else {
 								var angP = Math.atan2(mousePrev.Y - area.MidY, mousePrev.X - area.MidX);
 								angP = THREE.lVal(angP, Math.PI*2, true);
@@ -217,10 +219,11 @@
 				animate();
 				background("#080402");
 				t3jsRender.clear();
-				SetCameraViewport(t3jsRender, t3cameraView);
-				t3jsRender.render(t3sceneMain, t3cameraView);
 				SetCameraViewport(t3jsRender, t3cameraModel);
 				t3jsRender.render(t3sceneMain, t3cameraModel);
+				lightMain.position.copy(t3cameraView.position);
+				SetCameraViewport(t3jsRender, t3cameraView);
+				t3jsRender.render(t3sceneMain, t3cameraView);
 				//t3jsRender.render(t3sceneMain, t3cameraMain);
 			}
 
