@@ -24,14 +24,14 @@
 			var SECONDS_YEAR = SECONDS_DAY/364.25;
 			var SECONDS_SEASON = SECONDS_YEAR*4;
 			var unitsSECOND = {
-				"Seconds" : 1,
-				"Minutes" : 1/SECONDS_MINUTE,
-				"Hours" : 1/SECONDS_HOUR,
-				"Days" : 1/SECONDS_DAY,
-				"Weeks" : 1/SECONDS_WEEK,
-				"Lunars" : 1/SECONDS_LUNAR,
-				"Seasons" : 1/SECONDS_SEASON,
-				"Years" : 1/SECONDS_YEAR
+				"Second" : 1,
+				"Minute" : 1/SECONDS_MINUTE,
+				"Hour" : 1/SECONDS_HOUR,
+				"Day" : 1/SECONDS_DAY,
+				"Week" : 1/SECONDS_WEEK,
+				"Lunar" : 1/SECONDS_LUNAR,
+				"Season" : 1/SECONDS_SEASON,
+				"Year" : 1/SECONDS_YEAR
 			}
 			var SIMULATION_VALUE = 1;
 			var SIMULATION_UNIT = 1 / SECONDS_HOUR;
@@ -76,8 +76,8 @@
 				t3jsRender.setSize(szWin.width, szWin.height);
 				t3jsRender.autoClear = false;
 				t3sceneMain = new THREE.Scene();
-				t3cameraModel = new THREE.PerspectiveCamera(75, 1, 1e-4, 1e20);
-				t3cameraView = new THREE.PerspectiveCamera(50, 1, 1e-2, 1e14);
+				t3cameraModel = new THREE.PerspectiveCamera(75, 1, 1e-4, 1e16);
+				t3cameraView = new THREE.PerspectiveCamera(50, 1, 1e-6, 1e9);
 				UpdateCameraBounds();
 				t3cameraMain = new THREE.ArrayCamera([t3cameraModel, t3cameraView]);
 				t3CamControlsModel = new THREE.TrackballControls(t3cameraModel);	
@@ -97,14 +97,14 @@
 				objEarth.updateMatrix();
 				t3sceneMain.add(objEarth);
 				geometry = new THREE.EdgesGeometry(geometryWireSphere);
-				material = new THREE.LineBasicMaterial({ color:"#FFFFFF", linewidth: 4 });
+				material = new THREE.LineBasicMaterial({ color:"#8080FF", linewidth: 4 });
 				objEarth_wireframe = new THREE.LineSegments(geometry, material);
 				//objEarth_wireframe.scale.multiplyScalar(1.005);
 				objEarth.add(objEarth_wireframe);
 				geometry = new THREE.Geometry();
-				geometry.vertices.push(new THREE.Vector3(0,-EARTHToPolaris,0)); 
+				geometry.vertices.push(new THREE.Vector3(0,-1.01*EARTHToPolaris / EARTH_RADIUS,0)); 
 				geometry.vertices.push(new THREE.Vector3(0,0,0));
-				geometry.vertices.push(new THREE.Vector3(0, EARTHToPolaris,0));
+				geometry.vertices.push(new THREE.Vector3(0, 1.01*EARTHToPolaris / EARTH_RADIUS,0));
 				material = new THREE.LineBasicMaterial({ color:"#FFCC00", linewidth: 4 });
 				var objEarth_Axis = new THREE.Line(geometry, material);
 				objEarth.add(objEarth_Axis);
@@ -115,11 +115,11 @@
 					vertex.y = (random(2) - 1);
 					vertex.z = (random(2) - 1);
 					vertex.normalize();
-					vertex.multiplyScalar(random(EARTHToPolaris) + EARTHToNearStar);
+					vertex.multiplyScalar(random(EARTHToPolaris - EARTHToNearStar) + EARTHToNearStar);
 					geometryStars.vertices.push(vertex);
 				}
 				var vecStarMain = new THREE.Vector3(0, EARTHToPolaris, 0);
-				vecStarMain.applyMatrix4(objEarth.matrix);
+				vecStarMain.applyMatrix3(objEarth.matrix);
 				geometryStars.vertices.push(vecStarMain);
 				particlesStars = new THREE.Points(geometryStars,
 					new THREE.PointsMaterial({ color: "#FFFFFF", sizeAttenuation: false, size: 2 }));
@@ -137,10 +137,11 @@
 				objMoon.updateMatrix();
 				t3sceneMain.add(objMoon);
 				t3meshCamera = new THREE.CameraHelper(t3cameraView);
+				//t3meshCamera.scale.multiplyScalar(1e6);
 				t3sceneMain.add(t3meshCamera);
 				objEarth.add(t3cameraView);
 				t3Raycaster = new THREE.Raycaster();
-				t3Raycaster.params.Points.threshold = 500;
+				t3Raycaster.params.Points.threshold = 1000;
 				var guiParams = {"One Second" : SIMULATION_VALUE, "Time Unit" : SIMULATION_UNIT};
 				var guiMain = new dat.GUI();
 				var guiMain_SimRate = guiMain.addFolder("Simulation Rate");
@@ -225,7 +226,7 @@
 					}
 				}
 				t3CamControlsModel.update();
-				t3meshCamera.update();
+				//t3meshCamera.update();
 				mouseMove = {X:0, Y:0};
 
 				pt = tn;
