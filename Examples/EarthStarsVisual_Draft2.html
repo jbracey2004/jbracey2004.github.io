@@ -186,7 +186,11 @@
 						if (mouseIsPressed) {
 							objEarth.updateMatrix();
 							var pos = intersects[0].point;
-							pos.multiplyScalar(1.000001);
+							var norm = intersects[0].face.normal;
+							norm.applyMatrix4(objEarth.matrixWorld);
+							norm.sub(objEarth.position);
+							norm.multiplyScalar(0.001);
+							pos.add(norm);
 							var matx = new THREE.Matrix4().getInverse(objEarth.matrixWorld);
 							pos.applyMatrix4(matx);
 							t3cameraView.position.copy(pos);
