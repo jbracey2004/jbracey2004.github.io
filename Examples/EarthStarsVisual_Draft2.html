@@ -165,8 +165,6 @@
 				objEarth.position.set(EARTHToSUN*cos(periodSolar), 0, 0.8*EARTHToSUN*sin(periodSolar));
 				t3CamControlsModel.target.copy(objEarth.position);
 				t3cameraModel.position.addVectors(objEarth.position, offset);
-				lightMain.position.copy(offset);
-				//lightMain.position.multiplyScalar(-1);
 				var periodLunar = -(SimRate * SECONDS_LUNAR) * SIMULATION_Time * TAU;
 				offset = new THREE.Vector3(EARTHToMoon * cos(periodLunar), 0, EARTHToMoon * sin(periodLunar));
 				offset.applyMatrix4(new THREE.Matrix4().makeRotationX(-22.5 * PI/180));
@@ -229,6 +227,8 @@
 						}
 					}
 				}
+				t3cameraView.matrixWorld.extractBasis(new THREE.Vector3(), new THREE.Vector3(), offset);
+				lightMain.position.copy(offset);
 				t3CamControlsModel.update();
 				//t3meshCamera.update();
 				mouseMove = {X:0, Y:0};
@@ -252,7 +252,6 @@
 				t3jsRender.clear();
 				SetCameraViewport(t3jsRender, t3cameraModel);
 				t3jsRender.render(t3sceneMain, t3cameraModel);
-				lightMain.position.copy(t3cameraView.position);
 				SetCameraViewport(t3jsRender, t3cameraView);
 				t3jsRender.render(t3sceneMain, t3cameraView);
 				//t3jsRender.render(t3sceneMain, t3cameraMain);
