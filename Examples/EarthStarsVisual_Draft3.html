@@ -70,20 +70,20 @@
 				pixelDensity(1);
 				t3jsRender = new THREE.WebGLRenderer({ canvas: canvasMain, 
 														antialias: true,
-														logarithmicDepthBuffer: true, 
+														logarithmicDepthBuffer: false, 
 														preserveDrawingBuffer: true });
 				t3jsRender.setPixelRatio( window.devicePixelRatio );
 				t3jsRender.setSize(szWin.width, szWin.height);
 				t3jsRender.autoClear = false;
 				t3sceneMain = new THREE.Scene();
-				t3cameraModel = new THREE.PerspectiveCamera(75, 1, 1e-4, 1e16);
-				t3cameraView = new THREE.PerspectiveCamera(50, 1, 1e-6, 1e9);
+				t3cameraModel = new THREE.PerspectiveCamera(75, 1, 1e-4, 1e10);
+				t3cameraView = new THREE.PerspectiveCamera(50, 1, 1e-6, 1e6);
 				UpdateCameraBounds();
 				t3cameraMain = new THREE.ArrayCamera([t3cameraModel, t3cameraView]);
 				t3CamControlsModel = new THREE.TrackballControls(t3cameraModel);	
 				t3cameraModel.position.set(4 * EARTH_RADIUS, 0, 0);
 				t3cameraModel.lookAt(new THREE.Vector3(0, 0, 0));
-				t3cameraView.position.set(0, 0, 0);
+				t3cameraView.position.set(0, 0.001, 0);
 				t3cameraView.lookAt(new THREE.Vector3(0, 1.01, 1));
 				lightMain = new THREE.DirectionalLight("#FFFFFF", 1);
 				lightMain.position.set(100, 100, 100);
@@ -101,7 +101,6 @@
 				//objEarth_wireframe.scale.multiplyScalar(1.005);
 				objEarth.add(objEarth_wireframe);
 				geometry = new THREE.Geometry();
-				geometry.vertices.push(new THREE.Vector3(0,-1.01*EARTHToPolaris / EARTH_RADIUS,0)); 
 				geometry.vertices.push(new THREE.Vector3(0,0,0));
 				geometry.vertices.push(new THREE.Vector3(0, 1.01*EARTHToPolaris / EARTH_RADIUS,0));
 				material = new THREE.LineBasicMaterial({ color:"#FFCC00", linewidth: 4 });
