@@ -34,7 +34,7 @@
 				paddle.immovable = true;
 
 				initWalls();
-				setupWalls();
+				//setupWalls();
 
 				bricks = new Group();
 
@@ -47,7 +47,7 @@
 					brick.shapeColor = "#00FF00";
 					bricks.add(brick);
 					brick.immovable = true;
-					}
+				}
 
 				//the easiest way to avoid pesky multiple collision is to
 				//have the ball bigger than the bricks
@@ -62,20 +62,20 @@
             }
 
 			function initWalls() {
-				wallTop = createSprite(windowWidth / 2, -WALL_THICKNESS / 2, windowHeight + WALL_THICKNESS * 2, WALL_THICKNESS);
+				wallTop = createSprite(width / 2, -WALL_THICKNESS / 2, width + WALL_THICKNESS * 2, WALL_THICKNESS);
 				wallTop.immovable = true;
-				wallBottom = createSprite(windowWidth / 2, windowHeight + WALL_THICKNESS / 2, windowWidth + WALL_THICKNESS * 2, WALL_THICKNESS);
+				wallBottom = createSprite(width / 2, height + WALL_THICKNESS / 2, width + WALL_THICKNESS * 2, WALL_THICKNESS);
 				wallBottom.immovable = true;
-				wallLeft = createSprite(-WALL_THICKNESS / 2, windowHeight / 2, WALL_THICKNESS, windowHeight);
+				wallLeft = createSprite(-WALL_THICKNESS / 2, height / 2, WALL_THICKNESS, height);
 				wallLeft.immovable = true;
-				wallRight = createSprite(windowWidth + WALL_THICKNESS / 2, windowHeight / 2, WALL_THICKNESS, windowHeight);
+				wallRight = createSprite(width + WALL_THICKNESS / 2, height / 2, WALL_THICKNESS, height);
 				wallRight.immovable = true;
 			}
 			function setupWalls() {
-				wallTop.position = new p5.Vector(windowWidth / 2, -WALL_THICKNESS / 2);
-				wallBottom.position = new p5.Vector(windowWidth / 2, windowHeight + WALL_THICKNESS / 2);
-				wallLeft.position = new p5.Vector(-WALL_THICKNESS / 2, windowHeight / 2);
-				wallRight.position = new p5.Vector(windowWidth + WALL_THICKNESS / 2, windowHeight / 2);
+				wallTop.position = new p5.Vector(width / 2, -WALL_THICKNESS / 2);
+				wallBottom.position = new p5.Vector(width / 2, height + WALL_THICKNESS / 2);
+				wallLeft.position = new p5.Vector(-WALL_THICKNESS / 2, height / 2);
+				wallRight.position = new p5.Vector(width + WALL_THICKNESS / 2, height / 2);
 			}
 
             function draw() {
@@ -117,9 +117,9 @@
 
             function windowResized() {
                 resizeCanvas(windowWidth, windowHeight);
-				canvasMain.width = canvasMain.clientWidth;
-				canvasMain.height = canvasMain.clientHeight;
-				setupWalls();
+				//canvasMain.width = windowWidth;
+				//canvasMain.height = windowHeight;
+				//setupWalls();
                 console.log({
                     Width: windowWidth,
                     Height: windowHeight

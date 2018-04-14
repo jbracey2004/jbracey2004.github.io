@@ -1,5 +1,6 @@
 function plotArea2D(parent)
 {
+	this.__proto__ = plotArea2D.__proto__;
 	this.ParentElement = parent;
 	this.uvX = 0;
 	this.uvY = 0;

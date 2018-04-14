@@ -6,7 +6,10 @@
 		<meta name="viewport" content="width=device-width, height=device-height, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 		<title>Earth - Stars Visual - Representing Scale</title>
 		<script src="../libref/p5/p5.min.js"></script>
+		<script src="../libref/p5/p5.dom.min.js"></script>
 		<script src="../libref/utility.js"></script>
+		<script src="../libref/vector.js"></script>
+		<script src="../libref/stick.js"></script>
 		<script src="../libref/datguijs/dat.gui.min.js"></script>
 		<script src="../libref/threejs/three.min.js"></script>
 		<script src="../libref/threejs/OrbitControls.js"></script>
@@ -66,7 +69,7 @@
 				var szWin = sizeWindow();
 				console.log(szWin);
 				p5objCanvas = createCanvas(szWin.width, szWin.height, WEBGL);
-				canvasMain = document.getElementById(p5objCanvas.id());
+				canvasMain = p5objCanvas.elt;
 				pixelDensity(1);
 				t3jsRender = new THREE.WebGLRenderer({ canvas: canvasMain, 
 														antialias: true,
@@ -343,7 +346,7 @@
 
 	</head>
 
-	<body scrolling="no" style="overflow: hidden;">
+	<body scrolling="no" style="overflow: hidden; display: block">
 	</body>
 
 </html>
