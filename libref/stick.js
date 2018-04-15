@@ -112,8 +112,6 @@ controlStick.prototype.Update = function () {
 	this.Element.style.top = area.Min.Y.toString()+"px";
 	this.Element.style.width = area.Size.Width.toString()+"px";
 	this.Element.style.height = area.Size.Height.toString()+"px";
-	this.Element.left = this.Element.style.left;
-	this.Element.top = this.Element.style.top;
-	this.DrawContext.fillStyle = "#00008040";
+	this.DrawContext.fillStyle = "#00800040";
 	this.DrawContext.fillRect(0, 0, this.Element.width, this.Element.height);
 }

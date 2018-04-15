@@ -1,7 +1,6 @@
 var SplineEndBehaviour = {Halt: 0, Loop: 1, ContinueTan: 2, ContinuePattern: 3};
 function splineNode(setPos, setTangentPre, setTangentPost)
 {
-	this.__proto__ = splineNode.__proto__;
 	this.Pos = (typeof(setPos) === 'undefined') ? new vecN() : setPos;
 	this.TanPre = (typeof(setTangentPre) === 'undefined') ? new vecN() : setTangentPre;
 	this.TanPost = (typeof(settangentPost) === 'undefined') ? new vecN() : setTangentPost;
@@ -9,7 +8,6 @@ function splineNode(setPos, setTangentPre, setTangentPost)
 
 function spline(setNodes)
 {
-	this.__proto__ = spline.__proto__;
 	this.nodes = [];
 	if (!(typeof (setNodes) === 'undefined')) {
 		for (var i = 0; i < setNodes.length; i++) { this.nodes.push(setNodes[i]); }

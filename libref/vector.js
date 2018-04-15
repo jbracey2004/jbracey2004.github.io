@@ -3,7 +3,6 @@ var v_Y = 1;
 var v_Z = 2;
 var v_W = 3;
 function vecN() {
-	this.__proto__ = vecN.__proto__;
 	this.components = new Array(...arguments);
 }
 function vec2(_x, _y) { vecN.call(this, _x, _y); }
