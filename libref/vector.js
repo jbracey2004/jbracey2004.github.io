@@ -189,7 +189,6 @@ vec3.cross = function (a, b) {
 }
 
 function boxN(_min, _max) {
-	this.__proto__ = boxN.__proto__;
 	if(typeof(_min) === 'undefined') {this.Min = new vecN();} else {this.Min = _min;}
 	if(typeof(_max) === 'undefined') {this.Max = new vecN();} else {this.Max = _max;}
 }
