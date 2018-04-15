@@ -67,7 +67,6 @@
 				console.log(szWin);
 				p5objCanvas = createCanvas(szWin.width, szWin.height, WEBGL);
 				canvasMain = p5objCanvas.elt;
-				canvasMain.setAttribute("position", "relative");
 				pixelDensity(1);
 				t3jsRender = new THREE.WebGLRenderer({ canvas: canvasMain, 
 														antialias: true,
