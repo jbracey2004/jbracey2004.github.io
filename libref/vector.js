@@ -3,6 +3,7 @@ var v_Y = 1;
 var v_Z = 2;
 var v_W = 3;
 function vecN() {
+	this.__proto__ = vecN.__proto__;
 	this.components = new Array(...arguments);
 }
 function vec2(_x, _y) { vecN.call(this, _x, _y); }
@@ -189,6 +190,7 @@ vec3.cross = function (a, b) {
 }
 
 function boxN(_min, _max) {
+	this.__proto__ = boxN.__proto__;
 	if(typeof(_min) === 'undefined') {this.Min = new vecN();} else {this.Min = _min;}
 	if(typeof(_max) === 'undefined') {this.Max = new vecN();} else {this.Max = _max;}
 }
