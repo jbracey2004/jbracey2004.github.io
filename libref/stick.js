@@ -6,7 +6,7 @@ function RectToPolar(pos) {
 	return { Dist: sqrt(pos.X * pos.X + pos.Y * pos.Y), Ang: retAng };
 }
 function controlStick(parent) {
-	var ref = this;
+	var ref = this;	
 	this.ParentElement = parent;
 	this.uvX = 0;
 	this.uvY = 0;
@@ -21,41 +21,46 @@ function controlStick(parent) {
 	document.body.appendChild(this.Element);
 	var objStyle = this.Element.style;
 	objStyle["position"] = "absolute";
+	objStyle["pointer-events"] = "all";
 	this.DrawContext = this.Element.getContext("2d");
 	this.Element.width = 256;
 	this.Element.height = 256;
-	this.Element.host = ref;
-	this.Element.addEventListener("pointerdown", controlStick.onPointerStart, false);
-	window.addEventListener("resize", function() {ref.Update();});
+	function onPointerStart(e) {
+		ref.Element.style["pointer-events"] = "none"
+		var uvPos = { X: e.layerX / ref.Width(), Y: e.layerY / ref.Height() };
+		var posStick = { X: 2 * uvPos.X - 1, Y: 2 * uvPos.Y - 1 };
+		ref.Value = new vec2(posStick.X, posStick.Y);
+		ref.ParentElement.addEventListener("pointermove", onPointerMove, false);
+		ref.ParentElement.addEventListener("pointerup", onPointerRelease, true);
+		ref.ParentElement.addEventListener("pointerleave", onPointerRelease, true);
+		ref.Update();
+		e.preventDefault();
+	}
+	function onPointerMove(e) {
+		var area = ref.ClientArea();
+		var uvPos = { X: (e.layerX - area.Min.X) / area.Size.Width, Y: (e.layerY - area.Min.Y) / area.Size.Height };
+		uvPos.X = Math.max(Math.min(uvPos.X, 1), 0);
+		uvPos.Y = Math.max(Math.min(uvPos.Y, 1), 0);
+		var posStick = { X: 2 * uvPos.X - 1, Y: 2 * uvPos.Y - 1 };
+		ref.Value = new vec2(posStick.X, posStick.Y);
+		ref.Update();
+		e.preventDefault();
+	}
+	function onPointerRelease(e) {
+		ref.Value = new vec2(0, 0);
+		ref.ParentElement.removeEventListener("pointermove", onPointerMove);
+		ref.ParentElement.removeEventListener("pointerup", onPointerRelease);
+		ref.ParentElement.removeEventListener("pointerleave", onPointerRelease);
+		ref.Element.style["pointer-events"] = "all"
+		ref.Update();
+		e.preventDefault();
+	}
+	function onParentResize(e) {
+		ref.Update();
+	}
+	this.Element.addEventListener("pointerdown", onPointerStart);
+	window.addEventListener("resize", onParentResize);
 	this.Update();
-}
-controlStick.onPointerStart = function (e) {
-	var host = this.host;
-	var uvPos = { X: e.layerX / host.Width(), Y: e.layerY / host.Height() };
-	var posStick = { X: 2 * uvPos.X - 1, Y: 2 * uvPos.Y - 1 };
-	host.Value = new vec2(posStick.X, posStick.Y);
-	this.addEventListener("pointermove", controlStick.onPointerMove, false);
-	this.addEventListener("pointerup", controlStick.onPointerRelease, true);
-	this.addEventListener("pointerleave", controlStick.onPointerRelease, true);
-	host.Update();
-	e.preventDefault();
-}
-controlStick.onPointerMove = function (e) {
-	var host = this.host;
-	var uvPos = { X: e.layerX / host.Width(), Y: e.layerY / host.Height() };
-	var posStick = { X: 2 * uvPos.X - 1, Y: 2 * uvPos.Y - 1 };
-	host.Value = new vec2(posStick.X, posStick.Y);
-	host.Update();
-	e.preventDefault();
-}
-controlStick.onPointerRelease = function (e) {
-	var host = this.host;
-	host.Value = new vec2(0, 0);
-	this.removeEventListener("pointermove", controlStick.onPointerMove);
-	this.removeEventListener("pointerup", controlStick.onPointerRelease);
-	this.removeEventListener("pointerleave", controlStick.onPointerRelease);
-	host.Update();
-	e.preventDefault();
 }
 controlStick.prototype.X = function (setX) {
 	if (typeof (setX) === 'undefined') {
