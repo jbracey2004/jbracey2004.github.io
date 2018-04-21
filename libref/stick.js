@@ -17,33 +17,28 @@ function controlStick(parent) {
 	this.BackgroundColor = "#00000000";
 	this.BaseColor = "#404040FF";
 	this.StickColor = "#FFFFFF80"
-	this.Element = document.createElement("canvas");
-	document.body.appendChild(this.Element);
-	var objStyle = this.Element.style;
-	objStyle["position"] = "absolute";
-	objStyle["pointer-events"] = "all";
-	this.DrawContext = this.Element.getContext("2d");
-	this.Element.width = 256;
-	this.Element.height = 256;
 	function onPointerStart(e) {
-		ref.Element.style["pointer-events"] = "none"
-		var uvPos = { X: e.layerX / ref.Width(), Y: e.layerY / ref.Height() };
-		var posStick = { X: 2 * uvPos.X - 1, Y: 2 * uvPos.Y - 1 };
-		ref.Value = new vec2(posStick.X, posStick.Y);
-		ref.ParentElement.addEventListener("pointermove", onPointerMove, false);
-		ref.ParentElement.addEventListener("pointerup", onPointerRelease, true);
-		ref.ParentElement.addEventListener("pointerleave", onPointerRelease, true);
-		ref.Update();
-		e.preventDefault();
+		var area = ref.ClientArea();
+		var posMouse = {X:e.clientX - this.offsetLeft, Y:e.clientY - this.offsetTop};
+		if ((posMouse.X >= area.Min.X && posMouse.X <= area.Max.X) &&
+			(posMouse.Y >= area.Min.Y && posMouse.Y <= area.Max.Y)) {
+			var uvPos = { X: (posMouse.X - area.Min.X) / area.Size.Width, Y: (posMouse.Y - area.Min.Y) / area.Size.Height };
+			var posStick = { X: 2 * uvPos.X - 1, Y: 2 * uvPos.Y - 1 };
+			ref.Value = new vec2(posStick.X, posStick.Y);
+			ref.ParentElement.addEventListener("pointermove", onPointerMove, false);
+			ref.ParentElement.addEventListener("pointerup", onPointerRelease, true);
+			ref.ParentElement.addEventListener("pointerleave", onPointerRelease, true);
+			e.preventDefault();
+		}
 	}
 	function onPointerMove(e) {
 		var area = ref.ClientArea();
-		var uvPos = { X: (e.layerX - area.Min.X) / area.Size.Width, Y: (e.layerY - area.Min.Y) / area.Size.Height };
+		var posMouse = { X: e.clientX - this.offsetLeft, Y: e.clientY - this.offsetTop };
+		var uvPos = { X: (posMouse.X - area.Min.X) / area.Size.Width, Y: (posMouse.Y - area.Min.Y) / area.Size.Height };
 		uvPos.X = Math.max(Math.min(uvPos.X, 1), 0);
 		uvPos.Y = Math.max(Math.min(uvPos.Y, 1), 0);
 		var posStick = { X: 2 * uvPos.X - 1, Y: 2 * uvPos.Y - 1 };
 		ref.Value = new vec2(posStick.X, posStick.Y);
-		ref.Update();
 		e.preventDefault();
 	}
 	function onPointerRelease(e) {
@@ -51,16 +46,9 @@ function controlStick(parent) {
 		ref.ParentElement.removeEventListener("pointermove", onPointerMove);
 		ref.ParentElement.removeEventListener("pointerup", onPointerRelease);
 		ref.ParentElement.removeEventListener("pointerleave", onPointerRelease);
-		ref.Element.style["pointer-events"] = "all"
-		ref.Update();
 		e.preventDefault();
 	}
-	function onParentResize(e) {
-		ref.Update();
-	}
-	this.Element.addEventListener("pointerdown", onPointerStart);
-	window.addEventListener("resize", onParentResize);
-	this.Update();
+	this.ParentElement.addEventListener("pointerdown", onPointerStart);
 }
 controlStick.prototype.X = function (setX) {
 	if (typeof (setX) === 'undefined') {
@@ -167,24 +155,14 @@ controlStick.prototype.uvArea = function (setArea) {
 		return { uvMin: this.uvPos(), uvSize: this.uvSize() };
 	}
 }
-controlStick.prototype.Update = function () {
+controlStick.prototype.Render = function() {
 	var area = this.ClientArea();
-	var posStick = {X:0.5 + 0.25*this.Value.X , Y:0.5 + 0.25*this.Value.Y};
-	this.Element.style.left = area.Min.X.toString()+"px";
-	this.Element.style.top = area.Min.Y.toString()+"px";
-	this.Element.style.width = area.Size.Width.toString()+"px";
-	this.Element.style.height = area.Size.Height.toString()+"px";
-	this.DrawContext.clearRect(0, 0, this.Element.width, this.Element.height);
-	this.DrawContext.fillStyle = this.BackgroundColor;
-	this.DrawContext.fillRect(0, 0, this.Element.width, this.Element.height);
-	this.DrawContext.fillStyle = this.BaseColor;
-	this.DrawContext.beginPath();
-	this.DrawContext.arc(this.Element.width * 0.5, this.Element.height * 0.5, this.Element.width * 0.5, 0 , 2 * Math.PI);
-	this.DrawContext.stroke();
-	this.DrawContext.fill();
-	this.DrawContext.fillStyle = this.StickColor;
-	this.DrawContext.beginPath();
-	this.DrawContext.arc(posStick.X * this.Element.width , posStick.Y * this.Element.height, this.Element.width * 0.25, 0, 2 * Math.PI);
-	this.DrawContext.stroke();
-	this.DrawContext.fill();
+	var posStick = { X: 0.5 + 0.25 * this.Value.X, Y: 0.5 + 0.25 * this.Value.Y };
+	noStroke();
+	fill(this.BackgroundColor);
+	rect(area.Min.X, area.Min.Y, area.Size.Width, area.Size.Height);
+	fill(this.BaseColor);
+	ellipse(area.Min.X + (area.Size.Width * 0.5), area.Min.Y + (area.Size.Height * 0.5), area.Size.Width, area.Size.Height);
+	fill(this.StickColor);
+	ellipse(area.Min.X + (posStick.X * area.Size.Width), area.Min.Y + (posStick.Y * area.Size.Height), area.Size.Width * 0.5, area.Size.Height * 0.5);
 }

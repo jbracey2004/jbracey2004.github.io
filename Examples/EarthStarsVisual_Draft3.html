@@ -7,6 +7,8 @@
 		<title>Earth - Stars Visual - Representing Flat Plane</title>
 		<script src="../libref/p5/p5.min.js"></script>
 		<script src="../libref/utility.js"></script>
+		<script src="../libref/vector.js"></script>
+		<script src="../libref/stick.js"></script>
 		<script src="../libref/datguijs/dat.gui.min.js"></script>
 		<script src="../libref/threejs/three.min.js"></script>
 		<script src="../libref/threejs/OrbitControls.js"></script>
@@ -59,6 +61,8 @@
 			var objMoon;
 			var lightMain;
 			var particlesStars;
+			var stickAnalogA;
+			var stickAnalogB;
 			var mouseoverStars = [];
 			var mouseMove = {X:0, Y:0};
 
@@ -148,6 +152,11 @@
 				var guiMain_SimRate_SecUnit = guiMain_SimRate.add(guiParams,"Time Unit", unitsSECOND);
 				guiMain_SimRate_SecEquals.onChange(function (value) { SIMULATION_VALUE = value; });
 				guiMain_SimRate_SecUnit.onChange(function (value) { SIMULATION_UNIT = value; });
+				stickAnalogA = new controlStick(canvasMain);
+				stickAnalogA.uvArea({ Min: { X: 0.85, Y: 0.85 }, Max: { X: 0.95, Y: 0.95 } });
+				stickAnalogB = new controlStick(canvasMain);
+				stickAnalogB.uvArea({ Min: { X: 0.35, Y: 0.85 }, Max: { X: 0.45, Y: 0.95 } });
+				UpdateCameraBounds();
 			}
 
 			function animate() {
@@ -225,7 +234,27 @@
 						}
 					}
 				}
-				t3cameraView.matrixWorld.extractBasis(new THREE.Vector3(), new THREE.Vector3(), offset);
+				objEarth.updateMatrix();
+				t3cameraView.updateMatrix();
+				var matxInvs = new THREE.Matrix4();
+				matxInvs.copy(objEarth.matrixWorld);
+				matxInvs.setPosition(new THREE.Vector3());
+				matxInvs.getInverse(matxInvs);
+				var offsetForward = new THREE.Vector3();
+				var offsetUp = new THREE.Vector3();
+				var offsetRight = new THREE.Vector3();
+				t3cameraView.matrixWorld.extractBasis(offsetRight, offsetUp, offsetForward);
+				var offset = new THREE.Vector3(); offset.copy(offsetForward);
+				offsetForward.normalize(); offsetForward.applyMatrix4(matxInvs); offsetForward.multiplyScalar(stickAnalogB.Value.Y * 1e6 * t);
+				offsetRight.normalize(); offsetRight.applyMatrix4(matxInvs); offsetRight.multiplyScalar(stickAnalogB.Value.X * 1e6 * t);
+				offsetUp.normalize(); offsetUp.applyMatrix4(matxInvs); offsetUp.multiplyScalar(stickAnalogA.Value.Y * -1e6 * t);
+				var vecPosTmp = new THREE.Vector3().copy(t3cameraView.position);
+				vecPosTmp.add(offsetForward);
+				vecPosTmp.add(offsetRight);
+				//vecPosTmp.add(offsetUp);
+				vecPosTmp.z += (stickAnalogA.Value.Y * -0.1 * t);
+				if(vecPosTmp.z <= 1e-6) {vecPosTmp.z = 1e-6;}
+				t3cameraView.position.copy(vecPosTmp);
 				lightMain.position.copy(offset);
 				t3CamControlsModel.update();
 				//t3meshCamera.update();
@@ -245,6 +274,7 @@
 			}
 
 			function draw() {
+				var szWin = sizeWindow();
 				animate();
 				background("#080402");
 				t3jsRender.clear();
@@ -253,6 +283,14 @@
 				SetCameraViewport(t3jsRender, t3cameraView);
 				t3jsRender.render(t3sceneMain, t3cameraView);
 				//t3jsRender.render(t3sceneMain, t3cameraMain);
+				SetCameraViewport(t3jsRender);
+				t3jsRender.clearDepth();
+				rectMode(CORNER);
+				push();
+				translate(-0.5 * szWin.width, -0.5 * szWin.height);
+				stickAnalogA.Render();
+				stickAnalogB.Render();
+				pop();
 			}
 
 			function UpdateCameraBounds() {
@@ -260,9 +298,21 @@
 					if(windowWidth >= windowHeight) {
 						t3cameraModel.bounds = new THREE.Vector4(0, 0, 1 / 3, 1);
 						t3cameraView.bounds = new THREE.Vector4(1 / 3, 0, 2 / 3, 1);
+						if (stickAnalogA) {
+							stickAnalogA.uvArea({ Min: { X: 0.85, Y: 0.85 }, Max: { X: 0.95, Y: 0.95 } });
+						}
+						if (stickAnalogB) {
+							stickAnalogB.uvArea({ Min: { X: 0.35, Y: 0.85 }, Max: { X: 0.45, Y: 0.95 } });
+						}
 					} else {
 						t3cameraModel.bounds = new THREE.Vector4(0, 0, 1, 2/5);
 						t3cameraView.bounds = new THREE.Vector4(0, 2/5, 1, 3/5);
+						if (stickAnalogA) {
+							stickAnalogA.uvArea({ Min: { X: 0.85, Y: 0.875 }, Max: { X: 0.95, Y: 0.95 } });
+						}
+						if (stickAnalogB) {
+							stickAnalogB.uvArea({ Min: { X: 0, Y: 0.875 }, Max: { X: 0.1, Y: 0.95 } });
+						}
 					}
 					t3cameraModel.aspect = areaCameraViewport(t3cameraModel).Aspect;
 					t3cameraView.aspect = areaCameraViewport(t3cameraView).Aspect;
@@ -271,8 +321,13 @@
 				}
 			}
 			function SetCameraViewport(render, cam) {
-				var areaCam = areaCameraViewport(cam);
-				render.setViewport(areaCam.X, areaCam.Y, areaCam.Width, areaCam.Height);
+				if (cam) {
+					var areaCam = areaCameraViewport(cam);
+					render.setViewport(areaCam.X, areaCam.Y, areaCam.Width, areaCam.Height);
+				} else {
+					var szWin = sizeWindow();
+					render.setViewport(0, 0, szWin.width, szWin.height);
+				}
 			}
 			function windowResized() {
 				var szWin = sizeWindow();
