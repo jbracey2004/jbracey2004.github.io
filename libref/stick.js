@@ -35,6 +35,7 @@ function controlStick(parent) {
 		var area = ref.ClientArea();
 		var posMouse = { X: e.clientX - this.offsetLeft, Y: e.clientY - this.offsetTop };
 		var uvPos = { X: (posMouse.X - area.Min.X) / area.Size.Width, Y: (posMouse.Y - area.Min.Y) / area.Size.Height };
+		console.log({m:posMouse, uv:uvPos});
 		uvPos.X = Math.max(Math.min(uvPos.X, 1), 0);
 		uvPos.Y = Math.max(Math.min(uvPos.Y, 1), 0);
 		var posStick = { X: 2 * uvPos.X - 1, Y: 2 * uvPos.Y - 1 };
@@ -50,26 +51,35 @@ function controlStick(parent) {
 	}
 	this.ParentElement.addEventListener("pointerdown", onPointerStart);
 }
+controlStick.prototype.ParentArea = function () 
+{
+	return { 
+		x: this.ParentElement.offsetLeft, 
+		y: this.ParentElement.offsetTop, 
+		w: this.ParentElement.offsetWidth, 
+		h: this.ParentElement.offsetHeight
+	};
+}
 controlStick.prototype.X = function (setX) {
 	if (typeof (setX) === 'undefined') {
-		return this.uvX * this.ParentElement.width;
+		return this.uvX * this.ParentArea().w;
 	}
 	else {
-		this.uvX = setX / this.ParentElement.width;
+		this.uvX = setX / this.ParentArea().w;
 		return { uvX: this.uvX, X: setX };
 	}
 }
 controlStick.prototype.Y = function (setY) {
 	if (typeof (setY) === 'undefined') {
-		return this.uvY * this.ParentElement.height;
+		return this.uvY * this.ParentArea().h;
 	}
 	else {
-		this.uvY = setY / this.ParentElement.height;
+		this.uvY = setY / this.ParentArea().h;
 		return { uvY: this.uvY, Y: setY };
 	}
 }
 controlStick.prototype.Pos = function (setPos) {
-	var areaP = { x: this.ParentElement.offsetLeft, y: this.ParentElement.offsetTop, w: this.ParentElement.width, h: this.ParentElement.height };
+	var areaP = { x: this.ParentArea().x, y:this.ParentArea().y, w: this.ParentArea().w, h: this.ParentArea().h };
 	if (typeof (setPos) === 'undefined') {
 		return { X: areaP.x + this.uvX * areaP.w, Y: areaP.y + this.uvY * areaP.h };
 	}
@@ -91,19 +101,19 @@ controlStick.prototype.uvPos = function (setUVPos) {
 }
 controlStick.prototype.Width = function (setWidth) {
 	if (typeof (setWidth) === 'undefined') {
-		return this.uvWidth * this.ParentElement.width;
+		return this.uvWidth * this.ParentArea().w;
 	}
 	else {
-		this.uvWidth = setWidth / this.ParentElement.width;
+		this.uvWidth = setWidth / this.ParentArea().w;
 		return { uvWidth: this.uvWidth, Width: setWidth };
 	}
 }
 controlStick.prototype.Height = function (setHeight) {
 	if (typeof (setHeight) === 'undefined') {
-		return this.uvHeight * this.ParentElement.height;
+		return this.uvHeight * this.ParentArea().h;
 	}
 	else {
-		this.uvHeight = setHeight / this.ParentElement.height;
+		this.uvHeight = setHeight / this.ParentArea().h;
 		return { uvHeight: this.uvHeight, Width: setHeight };
 	}
 }
@@ -119,11 +129,11 @@ controlStick.prototype.uvSize = function (setUVSize) {
 }
 controlStick.prototype.Size = function (setSize) {
 	if (typeof (setSize) === 'undefined') {
-		return { Width: this.uvWidth * this.ParentElement.width, Height: this.uvHeight * this.ParentElement.height };
+		return { Width: this.uvWidth * this.ParentArea().w, Height: this.uvHeight * this.ParentArea().h };
 	}
 	else {
-		this.uvWidth = setSize.Width / this.ParentElement.width;
-		this.uvHeight = setSize.Height / this.ParentElement.height;
+		this.uvWidth = setSize.Width / this.ParentArea().w;
+		this.uvHeight = setSize.Height / this.ParentArea().h;
 		return { uvSize: { uvW: this.uvWidth, uvH: this.uvHeight }, Size: setSize };
 	}
 }
