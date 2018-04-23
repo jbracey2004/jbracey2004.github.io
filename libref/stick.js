@@ -15,9 +15,8 @@ function controlStick(parent) {
 	this.uvHeight = 1;
 	this.Value = new vec2(0, 0);
 	this.Type = StickType.Analog;
-	this.BackgroundColor = "#00000000";
-	this.BaseColor = "#404040FF";
-	this.StickColor = "#FFFFFF80"
+	this.BaseColor = "#00000010";
+	this.StickColor = "#00000020"
 	function onPointerStart(e) {
 		if(ref.idStartEvent) {return;}
 		var area = ref.ClientArea();
@@ -28,8 +27,8 @@ function controlStick(parent) {
 			var uvPos = { X: (posMouse.X - area.Min.X) / area.Size.Width, Y: (posMouse.Y - area.Min.Y) / area.Size.Height };
 			var posStick = { X: 2 * uvPos.X - 1, Y: 2 * uvPos.Y - 1 };
 			ref.Value = new vec2(posStick.X, posStick.Y);
-			e.preventDefault();
-			e.stopPropagation();
+			//e.preventDefault();
+			//e.stopPropagation();
 		}
 	}
 	function onPointerMove(e) {
@@ -42,14 +41,17 @@ function controlStick(parent) {
 		uvPos.Y = Math.max(Math.min(uvPos.Y, 1), 0);
 		var posStick = { X: 2 * uvPos.X - 1, Y: 2 * uvPos.Y - 1 };
 		ref.Value = new vec2(posStick.X, posStick.Y);
-		e.preventDefault();
-		e.stopPropagation();
+		//e.preventDefault();
+		//e.stopPropagation();
 	}
 	function onPointerRelease(e) {
 		ref.Value = new vec2(0, 0);
 		ref.idStartEvent = null;
-	}	this.ParentElement.addEventListener("pointerdown", onPointerStart, false);	this.ParentElement.addEventListener("pointermove", onPointerMove, false);	this.ParentElement.addEventListener("pointerup", onPointerRelease, false);
-this.ParentElement.addEventListener("pointerleave", onPointerRelease, false);	
+	}	
+	this.ParentElement.addEventListener("pointerdown", onPointerStart, false);	
+	this.ParentElement.addEventListener("pointermove", onPointerMove, false);	
+	this.ParentElement.addEventListener("pointerup", onPointerRelease, false);
+	this.ParentElement.addEventListener("pointerleave", onPointerRelease, false);	
 }
 controlStick.prototype.ParentArea = function () 
 {
@@ -169,8 +171,6 @@ controlStick.prototype.Render = function() {
 	var area = this.ClientArea();
 	var posStick = { X: 0.5 + 0.25 * this.Value.X, Y: 0.5 + 0.25 * this.Value.Y };
 	noStroke();
-	fill(this.BackgroundColor);
-	rect(area.Min.X, area.Min.Y, area.Size.Width, area.Size.Height);
 	fill(this.BaseColor);
 	ellipse(area.Min.X + (area.Size.Width * 0.5), area.Min.Y + (area.Size.Height * 0.5), area.Size.Width, area.Size.Height);
 	fill(this.StickColor);
