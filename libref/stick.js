@@ -6,8 +6,9 @@ function RectToPolar(pos) {
 	return { Dist: sqrt(pos.X * pos.X + pos.Y * pos.Y), Ang: retAng };
 }
 function controlStick(parent) {
-	var ref = this;	
+	var ref = this;
 	this.ParentElement = parent;
+	this.idStartEvent = null;
 	this.uvX = 0;
 	this.uvY = 0;
 	this.uvWidth = 1;
@@ -18,38 +19,37 @@ function controlStick(parent) {
 	this.BaseColor = "#404040FF";
 	this.StickColor = "#FFFFFF80"
 	function onPointerStart(e) {
+		if(ref.idStartEvent) {return;}
 		var area = ref.ClientArea();
 		var posMouse = {X:e.clientX - this.offsetLeft, Y:e.clientY - this.offsetTop};
 		if ((posMouse.X >= area.Min.X && posMouse.X <= area.Max.X) &&
 			(posMouse.Y >= area.Min.Y && posMouse.Y <= area.Max.Y)) {
+			ref.idStartEvent = e;
 			var uvPos = { X: (posMouse.X - area.Min.X) / area.Size.Width, Y: (posMouse.Y - area.Min.Y) / area.Size.Height };
 			var posStick = { X: 2 * uvPos.X - 1, Y: 2 * uvPos.Y - 1 };
 			ref.Value = new vec2(posStick.X, posStick.Y);
-			ref.ParentElement.addEventListener("pointermove", onPointerMove, false);
-			ref.ParentElement.addEventListener("pointerup", onPointerRelease, true);
-			ref.ParentElement.addEventListener("pointerleave", onPointerRelease, true);
 			e.preventDefault();
+			e.stopPropagation();
 		}
 	}
 	function onPointerMove(e) {
+		if(!(ref.idStartEvent)) {return;}
+		if(ref.idStartEvent.pointerId != e.pointerId) {return;}
 		var area = ref.ClientArea();
 		var posMouse = { X: e.clientX - this.offsetLeft, Y: e.clientY - this.offsetTop };
 		var uvPos = { X: (posMouse.X - area.Min.X) / area.Size.Width, Y: (posMouse.Y - area.Min.Y) / area.Size.Height };
-		console.log({m:posMouse, uv:uvPos});
 		uvPos.X = Math.max(Math.min(uvPos.X, 1), 0);
 		uvPos.Y = Math.max(Math.min(uvPos.Y, 1), 0);
 		var posStick = { X: 2 * uvPos.X - 1, Y: 2 * uvPos.Y - 1 };
 		ref.Value = new vec2(posStick.X, posStick.Y);
 		e.preventDefault();
+		e.stopPropagation();
 	}
 	function onPointerRelease(e) {
 		ref.Value = new vec2(0, 0);
-		ref.ParentElement.removeEventListener("pointermove", onPointerMove);
-		ref.ParentElement.removeEventListener("pointerup", onPointerRelease);
-		ref.ParentElement.removeEventListener("pointerleave", onPointerRelease);
-		e.preventDefault();
-	}
-	this.ParentElement.addEventListener("pointerdown", onPointerStart);
+		ref.idStartEvent = null;
+	}	this.ParentElement.addEventListener("pointerdown", onPointerStart, false);	this.ParentElement.addEventListener("pointermove", onPointerMove, false);	this.ParentElement.addEventListener("pointerup", onPointerRelease, false);
+this.ParentElement.addEventListener("pointerleave", onPointerRelease, false);	
 }
 controlStick.prototype.ParentArea = function () 
 {

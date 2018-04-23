@@ -72,6 +72,7 @@
 				console.log(szWin);
 				p5objCanvas = createCanvas(szWin.width, szWin.height, WEBGL);
 				canvasMain = p5objCanvas.elt;
+				canvasMain.style["touch-action"] = "none";
 				pixelDensity(1);
 				t3jsRender = new THREE.WebGLRenderer({ canvas: canvasMain, 
 														antialias: true,
@@ -217,7 +218,7 @@
 							mouseoverStars.push(objIntcpt);
 						}
 					} else {
-						if (mouseIsPressed) {
+						if (mouseIsPressed && !sticksActive([stickAnalogA, stickAnalogB])) {
 							var area = areaCameraViewport(t3cameraView);
 							var diffmid = { X: mouseCurrent.X - area.MidX, Y: mouseCurrent.Y - area.MidY };
 							var diffdist = (diffmid.X ** 2 + diffmid.Y ** 2) ** 0.5;
@@ -273,6 +274,15 @@
 			}
 
 			function touchMove() {
+				return false;
+			}
+			
+			function sticksActive(ary) {
+				for(var stick of ary) {
+					if(stick.idStartEvent) {
+						return true;
+					}
+				}
 				return false;
 			}
 
