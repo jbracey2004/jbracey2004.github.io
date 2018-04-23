@@ -8,7 +8,7 @@ function RectToPolar(pos) {
 function controlStick(parent) {
 	var ref = this;
 	this.ParentElement = parent;
-	this.idStartEvent = null;
+	this.objStartEvent = null;
 	this.uvX = 0;
 	this.uvY = 0;
 	this.uvWidth = 1;
@@ -18,12 +18,12 @@ function controlStick(parent) {
 	this.BaseColor = "#00000010";
 	this.StickColor = "#00000020"
 	function onPointerStart(e) {
-		if(ref.idStartEvent) {return;}
+		if(ref.objStartEvent) {return;}
 		var area = ref.ClientArea();
 		var posMouse = {X:e.clientX - this.offsetLeft, Y:e.clientY - this.offsetTop};
 		if ((posMouse.X >= area.Min.X && posMouse.X <= area.Max.X) &&
 			(posMouse.Y >= area.Min.Y && posMouse.Y <= area.Max.Y)) {
-			ref.idStartEvent = e;
+			ref.objStartEvent = e;
 			var uvPos = { X: (posMouse.X - area.Min.X) / area.Size.Width, Y: (posMouse.Y - area.Min.Y) / area.Size.Height };
 			var posStick = { X: 2 * uvPos.X - 1, Y: 2 * uvPos.Y - 1 };
 			ref.Value = new vec2(posStick.X, posStick.Y);
@@ -32,8 +32,8 @@ function controlStick(parent) {
 		}
 	}
 	function onPointerMove(e) {
-		if(!(ref.idStartEvent)) {return;}
-		if(ref.idStartEvent.pointerId != e.pointerId) {return;}
+		if(!(ref.objStartEvent)) {return;}
+		if(ref.objStartEvent.pointerId != e.pointerId) {return;}
 		var area = ref.ClientArea();
 		var posMouse = { X: e.clientX - this.offsetLeft, Y: e.clientY - this.offsetTop };
 		var uvPos = { X: (posMouse.X - area.Min.X) / area.Size.Width, Y: (posMouse.Y - area.Min.Y) / area.Size.Height };
@@ -45,8 +45,10 @@ function controlStick(parent) {
 		//e.stopPropagation();
 	}
 	function onPointerRelease(e) {
+		if(!(ref.objStartEvent)) {return;}
+		if(ref.objStartEvent.pointerId != e.pointerId) {return;}
 		ref.Value = new vec2(0, 0);
-		ref.idStartEvent = null;
+		ref.objStartEvent = null;
 	}	
 	this.ParentElement.addEventListener("pointerdown", onPointerStart, false);	
 	this.ParentElement.addEventListener("pointermove", onPointerMove, false);	
