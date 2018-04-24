@@ -218,7 +218,7 @@
 							mouseoverStars.push(objIntcpt);
 						}
 					} else {
-						if (mouseIsPressed && !sticksActive([stickAnalogA, stickAnalogB])) {
+						if (mouseIsPressed && !sticksActive(mouseCurrent, [stickAnalogA, stickAnalogB])) {
 							var area = areaCameraViewport(t3cameraView);
 							var diffmid = { X: mouseCurrent.X - area.MidX, Y: mouseCurrent.Y - area.MidY };
 							var diffdist = (diffmid.X ** 2 + diffmid.Y ** 2) ** 0.5;
@@ -277,9 +277,9 @@
 				return false;
 			}
 			
-			function sticksActive(ary) {
+			function sticksActive(vec, ary) {
 				for(var stick of ary) {
-					if(stick.idStartEvent) {
+					if(stick.AreaContainsPoint(vec)) {
 						return true;
 					}
 				}

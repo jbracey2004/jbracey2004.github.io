@@ -169,6 +169,24 @@ controlStick.prototype.uvArea = function (setArea) {
 		return { uvMin: this.uvPos(), uvSize: this.uvSize() };
 	}
 }
+controlStick.prototype.AreaContainsPoint = function(vec) {
+	var area = this.ClientArea();
+	var parea = this.ParentArea();
+	var posMouse = {X:vec.X - parea.x, Y:vec.Y - parea.y};
+	if ((posMouse.X >= area.Min.X && posMouse.X <= area.Max.X) &&
+			(posMouse.Y >= area.Min.Y && posMouse.Y <= area.Max.Y)) {
+			return true;
+		} else {
+			return false;
+	}
+}
+controlStick.prototype.mapPointToUV = function(vec) {
+	var area = this.ClientArea();
+	var parea = this.ParentArea();
+	var posMouse = {X:vec.X - parea.x, Y:vec.Y - parea.y};
+	var uvPos = { X: (posMouse.X - area.Min.X) / area.Size.Width, Y: (posMouse.Y - area.Min.Y) / area.Size.Height };
+	return uvPos;
+}
 controlStick.prototype.Render = function() {
 	var area = this.ClientArea();
 	var posStick = { X: 0.5 + 0.25 * this.Value.X, Y: 0.5 + 0.25 * this.Value.Y };
