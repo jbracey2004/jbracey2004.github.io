@@ -33,7 +33,8 @@
 				var szWin = sizeWindow();
 				console.log(szWin);
 				p5objCanvas = createCanvas(szWin.width, szWin.height, WEBGL);
-				canvasMain = document.getElementById(p5objCanvas.id());
+				canvasMain = p5objCanvas.elt;
+				canvasMain.style["touch-action"] = "none";
 				pixelDensity(1);
 				t3jsRender = new THREE.WebGLRenderer({ canvas: canvasMain, logarithmicDepthBuffer: false, preserveDrawingBuffer: true });
 				t3jsRender.setSize(szWin.width, szWin.height);

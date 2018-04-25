@@ -11,7 +11,8 @@
 			var t3jsRender;
             function setup() {
                 var p5objCanvas = createCanvas(windowWidth, windowHeight, WEBGL);
-				canvasMain = document.getElementById(p5objCanvas.id());
+				canvasMain = p5objCanvas.elt;
+				canvasMain.style["touch-action"] = "none";
 				t3jsRender = new THREE.WebGLRenderer({canvas:canvasMain, preserveDrawingBuffer: true});
             }
 

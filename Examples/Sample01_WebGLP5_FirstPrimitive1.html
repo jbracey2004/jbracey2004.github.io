@@ -9,7 +9,9 @@
 			var pt = 0;
 			var ct = 0;
             function setup() {
-                createCanvas(windowWidth, windowHeight, WEBGL);
+                var p5objCanvas = createCanvas(windowWidth, windowHeight, WEBGL);
+				canvasMain = p5objCanvas.elt;
+				canvasMain.style["touch-action"] = "none";
 				pixelDensity(1);
             }
 

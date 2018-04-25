@@ -50,9 +50,9 @@
 
 			function setup() {
 				var szWin = sizeWindow();
-				console.log(szWin);
 				p5objCanvas = createCanvas(szWin.width, szWin.height);
-				canvasMain = document.getElementById(p5objCanvas.id());
+				canvasMain = p5objCanvas.elt;
+				canvasMain.style["touch-action"] = "none";
 				pixelDensity(1);
 				graphWaveform = new plotArea2D(canvasMain);
 				graphWaveform.uvHeight = 0.3;

@@ -27,7 +27,8 @@
 
             function setup() {
                 var p5objCanvas = createCanvas(windowWidth, windowHeight);
-				canvasMain = document.getElementById(p5objCanvas.id());
+				canvasMain = p5objCanvas.elt;
+				canvasMain.style["touch-action"] = "none";
 				pixelDensity(1);
 
 				paddle = createSprite(width/2, height-50, 100, 10);

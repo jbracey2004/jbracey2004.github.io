@@ -7,7 +7,9 @@
         <script src="../libref/p5/p5.min.js"></script>
         <script>
             function setup() {
-                createCanvas(windowWidth, windowHeight, WEBGL);
+                var p5objCanvas = createCanvas(windowWidth, windowHeight, WEBGL);
+				canvasMain = p5objCanvas.elt;
+				canvasMain.style["touch-action"] = "none";
 				pixelDensity(1);
             }
 

@@ -36,6 +36,7 @@
             function load() 
 			{
                 canvasMain = document.getElementById("canvasMain");
+				canvasMain.style["touch-action"] = "none";
 				gl = canvasMain.getContext("webgl2", { antialias: false });
         		if(!WebGLGood()) 
 				{
