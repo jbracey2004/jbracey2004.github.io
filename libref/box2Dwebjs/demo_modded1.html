@@ -5,10 +5,12 @@
 		<title>Box2dWeb Demo</title>
 	</head>
 	<body onload="init();">
-		<canvas id="canvas" width="800" height="600" style="background-color:#333333;" ></canvas>
+		<canvas id="canvas" style="width: 100%; height: 100%; background-color:#333333; padding: 0" ></canvas>
 	</body>
 	<script type="text/javascript" src="Box2d.min.js"></script>
 	<script type="text/javascript">
+
+		var canvasBuffer;
 		
 		function init() {
 			var   b2Vec2 = Box2D.Common.Math.b2Vec2
@@ -73,7 +75,11 @@
 			
 			//setup debug draw
 			var debugDraw = new b2DebugDraw();
-			debugDraw.SetSprite(document.getElementById("canvas").getContext("2d"));
+			canvasBuffer = document.createElement("canvas");
+			canvasBuffer.id = "canvasBuffer";
+			canvasBuffer.width = 600;
+			canvasBuffer.height = 400;
+			debugDraw.SetSprite(canvasBuffer.getContext("2d"));
 			debugDraw.SetDrawScale(30.0);
 			debugDraw.SetFillAlpha(0.5);
 			debugDraw.SetLineThickness(1.0);
@@ -81,7 +87,15 @@
 			world.SetDebugDraw(debugDraw);
 			
 			window.setInterval(update, 1000 / 60);
-			
+			window.addEventListener("resize", handleWindowResize);
+			handleWindowResize();
+
+			function handleWindowResize() {
+				var elemCanvas = document.getElementById("canvas");
+				elemCanvas.width = elemCanvas.offsetWidth;
+				elemCanvas.height = elemCanvas.offsetHeight;
+				console.log({w:elemCanvas.width, h:elemCanvas.height});
+			}			
 			//mouse
 			
 			var mouseX, mouseY, mousePVec, isMouseDown, selectedBody, mouseJoint;
@@ -125,8 +139,10 @@
 			{
 				return;
 			}
-			mouseX = (clientX - canvasPosition.x) / 30;
-			mouseY = (clientY - canvasPosition.y) / 30;
+			var pMouse = remapScreenToBuffer({x:clientX, y:clientY});
+			mouseX = pMouse.x / 30;
+			mouseY = pMouse.y / 30;
+			//console.log({cl:{x:clientX, y:clientY}, pM:pMouse, mxy:{x:mouseX, y:mouseY}});
 			e.preventDefault();
 			};
 			
@@ -153,6 +169,15 @@
 			return true;
 			}
 			
+			function remapScreenToBuffer(XY) {
+				return remapCoords(XY, document.getElementById("canvas"), canvasBuffer);
+			}
+			function remapCoords(XY, elemFrom, elemTo) {
+				//console.log({elFrom:{w:elemFrom.width, h:elemFrom.height}, elTo:{w:elemTo.width, h:elemTo.height}});
+				return {x:elemTo.offsetLeft + ((XY.x - elemFrom.offsetLeft)/elemFrom.width)*elemTo.width,
+						y:elemTo.offsetTop + ((XY.y - elemFrom.offsetTop)/elemFrom.height)*elemTo.height}
+			}
+
 			//update
 			
 			function update() {
@@ -183,6 +208,12 @@
 			world.Step(1 / 60, 10, 10);
 			world.DrawDebugData();
 			world.ClearForces();
+
+			var pCanvas = document.getElementById("canvas");
+			var context = pCanvas.getContext("2d");
+			context.clearRect(0,0, pCanvas.width, pCanvas.height);
+			context.drawImage(canvasBuffer, 0, 0, pCanvas.width, pCanvas.height);
+
 			};
 			
 			//helpers
