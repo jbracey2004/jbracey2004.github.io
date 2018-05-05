@@ -9,6 +9,8 @@
 		<script src="../libref/p5/p5.dom.min.js"></script>
         <script>
 			var canvasMain;
+			var canvasBuffer;
+			var contextBuffer;
 			var pt = 0;
 			var ct = 0;
 
@@ -30,6 +32,12 @@
 				canvasMain = p5objCanvas.elt;
 				canvasMain.style["touch-action"] = "none";
 				pixelDensity(1);
+				
+				canvasBuffer = document.createElement("canvas");
+				canvasBuffer.id = "canvasBuffer";
+				canvasBuffer.width = 800;
+				canvasBuffer.height = 600;
+				contextBuffer = canvasBuffer.getContext("2d");
 
 				paddle = createSprite(width/2, height-50, 100, 10);
 				paddle.immovable = true;
@@ -102,8 +110,16 @@
 
 				ball.bounce(bricks, brickHit);
 
-				drawSprites();
-
+				//drawSprites();
+				canvasBuffer.drawSprites();
+				
+				rectMode(CENTER);
+				ellipse(ball.position.x, ball.position.y, 16, 16);
+				for(var brk of bricks) {
+					rect(brk.position.x, brk.position.y, brk.width, brk.height); 
+				}
+				rect(paddle.position.x, paddle.position.y, paddle.width, paddle.height);
+				
 				pt = tn;
             }
 
