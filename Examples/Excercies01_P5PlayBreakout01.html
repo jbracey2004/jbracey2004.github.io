@@ -33,16 +33,23 @@
 				canvasBuffer = p5objCanvas.elt;
 				canvasBuffer.id = "canvasBuffer";
 				contextBuffer = canvasBuffer.getContext("2d");
-				canvasBuffer.hidden = true;
+				//canvasBuffer.hidden = true;
+				canvasBuffer.style.position = "relative";
+				canvasBuffer.style.left = 0;
+				canvasBuffer.style.top = 0;
+				canvasBuffer.style.opacity = 0;
 				pixelDensity(1);
 				
 				canvasMain = document.createElement("canvas");
 				canvasMain.id = "canvasMain";
 				canvasMain.width = windowWidth;
 				canvasMain.height = windowHeight;
+				canvasMain.offsetWidth = windowWidth;
+				canvasMain.offsetHeight = windowHeight;
 				canvasMain.style["touch-action"] = "none";
-				canvasMain.style.width = "100%";
-				canvasMain.style.height = "100%";
+				canvasMain.style.position = "absolute";
+				canvasMain.style.left = 0;
+				canvasMain.style.top = 0;
 				document.body.appendChild(canvasMain);
 				contextMain = canvasMain.getContext("2d");
 
@@ -67,9 +74,10 @@
 
 				//the easiest way to avoid pesky multiple collision is to
 				//have the ball bigger than the bricks
-				ball = createSprite(width/2, height-200, 11, 11);
+				ball = createSprite(width/2, height-200, 12, 12);
+				ball.shapeColor = "#0000FF";
 				ball.maxSpeed = MAX_SPEED;
-				paddle.shapeColor = ball.shapeColor = "#FFFFFF";
+				paddle.shapeColor = "#FFFFFF";
 
 				var comFullscreen = createButton("Toggle Fullscreen");
 				comFullscreen.style("position: absolute");
@@ -102,7 +110,7 @@
 
                 background("#404040");
 
-				paddle.position.x = constrain(mouseX, paddle.width/2, width-paddle.width/2);
+				paddle.position.x = mouseX;
 
 				ball.bounce(wallTop);
 				ball.bounce(wallBottom);
@@ -147,6 +155,8 @@
                 //resizeCanvas(windowWidth, windowHeight);
 				canvasMain.width = windowWidth;
 				canvasMain.height = windowHeight;
+				canvasMain.offsetWidth = windowWidth;
+				canvasMain.offsetHeight = windowHeight;
 				//setupWalls();
                 console.log({
                     Width: windowWidth,
