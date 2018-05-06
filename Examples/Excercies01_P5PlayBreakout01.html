@@ -9,8 +9,9 @@
 		<script src="../libref/p5/p5.dom.min.js"></script>
         <script>
 			var canvasMain;
+			var contextMain;
 			var canvasBuffer;
-			var contextBuffer;
+			var contextMain;
 			var pt = 0;
 			var ct = 0;
 
@@ -28,16 +29,22 @@
 			var COLUMNS = 16;
 
             function setup() {
-                var p5objCanvas = createCanvas(windowWidth, windowHeight);
-				canvasMain = p5objCanvas.elt;
-				canvasMain.style["touch-action"] = "none";
+                var p5objCanvas = createCanvas(800, 600);
+				canvasBuffer = p5objCanvas.elt;
+				canvasBuffer.id = "canvasBuffer";
+				contextBuffer = canvasBuffer.getContext("2d");
+				canvasBuffer.hidden = true;
 				pixelDensity(1);
 				
-				canvasBuffer = document.createElement("canvas");
-				canvasBuffer.id = "canvasBuffer";
-				canvasBuffer.width = 800;
-				canvasBuffer.height = 600;
-				contextBuffer = canvasBuffer.getContext("2d");
+				canvasMain = document.createElement("canvas");
+				canvasMain.id = "canvasMain";
+				canvasMain.width = windowWidth;
+				canvasMain.height = windowHeight;
+				canvasMain.style["touch-action"] = "none";
+				canvasMain.style.width = "100%";
+				canvasMain.style.height = "100%";
+				document.body.appendChild(canvasMain);
+				contextMain = canvasMain.getContext("2d");
 
 				paddle = createSprite(width/2, height-50, 100, 10);
 				paddle.immovable = true;
@@ -110,16 +117,20 @@
 
 				ball.bounce(bricks, brickHit);
 
-				//drawSprites();
-				canvasBuffer.drawSprites();
+				drawSprites();
+				//canvasBuffer.drawSprites();
 				
-				rectMode(CENTER);
-				ellipse(ball.position.x, ball.position.y, 16, 16);
-				for(var brk of bricks) {
-					rect(brk.position.x, brk.position.y, brk.width, brk.height); 
-				}
-				rect(paddle.position.x, paddle.position.y, paddle.width, paddle.height);
-				
+				//rectMode(CENTER);
+				//ellipse(ball.position.x, ball.position.y, 16, 16);
+				//for(var brk of bricks) {
+				//	rect(brk.position.x, brk.position.y, brk.width, brk.height); 
+				//}
+				//rect(paddle.position.x, paddle.position.y, paddle.width, paddle.height);
+
+				//contextMain.fillStyle = "#004000";
+				//contextMain.fillRect(0,0,canvasMain.width, canvasMain.height);
+				contextMain.drawImage(canvasBuffer, 0, 0, canvasMain.width, canvasMain.height);
+
 				pt = tn;
             }
 
@@ -133,9 +144,9 @@
 			}
 
             function windowResized() {
-                resizeCanvas(windowWidth, windowHeight);
-				//canvasMain.width = windowWidth;
-				//canvasMain.height = windowHeight;
+                //resizeCanvas(windowWidth, windowHeight);
+				canvasMain.width = windowWidth;
+				canvasMain.height = windowHeight;
 				//setupWalls();
                 console.log({
                     Width: windowWidth,
