@@ -3,9 +3,10 @@
 
     <head>
         <meta charset="utf-8">
-        <title>Portfolio - Breakout</title>
+        <title>Portfolio - Breakout Sprites</title>
         <script src="../libref/p5/p5.min.js"></script>
 		<script src="../libref/p5/p5.play.js"></script>
+		<script src="../libref/p5/p5.sound.min.js"></script>
 		<script src="../libref/p5/p5.dom.min.js"></script>
         <script>
 			var canvasMain;
@@ -74,8 +75,19 @@
 
 				//the easiest way to avoid pesky multiple collision is to
 				//have the ball bigger than the bricks
-				ball = createSprite(width/2, height-200, 12, 12);
-				ball.shapeColor = "#0000FF";
+				ball = createSprite(width/2, height-200);
+				var imgBall = createImage(128, 128);
+				var ctxBall = imgBall.drawingContext;
+				ctxBall.clearRect(0,0, imgBall.width, imgBall.height);
+				ctxBall.beginPath();
+				ctxBall.arc(imgBall.width/2, imgBall.height/2, 8, 0, 2 * Math.PI, false);
+				ctxBall.fillStyle = "#0000FF";
+				ctxBall.fill();
+				ctxBall.lineWidth = 1;
+				ctxBall.strokeStyle = "#FFFFFF";
+				ctxBall.stroke();
+				ball.addImage("Ball", imgBall);
+				ball.setCollider("circle", 0,0, 8);
 				ball.maxSpeed = MAX_SPEED;
 				paddle.shapeColor = "#FFFFFF";
 
