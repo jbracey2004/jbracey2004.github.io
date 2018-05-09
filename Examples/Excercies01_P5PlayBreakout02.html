@@ -65,29 +65,31 @@
 				var offsetX = width/2-(COLUMNS-1)*(BRICK_MARGIN+BRICK_W)/2;
 				var offsetY = 80;
 
+				var fxnDrawBall = function() {
+					fill("#0000FF");
+					stroke("#FFFFFF");
+					strokeWeight = 2;
+					ellipse(0,0, 16, 16);
+				};
+				var fxnDrawBrick = function () {
+					fill("#00FF00");
+					stroke("#FFFFFF");
+					strokeWeight = 2;
+					rect(0, 0, BRICK_W, BRICK_H);
+				};
+
 				for(var r = 0; r<ROWS; r++)
 					for(var c = 0; c<COLUMNS; c++) {
 					var brick = createSprite(offsetX+c*(BRICK_W+BRICK_MARGIN), offsetY+r*(BRICK_H+BRICK_MARGIN), BRICK_W, BRICK_H);
-					brick.shapeColor = "#00FF00";
+					brick.draw = fxnDrawBrick;
 					bricks.add(brick);
 					brick.immovable = true;
 				}
-
 				//the easiest way to avoid pesky multiple collision is to
 				//have the ball bigger than the bricks
-				ball = createSprite(width/2, height-200);
-				var imgBall = createImage(128, 128);
-				var ctxBall = imgBall.drawingContext;
-				ctxBall.clearRect(0,0, imgBall.width, imgBall.height);
-				ctxBall.beginPath();
-				ctxBall.arc(imgBall.width/2, imgBall.height/2, 8, 0, 2 * Math.PI, false);
-				ctxBall.fillStyle = "#0000FF";
-				ctxBall.fill();
-				ctxBall.lineWidth = 1;
-				ctxBall.strokeStyle = "#FFFFFF";
-				ctxBall.stroke();
-				ball.addImage("Ball", imgBall);
-				ball.setCollider("circle", 0,0, 8);
+				ball = createSprite(width/2, height-200, 16, 16);
+				ball.draw = fxnDrawBall;
+				ball.setCollider("circle", 0, 0, 8);
 				ball.maxSpeed = MAX_SPEED;
 				paddle.shapeColor = "#FFFFFF";
 
