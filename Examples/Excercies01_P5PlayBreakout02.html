@@ -141,7 +141,7 @@
 					ball.velocity.x = 0;
 					ball.velocity.y = 0;
 					ball.position.x = canvasMain.width / 2;
-					ball.position.y = canvasMin.height - 200;
+					ball.position.y = canvasMain.height - 200;
 				}
 
 				ball.bounce(bricks, brickHit);
@@ -168,15 +168,16 @@
 			}
 
             function windowResized() {
-                canvasMain.style.width = windowWidth + "px";
-				canvasMain.style.height = windowHeight + "px";
-				//setupWalls();
-                console.log({
-                    Width: windowWidth,
-                    Height: windowHeight
-                });
+				var szWin = {width: 0, height: 0};
+				if(bolFullscreen) 
+				{szWin.width = displayWidth; szWin.height = displayHeight} else 
+				{szWin.width = windowWidth; szWin.height = windowHeight}
+                canvasMain.style.width = szWin.width + "px";
+				canvasMain.style.height = szWin.height + "px";
+                console.log(szWin);
             }
 
+			var bolFullscreen = false;
 			function toggleFullScreen() {
 				if (!document.fullscreenElement &&    // alternative standard method
 					!document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {  // current working methods
@@ -189,6 +190,7 @@
 					} else if (document.documentElement.webkitRequestFullscreen) {
 						document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
 					}
+					bolFullscreen = true;
 				} else {
 					if (document.exitFullscreen) {
 						document.exitFullscreen();
@@ -199,6 +201,7 @@
 					} else if (document.webkitExitFullscreen) {
 						document.webkitExitFullscreen();
 					}
+					bolFullscreen = false;
 				}
 				windowResized();
 			}
