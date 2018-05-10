@@ -3,6 +3,7 @@
 
     <head>
         <meta charset="utf-8">
+		<meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width">
         <title>Portfolio - Breakout</title>
         <script src="../libref/p5/p5.min.js"></script>
 		<script src="../libref/p5/p5.play.js"></script>
@@ -32,6 +33,7 @@
 				pixelDensity(1);
 				canvasMain.style.width = windowWidth + "px";
 				canvasMain.style.height = windowHeight + "px";
+				canvasMain.style["touch-action"] = "none";
 
 				paddle = createSprite(width/2, height-50, 100, 10);
 				paddle.immovable = true;

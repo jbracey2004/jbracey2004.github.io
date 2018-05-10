@@ -3,6 +3,7 @@
 
     <head>
         <meta charset="utf-8">
+		<meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width">
         <title>Portfolio - Breakout Sprites</title>
         <script src="../libref/p5/p5.min.js"></script>
 		<script src="../libref/p5/p5.play.js"></script>
@@ -13,6 +14,7 @@
 			var wavPing_Paddle;
 			var wavPing_Bounds;
 			var wavPing_Brick;
+			var wavPing_Lost;
 			var pt = 0;
 			var ct = 0;
 
@@ -36,6 +38,7 @@
 				pixelDensity(1);
 				canvasMain.style.width = windowWidth + "px";
 				canvasMain.style.height = windowHeight + "px";
+				canvasMain.style["touch-action"] = "none";
 
 				paddle = createSprite(width/2, height-50, 100, 10);
 				paddle.immovable = true;
@@ -91,6 +94,11 @@
 				wavPing_Bounds.start();
 				wavPing_Bounds.freq(1024);
 				wavPing_Bounds.amp(0);
+				wavPing_Lost = new p5.Oscillator();
+				wavPing_Lost.setType("triangle");
+				wavPing_Lost.start();
+				wavPing_Lost.freq(128);
+				wavPing_Lost.amp(0);
 
 				var comFullscreen = createButton("Toggle Fullscreen");
 				comFullscreen.style("position: absolute");
@@ -133,7 +141,7 @@
 				{
 					var swing = (ball.position.x-paddle.position.x)/3;
 					ball.setSpeed(MAX_SPEED, ball.getDirection()+swing);
-					wavPing_Paddle.amp(1);
+					wavPing_Paddle.amp(1, 0.1);
 					wavPing_Paddle.amp(0, 0.25);
 				}
 				if(ball.collide(wallBottom)) 
@@ -142,6 +150,8 @@
 					ball.velocity.y = 0;
 					ball.position.x = canvasMain.width / 2;
 					ball.position.y = canvasMain.height - 200;
+					wavPing_Lost.amp(0.75, 0.25);
+					wavPing_Lost.amp(0, 0.5);
 				}
 
 				ball.bounce(bricks, brickHit);
@@ -157,12 +167,12 @@
 			}
 
 			function boundsHit(ball, bounds) {
-				wavPing_Bounds.amp(0.5);
+				wavPing_Bounds.amp(0.5, 0.05);
 				wavPing_Bounds.amp(0, 0.1);
 			}
 
 			function brickHit(ball, brick) {
-				wavPing_Brick.amp(1);
+				wavPing_Brick.amp(1, 0.05);
 				wavPing_Brick.amp(0, 0.1);
 				brick.remove();
 			}
