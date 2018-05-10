@@ -13,6 +13,9 @@
 			var contextMain;
 			var canvasBuffer;
 			var contextMain;
+			var wavPing_Paddle;
+			var wavPing_Bounds;
+			var wavPing_Brick;
 			var pt = 0;
 			var ct = 0;
 
@@ -92,6 +95,13 @@
 				ball.setCollider("circle", 0, 0, 8);
 				ball.maxSpeed = MAX_SPEED;
 				paddle.shapeColor = "#FFFFFF";
+				
+				wavPing_Paddle = new p5.TriOsc();
+		   //wavPing_Bounds = new p5.Oscillator();
+		   //wavPing_Brick = new p5.Oscillator();
+		   wavPing_Paddle.start();
+		   wavPing_Paddle.freq(400);
+		   wavPing_Paddle.amp(1);
 
 				var comFullscreen = createButton("Toggle Fullscreen");
 				comFullscreen.style("position: absolute");
@@ -134,6 +144,8 @@
 				{
 					var swing = (ball.position.x-paddle.position.x)/3;
 					ball.setSpeed(MAX_SPEED, ball.getDirection()+swing);
+					//wavPing_Paddle.amp(1);
+					//wavPing_Paddle.amp(0, 0.5);
 				}
 				if(ball.collide(wallBottom)) 
 				{
