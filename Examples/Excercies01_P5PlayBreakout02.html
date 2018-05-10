@@ -10,9 +10,6 @@
 		<script src="../libref/p5/p5.dom.min.js"></script>
         <script>
 			var canvasMain;
-			var contextMain;
-			var canvasBuffer;
-			var contextMain;
 			var wavPing_Paddle;
 			var wavPing_Bounds;
 			var wavPing_Brick;
@@ -34,28 +31,11 @@
 
             function setup() {
                 var p5objCanvas = createCanvas(800, 600);
-				canvasBuffer = p5objCanvas.elt;
-				canvasBuffer.id = "canvasBuffer";
-				contextBuffer = canvasBuffer.getContext("2d");
-				//canvasBuffer.hidden = true;
-				canvasBuffer.style.position = "relative";
-				canvasBuffer.style.left = 0;
-				canvasBuffer.style.top = 0;
-				canvasBuffer.style.opacity = 0;
-				pixelDensity(1);
-				
-				canvasMain = document.createElement("canvas");
+				canvasMain = p5objCanvas.elt;
 				canvasMain.id = "canvasMain";
-				canvasMain.width = windowWidth;
-				canvasMain.height = windowHeight;
-				canvasMain.offsetWidth = windowWidth;
-				canvasMain.offsetHeight = windowHeight;
-				canvasMain.style["touch-action"] = "none";
-				canvasMain.style.position = "absolute";
-				canvasMain.style.left = 0;
-				canvasMain.style.top = 0;
-				document.body.appendChild(canvasMain);
-				contextMain = canvasMain.getContext("2d");
+				pixelDensity(1);
+				canvasMain.style.width = windowWidth + "px";
+				canvasMain.style.height = windowHeight + "px";
 
 				paddle = createSprite(width/2, height-50, 100, 10);
 				paddle.immovable = true;
@@ -96,12 +76,21 @@
 				ball.maxSpeed = MAX_SPEED;
 				paddle.shapeColor = "#FFFFFF";
 				
-				wavPing_Paddle = new p5.TriOsc();
-		   //wavPing_Bounds = new p5.Oscillator();
-		   //wavPing_Brick = new p5.Oscillator();
-		   wavPing_Paddle.start();
-		   wavPing_Paddle.freq(400);
-		   wavPing_Paddle.amp(1);
+				wavPing_Paddle = new p5.Oscillator();
+				wavPing_Paddle.setType("sine");
+				wavPing_Paddle.start();
+				wavPing_Paddle.freq(256);
+				wavPing_Paddle.amp(0);
+				wavPing_Brick = new p5.Oscillator();
+				wavPing_Brick.setType("sine");
+				wavPing_Brick.start();
+				wavPing_Brick.freq(512);
+				wavPing_Brick.amp(0);
+				wavPing_Bounds = new p5.Oscillator();
+				wavPing_Bounds.setType("sine");
+				wavPing_Bounds.start();
+				wavPing_Bounds.freq(1024);
+				wavPing_Bounds.amp(0);
 
 				var comFullscreen = createButton("Toggle Fullscreen");
 				comFullscreen.style("position: absolute");
@@ -134,31 +123,30 @@
 
                 background("#404040");
 
-				paddle.position.x = constrain(mouseX, paddle.width / 2, canvasBuffer.width - paddle.width / 2);;
+				paddle.position.x = constrain(mouseX, paddle.width / 2, canvasMain.width - paddle.width / 2);
 
-				ball.bounce(wallTop);
-				ball.bounce(wallLeft);
-				ball.bounce(wallRight);
+				ball.bounce(wallTop, boundsHit);
+				ball.bounce(wallLeft, boundsHit);
+				ball.bounce(wallRight, boundsHit);
 
 				if(ball.bounce(paddle))
 				{
 					var swing = (ball.position.x-paddle.position.x)/3;
 					ball.setSpeed(MAX_SPEED, ball.getDirection()+swing);
-					//wavPing_Paddle.amp(1);
-					//wavPing_Paddle.amp(0, 0.5);
+					wavPing_Paddle.amp(1);
+					wavPing_Paddle.amp(0, 0.25);
 				}
 				if(ball.collide(wallBottom)) 
 				{
 					ball.velocity.x = 0;
 					ball.velocity.y = 0;
-					ball.position.x = canvasBuffer.width / 2;
-					ball.position.y = canvasBuffer.height - 200;
+					ball.position.x = canvasMain.width / 2;
+					ball.position.y = canvasMin.height - 200;
 				}
 
 				ball.bounce(bricks, brickHit);
 
 				drawSprites();
-				contextMain.drawImage(canvasBuffer, 0, 0, canvasMain.width, canvasMain.height);
 
 				pt = tn;
             }
@@ -168,16 +156,20 @@
 					ball.setSpeed(MAX_SPEED, random(90 - 10, 90 + 10));
 			}
 
+			function boundsHit(ball, bounds) {
+				wavPing_Bounds.amp(0.5);
+				wavPing_Bounds.amp(0, 0.1);
+			}
+
 			function brickHit(ball, brick) {
+				wavPing_Brick.amp(1);
+				wavPing_Brick.amp(0, 0.1);
 				brick.remove();
 			}
 
             function windowResized() {
-                //resizeCanvas(windowWidth, windowHeight);
-				canvasMain.width = windowWidth;
-				canvasMain.height = windowHeight;
-				canvasMain.offsetWidth = windowWidth;
-				canvasMain.offsetHeight = windowHeight;
+                canvasMain.style.width = windowWidth + "px";
+				canvasMain.style.height = windowHeight + "px";
 				//setupWalls();
                 console.log({
                     Width: windowWidth,
