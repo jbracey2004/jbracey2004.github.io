@@ -80,12 +80,12 @@
 				paddle.shapeColor = "#FFFFFF";
 				
 				wavPing_Paddle = new p5.Oscillator();
-				wavPing_Paddle.setType("sine");
+				wavPing_Paddle.setType("square");
 				wavPing_Paddle.start();
 				wavPing_Paddle.freq(256);
 				wavPing_Paddle.amp(0);
 				wavPing_Brick = new p5.Oscillator();
-				wavPing_Brick.setType("sine");
+				wavPing_Brick.setType("triangle");
 				wavPing_Brick.start();
 				wavPing_Brick.freq(512);
 				wavPing_Brick.amp(0);
