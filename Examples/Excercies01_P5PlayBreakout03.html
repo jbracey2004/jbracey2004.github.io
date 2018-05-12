@@ -1,19 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-
-  <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width">
-	<title>Portfolio - Breakout Sprites - Groups </title>
-	<script src="../libref/p5/p5.min.js"></script>
-	<script src="../libref/p5/p5.play.js"></script>
-	<script src="../libref/p5/p5.sound.min.js"></script>
-	<script src="../libref/p5/p5.dom.min.js"></script>
-<script>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width">
+		<title>Portfolio - Breakout Sprites - Groups </title>
+		<script src="../libref/p5/p5.min.js"></script>
+		<script src="../libref/p5/p5.play.js"></script>
+		<script src="../libref/p5/p5.sound.min.js"></script>
+		<script src="../libref/p5/p5.dom.min.js"></script>
+		<script>
 			var canvasMain;
+			var contextMain;
 			var wavPing_Paddle;
 			var wavPing_Bounds;
 			var wavPing_Brick;
+			var wavPing_GroupClear;
 			var wavPing_Lost;
 			var groupBricks = [];
 			var pt = 0;
@@ -22,37 +23,57 @@
 			//breakout close (core mechanics)
 			//mouse to control the paddle, click to start
 
-			var paddle, ball, wallTop, wallBottom, wallLeft, wallRight;
-			var bricks;
-			var MAX_SPEED = 9;
+			var PlayScreen_Width = 800;
+			var PlayScreen_Height = 600;
+			var MAX_SPEED = Math.sqrt(PlayScreen_Width * PlayScreen_Height)/100;
 			var WALL_THICKNESS = 30;
 			var BRICK_W = 40;
 			var BRICK_H = 20;
 			var BRICK_MARGIN = 4;
 			var ROWS = 9;
 			var COLUMNS = 16;
-			
+			var paddle, ball, wallTop, wallBottom, wallLeft, wallRight, bricks;
+			var gradientBall, gradientPaddle, gradientBrick;
+
 			var fxnDrawBall = function() {
-				fill("#0000FF");
-				stroke("#FFFFFF");
-				strokeWeight = 2;
+				noStroke();
+				contextMain.fillStyle = gradientBall;
 				ellipse(0,0, 16, 16);
 			};
-			var fxnDrawBrick = function () {
-				fill("#00FF00");
-				stroke("#FFFFFF");
-				strokeWeight = 2;
-				rect(0, 0, BRICK_W, BRICK_H);
+			var fxnDrawPaddle = function () {
+				noStroke();
+				contextMain.fillStyle = gradientPaddle;
+				rect(0,0,paddle.width, paddle.height);
+			}
+			var fxnDrawBrick = function(group) {
+				return function() {
+					contextMain.fillStyle = gradientBrick;
+					stroke(group);
+					strokeWeight(2);
+					rect(0, 0, BRICK_W, BRICK_H);
+				}
 			};
 
-            function setup() {
-                var p5objCanvas = createCanvas(800, 600);
+			function setup() {
+				var p5objCanvas = createCanvas(PlayScreen_Width, PlayScreen_Height);
 				canvasMain = p5objCanvas.elt;
+				contextMain = canvasMain.getContext("2d");
 				canvasMain.id = "canvasMain";
 				pixelDensity(1);
 				canvasMain.style.width = windowWidth + "px";
 				canvasMain.style.height = windowHeight + "px";
 				canvasMain.style["touch-action"] = "none";
+
+				gradientBall = contextMain.createRadialGradient(0,0,0,0,0,16);
+				gradientBall.addColorStop(0, "#0000FF");
+				gradientBall.addColorStop(1, "#000000");
+				gradientPaddle = contextMain.createLinearGradient(0,-5,0,5);
+				gradientPaddle.addColorStop(0, "#000000")
+				gradientPaddle.addColorStop(0.5, "#FFFFFF");
+				gradientPaddle.addColorStop(1, "#000000");
+				gradientBrick = contextMain.createLinearGradient(0, -BRICK_H*0.5, 0, BRICK_H*0.5);
+				gradientBrick.addColorStop(0, "#00CC00");
+				gradientBrick.addColorStop(1, "#00FF00");
 
 				paddle = createSprite(width/2, height-50, 100, 10);
 				paddle.immovable = true;
@@ -66,13 +87,16 @@
 				var offsetY = 80;
 
 				for(var r = 0; r<ROWS; r++) {
-					var lstBricks = [];
+					var rID = (r / ROWS) * 255;
+					var lstBricks = {};
+					lstBricks.objs = [];
+					lstBricks.id = rID;
 					for(var c = 0; c<COLUMNS; c++) {
-					    var brick = createSprite(offsetX+c*(BRICK_W+BRICK_MARGIN), offsetY+r*(BRICK_H+BRICK_MARGIN), BRICK_W, BRICK_H);
-					    brick.draw = fxnDrawBrick;
-					    bricks.add(brick);
+						var brick = createSprite(offsetX+c*(BRICK_W+BRICK_MARGIN), offsetY+r*(BRICK_H+BRICK_MARGIN), BRICK_W, BRICK_H);
+						brick.draw = fxnDrawBrick(rID);
+						bricks.add(brick);
 						brick.immovable = true;
-						lstBricks.push({obj:brick, pos:{x:brick.position.x, y:brick.position.y}});
+						lstBricks.objs.push({obj:brick, pos:{x:brick.position.x, y:brick.position.y}});
 					}
 					groupBricks.push(lstBricks);
 				}
@@ -82,7 +106,7 @@
 				ball.draw = fxnDrawBall;
 				ball.setCollider("circle", 0, 0, 8);
 				ball.maxSpeed = MAX_SPEED;
-				paddle.shapeColor = "#FFFFFF";
+				paddle.draw = fxnDrawPaddle;
 				
 				wavPing_Paddle = new p5.Oscillator();
 				wavPing_Paddle.setType("square");
@@ -104,12 +128,18 @@
 				wavPing_Lost.start();
 				wavPing_Lost.freq(128);
 				wavPing_Lost.amp(0);
+				wavPing_GroupClear = new p5.Oscillator();
+				wavPing_GroupClear.setType("triangle");
+				wavPing_GroupClear.start();
+				wavPing_GroupClear.freq(768);
+				wavPing_GroupClear.amp(0);
 
 				var comFullscreen = createButton("Toggle Fullscreen");
 				comFullscreen.style("position: absolute");
 				comFullscreen.position(0, 0);
 				comFullscreen.mouseClicked(toggleFullScreen);
-            }
+				//frameRate(30);
+			}
 
 			function initWalls() {
 				wallTop = createSprite(width / 2, -WALL_THICKNESS / 2, width + WALL_THICKNESS * 2, WALL_THICKNESS);
@@ -128,13 +158,13 @@
 				wallRight.position = new p5.Vector(width + WALL_THICKNESS / 2, height / 2);
 			}
 
-            function draw() {
+			function draw() {
 				var tn = new Date(Date.now()).getTime()*0.001;
 				if (pt == 0) { pt = tn; }
 				var t = tn - pt;
 				ct += t;
 
-                background("#404040");
+				background("#404040");
 
 				paddle.position.x = constrain(mouseX, paddle.width / 2, canvasMain.width - paddle.width / 2);
 
@@ -146,7 +176,7 @@
 				{
 					var swing = (ball.position.x-paddle.position.x)/2;
 					ball.setSpeed(MAX_SPEED, ball.getDirection()+swing);
-					wavPing_Paddle.amp(1, 0.1);
+					wavPing_Paddle.amp(0.1, 0.1);
 					wavPing_Paddle.amp(0, 0.25);
 				}
 				if(ball.collide(wallBottom)) 
@@ -155,7 +185,7 @@
 					ball.velocity.y = 0;
 					ball.position.x = canvasMain.width / 2;
 					ball.position.y = canvasMain.height - 200;
-					wavPing_Lost.amp(0.75, 0.25);
+					wavPing_Lost.amp(1, 0.25);
 					wavPing_Lost.amp(0, 0.5);
 				}
 
@@ -164,7 +194,7 @@
 				drawSprites();
 
 				pt = tn;
-            }
+			}
 
 			function mousePressed() {
 				if (ball.velocity.x == 0 && ball.velocity.y == 0)
@@ -172,7 +202,7 @@
 			}
 
 			function boundsHit(ball, bounds) {
-				wavPing_Bounds.amp(0.5, 0.05);
+				wavPing_Bounds.amp(0.25, 0.05);
 				wavPing_Bounds.amp(0, 0.1);
 			}
 
@@ -180,33 +210,35 @@
 				wavPing_Brick.amp(1, 0.05);
 				wavPing_Brick.amp(0, 0.1);
 				for(var gB of groupBricks) {
-					var foundB = gB.find(function (x) {return (x.obj === brick);});
+					var foundB = gB.objs.find(function (x) {return (x.obj === brick);});
 					if(foundB) {
 						brick.remove();
 						foundB.obj = null;
 					}
-					var lstBricksLeft = gB.filter(function(x) {return x.obj !== null;});
+					var lstBricksLeft = gB.objs.filter(function(x) {return x.obj !== null;});
 					if(lstBricksLeft.length <= 0) {
-						for(var brickTmp of gB) {
+						wavPing_GroupClear.amp(1, 0.1);
+						wavPing_GroupClear.amp(0, 1)
+						for(var brickTmp of gB.objs) {
 							brickTmp.obj = createSprite(brickTmp.pos.x, brickTmp.pos.y, BRICK_W, BRICK_H);
-					    	brickTmp.obj.draw = fxnDrawBrick;
-					    	bricks.add(brickTmp.obj);
-							brickTmp.obj.debug = true;
+							brickTmp.obj.draw = fxnDrawBrick(gB.id);
+							brickTmp.obj.setDefaultCollider();
+							bricks.add(brickTmp.obj);
 							brickTmp.obj.immovable = true;
 						}
 					}
 				}
 			}
 
-            function windowResized() {
+			function windowResized() {
 				var szWin = {width: 0, height: 0};
 				if(bolFullscreen) 
 				{szWin.width = displayWidth; szWin.height = displayHeight} else 
 				{szWin.width = windowWidth; szWin.height = windowHeight}
-                canvasMain.style.width = szWin.width + "px";
+				canvasMain.style.width = szWin.width + "px";
 				canvasMain.style.height = szWin.height + "px";
-                console.log(szWin);
-            }
+				console.log(szWin);
+			}
 
 			var bolFullscreen = false;
 			function toggleFullScreen() {
@@ -236,11 +268,8 @@
 				}
 				windowResized();
 			}
-</script>
-
-  </head>
-
-  <body style="margin: 0; overflow: hidden">
-  </body>
-
+		</script>
+	</head>
+	<body style="margin: 0; overflow: hidden">
+	</body>
 </html>
