@@ -23,10 +23,10 @@
 			//breakout close (core mechanics)
 			//mouse to control the paddle, click to start
 
-			var PlayScreen_Width = 800;
-			var PlayScreen_Height = 600;
-			var MAX_SPEED = Math.sqrt(PlayScreen_Width * PlayScreen_Height)/100;
-			var WALL_THICKNESS = 30;
+			var PlayScreen_Width = 702;
+			var PlayScreen_Height = 1024;
+			var MAX_SPEED = Math.sqrt(PlayScreen_Width * PlayScreen_Height)/60;
+			var WALL_THICKNESS = 100;
 			var BRICK_W = 40;
 			var BRICK_H = 20;
 			var BRICK_MARGIN = 4;
@@ -136,6 +136,7 @@
 
 				var comFullscreen = createButton("Toggle Fullscreen");
 				comFullscreen.style("position: absolute");
+				comFullscreen.style("user-select: none");
 				comFullscreen.position(0, 0);
 				comFullscreen.mouseClicked(toggleFullScreen);
 				//frameRate(30);
@@ -166,7 +167,7 @@
 
 				background("#404040");
 
-				paddle.position.x = constrain(mouseX, paddle.width / 2, canvasMain.width - paddle.width / 2);
+				paddle.position.x = constrain((mouseY/canvasMain.height)*canvasMain.width, paddle.width / 2, canvasMain.width - paddle.width / 2);
 
 				ball.bounce(wallTop, boundsHit);
 				ball.bounce(wallLeft, boundsHit);
@@ -191,7 +192,12 @@
 
 				ball.bounce(bricks, brickHit);
 
+				push();
+				translate(canvasMain.width, 0);
+				rotate(PI / 2);
+				scale(canvasMain.height / canvasMain.width, canvasMain.width / canvasMain.height);
 				drawSprites();
+				pop();
 
 				pt = tn;
 			}

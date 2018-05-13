@@ -24,9 +24,9 @@
 			//mouse to control the paddle, click to start
 
 			var PlayScreen_Width = 800;
-			var PlayScreen_Height = 600;
+			var PlayScreen_Height = 1200;
 			var MAX_SPEED = Math.sqrt(PlayScreen_Width * PlayScreen_Height)/100;
-			var WALL_THICKNESS = 30;
+			var WALL_THICKNESS = 100;
 			var BRICK_W = 40;
 			var BRICK_H = 20;
 			var BRICK_MARGIN = 4;
@@ -136,6 +136,7 @@
 
 				var comFullscreen = createButton("Toggle Fullscreen");
 				comFullscreen.style("position: absolute");
+				comFullscreen.style("user-select: none");
 				comFullscreen.position(0, 0);
 				comFullscreen.mouseClicked(toggleFullScreen);
 				//frameRate(30);
