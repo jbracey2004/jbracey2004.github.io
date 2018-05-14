@@ -24,10 +24,10 @@
 			//breakout close (core mechanics)
 			//mouse to control the paddle, click to start
 
-			var PlayScreen_Width = 702;
+			var PlayScreen_Width = 708;
 			var PlayScreen_Height = 1024;
-			var MAX_SPEED = Math.sqrt(PlayScreen_Width * PlayScreen_Height)/60;
-			var WALL_THICKNESS = 100;
+			var MAX_SPEED = Math.sqrt(PlayScreen_Width * PlayScreen_Height)/10;
+			var WALL_THICKNESS = 50;
 			var BRICK_W = 40;
 			var BRICK_H = 20;
 			var BRICK_MARGIN = 4;
@@ -66,8 +66,8 @@
 				canvasMain.style["touch-action"] = "none";
 
 				gradientBall = contextMain.createRadialGradient(0,0,0,0,0,16);
-				gradientBall.addColorStop(0, "#0000FF");
-				gradientBall.addColorStop(1, "#000000");
+				gradientBall.addColorStop(0, "#8080FF");
+				gradientBall.addColorStop(1, "#000040");
 				gradientPaddle = contextMain.createLinearGradient(0,-5,0,5);
 				gradientPaddle.addColorStop(0, "#000000")
 				gradientPaddle.addColorStop(0.5, "#FFFFFF");
@@ -170,27 +170,32 @@
 				if (pt == 0) { pt = tn; }
 				var t = tn - pt;
 				ct += t;
-
-				background("#404040");
-
+;
 				if (canvasMain.offsetWidth > canvasMain.offsetHeight) {
 					paddle.position.x = constrain((mouseY / canvasMain.height) * canvasMain.width, paddle.width / 2, canvasMain.width - paddle.width / 2);
 				} else {
 					paddle.position.x = constrain(mouseX, paddle.width / 2, canvasMain.width - paddle.width / 2);
 				}
 
-				ball.bounce(wallTop, boundsHit);
-				ball.bounce(wallLeft, boundsHit);
-				ball.bounce(wallRight, boundsHit);
+				var bolHitWall = false;
+				if (!bolHitWall) ball.bounce(wallTop, boundsHit);
+				if (!bolHitWall) ball.bounce(wallLeft, boundsHit);
+				if (!bolHitWall) ball.bounce(wallRight, boundsHit);
 
 				if(ball.bounce(paddle))
 				{
+					var vecTmp = ball.velocity;
+					var speedTmp = vecTmp.mag();
 					var swing = (ball.position.x-paddle.position.x)/4;
-					//ball.setSpeed(MAX_SPEED, ball.getDirection()+swing);
-					ball.velocity.x += swing;
+					vecTmp.x += swing;
+					vecTmp.normalize();
+					vecTmp.mult(speedTmp);
+					ball.velocity.x = vecTmp.x;
+					ball.velocity.y = vecTmp.y;
 					wavPing_Paddle.amp(0.1, 0.1);
 					wavPing_Paddle.amp(0, 0.25);
 				}
+				ball.addSpeed(ball.getSpeed()*0.00001, ball.getDirection());
 				if(ball.collide(wallBottom)) 
 				{
 					ball.velocity.x = 0;
@@ -203,8 +208,10 @@
 
 				ball.bounce(bricks, brickHit);
 
+				background("#404040");
+
 				push();
-				if(canvasMain.offsetWidth > canvasMain.offsetHeight) {
+				if (canvasMain.offsetWidth > canvasMain.offsetHeight) {
 					translate(canvasMain.width, 0);
 					rotate(PI / 2);
 					scale(canvasMain.height / canvasMain.width, canvasMain.width / canvasMain.height);
@@ -214,14 +221,17 @@
 				textSize(32);
 				stroke("#FFFFFF");
 				strokeWeight(2);
-				text(score.toString(), canvasMain.width/2, 36);
+				text(score.toString(), canvasMain.width / 2, 36);
+				textSize(12);
+				noStroke();
+				//text(ball.getSpeed().toString(), 0, canvasMain.height - 16);
 
 				pt = tn;
 			}
 
 			function mousePressed() {
 				if (ball.velocity.x == 0 && ball.velocity.y == 0)
-					ball.setSpeed(MAX_SPEED, random(90 - 10, 90 + 10));
+					ball.setSpeed(MAX_SPEED * 0.15, random(90 - 10, 90 + 10));
 			}
 
 			function boundsHit(ball, bounds) {
@@ -266,7 +276,8 @@
 			function windowResized() {
 				var szWin = {width: 0, height: 0};
 				if(bolFullscreen) 
-				{szWin.width = displayWidth; szWin.height = displayHeight} else 
+				{szWin.width = displayWidth; szWin.height = displayHeight;
+				if(szWin.width > szWin.height){var tmp = szWin.width; szWin.width = sz.height; sz.height = tmp;}} else 
 				{szWin.width = windowWidth; szWin.height = windowHeight}
 				canvasMain.style.width = szWin.width + "px";
 				canvasMain.style.height = szWin.height + "px";
