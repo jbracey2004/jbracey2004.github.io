@@ -209,16 +209,16 @@
 						y: ((XY.y)/ sizeFrom.height)* sizeTo.height}
 			}
 
-			document.addEventListener("deviceorientation", handleDeviceOrientation, true);
+			document.addEventListener("deviceorientation", handleDeviceOrientation);
 
 			function handleDeviceOrientation(e) {
 				var absolute = e.absolute;
-				var alpha = e.alpha;
-				var beta = e.beta;
-				var gamma = e.gamma;
+				var alpha = e.alpha/90;
+				var beta = e.beta/90;
+				var gamma = e.gamma/90;
 				
 				if(window.innerWidth < window.innerHeight) {var tmp = beta; beta=gamma; gammer=tmp;};
-				var gravity = new b2.Vec2(beta, gamma);
+				var gravity = new b2.Vec2(beta*20, gamma*20);
 				world.SetGravity(gravity);
 			}
 
