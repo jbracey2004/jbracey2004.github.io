@@ -100,10 +100,11 @@
 				wavPing_Lost.freq(128);
 				wavPing_Lost.amp(0);
 
-				var comFullscreen = createButton("Toggle Fullscreen");
+				var comFullscreen = createButton("[]");
 				comFullscreen.style("position: absolute");
+				comFullscreen.style("user-select: none");
 				comFullscreen.position(0, 0);
-				comFullscreen.mouseClicked(toggleFullScreen);
+				comFullscreen.mouseClicked(onFullScreenToggleClick);
             }
 
 			function initWalls() {
@@ -187,8 +188,11 @@
                 console.log(szWin);
             }
 
+			function onFullScreenToggleClick(e) {
+				toggleFullScreen(this);
+			}
 			var bolFullscreen = false;
-			function toggleFullScreen() {
+			function toggleFullScreen(elem) {
 				if (!document.fullscreenElement &&    // alternative standard method
 					!document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {  // current working methods
 					if (document.documentElement.requestFullscreen) {
@@ -212,6 +216,9 @@
 						document.webkitExitFullscreen();
 					}
 					bolFullscreen = false;
+				}
+				if (elem) {
+					elem.innerText = (bolFullscreen) ? ("X") : ("[]");
 				}
 				windowResized();
 			}

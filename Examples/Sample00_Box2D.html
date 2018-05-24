@@ -5,11 +5,11 @@
 		<title>Box2dWeb Demo</title>
 	</head>
 	<body style="overflow: hidden; margin: 0;" onload="init();">
-		<canvas id="canvas" style="background-color:#333333; touch-action: none" ></canvas>
+		<canvas id="canvas" style="position: absolute; background-color:#333333; touch-action: none" ></canvas>
+		<button id="comFullscreen" style="position: absolute; user-select: none">[]</button>
 	</body>
 	<script type="text/javascript" src="../libref/box2Dwebjs/Box2d.min.js"></script>
 	<script type="text/javascript">
-
 		function init() {
 			var   b2Vec2 = Box2D.Common.Math.b2Vec2
 			,  b2AABB = Box2D.Collision.b2AABB
@@ -87,19 +87,25 @@
 			window.addEventListener("resize", handleWindowResize);
 			handleWindowResize();
 
+			function onFullScreenToggleClick(e) {
+				toggleFullScreen(this);
+			}
+			var comFullScreen = document.getElementById("comFullscreen");
+			comFullScreen.addEventListener("click", onFullScreenToggleClick);
+
 			function handleWindowResize() {
 				var elemCanvas = document.getElementById("canvas");
 				var szWin = { width: 0, height: 0 };
 				if (bolFullscreen) {
 				szWin.width = screen.width; szWin.height = screen.height;
-					if (szWin.width > szWin.height) { var tmp = szWin.width; szWin.width = sz.height; sz.height = tmp; }
+					if (szWin.width > szWin.height) { var tmp = szWin.width; szWin.width = szWin.height; szWin.height = tmp; }
 				} else { szWin.width = window.innerWidth; szWin.height = window.innerHeight }
 				elemCanvas.style.width = szWin.width + "px";
 				elemCanvas.style.height = szWin.height + "px";
 				console.log(szWin);
 			}			
 			var bolFullscreen = false;
-			function toggleFullScreen() {
+			function toggleFullScreen(elem) {
 				if (!document.fullscreenElement &&    // alternative standard method
 					!document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {  // current working methods
 					if (document.documentElement.requestFullscreen) {
@@ -123,6 +129,9 @@
 						document.webkitExitFullscreen();
 					}
 					bolFullscreen = false;
+				}
+				if (elem) {
+					elem.innerText = (bolFullscreen) ? ("X") : ("[]");
 				}
 				handleWindowResize();
 			}

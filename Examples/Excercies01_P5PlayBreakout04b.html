@@ -140,11 +140,11 @@
 				wavPing_GroupClear.freq(768);
 				wavPing_GroupClear.amp(0);
 
-				var comFullscreen = createButton("Toggle Fullscreen");
+				var comFullscreen = createButton("[]");
 				comFullscreen.style("position: absolute");
 				comFullscreen.style("user-select: none");
 				comFullscreen.position(0, 0);
-				comFullscreen.mouseClicked(toggleFullScreen);
+				comFullscreen.mouseClicked(onFullScreenToggleClick);
 				//frameRate(30);
 			}
 
@@ -277,15 +277,18 @@
 				var szWin = {width: 0, height: 0};
 				if(bolFullscreen) 
 				{szWin.width = displayWidth; szWin.height = displayHeight;
-				if(szWin.width > szWin.height){var tmp = szWin.width; szWin.width = sz.height; sz.height = tmp;}} else 
+				if(szWin.width > szWin.height){var tmp = szWin.width; szWin.width = szWin.height; szWin.height = tmp;}} else 
 				{szWin.width = windowWidth; szWin.height = windowHeight}
 				canvasMain.style.width = szWin.width + "px";
 				canvasMain.style.height = szWin.height + "px";
 				console.log(szWin);
 			}
 
+			function onFullScreenToggleClick(e) {
+				toggleFullScreen(this);
+			}
 			var bolFullscreen = false;
-			function toggleFullScreen() {
+			function toggleFullScreen(elem) {
 				if (!document.fullscreenElement &&    // alternative standard method
 					!document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {  // current working methods
 					if (document.documentElement.requestFullscreen) {
@@ -309,6 +312,9 @@
 						document.webkitExitFullscreen();
 					}
 					bolFullscreen = false;
+				}
+				if(elem) {
+					elem.innerText = (bolFullscreen) ? ("X") : ("[]");
 				}
 				windowResized();
 			}
