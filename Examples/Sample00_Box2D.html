@@ -75,7 +75,8 @@
 			var pCanvas = document.getElementById("canvas");
 			pCanvas.width = 600;
 			pCanvas.height = 400;
-			debugDraw.SetSprite(pCanvas.getContext("2d"));
+			var pContext = pCanvas.getContext("2d");
+			debugDraw.SetSprite(pContext);
 			debugDraw.SetDrawScale(30.0);
 			debugDraw.SetFillAlpha(0.5);
 			debugDraw.SetLineThickness(1.0);
@@ -217,8 +218,8 @@
 				var beta = e.beta/90;
 				var gamma = e.gamma/90;
 				
-				if(window.innerWidth < window.innerHeight) {var tmp = beta; beta=gamma; gammer=tmp;};
-				var gravity = new b2.Vec2(beta*20, gamma*20);
+				if(window.innerWidth < window.innerHeight) {var tmp = beta; beta=gamma; gamma=tmp;} else {gamma = -gamma;}
+				var gravity = new b2Vec2(beta*40, gamma*40);
 				world.SetGravity(gravity);
 			}
 
@@ -250,7 +251,14 @@
 			}
 			
 			world.Step(1 / 60, 10, 10);
+			pContext.save();
+			if (pCanvas.offsetWidth > pCanvas.offsetHeight) {
+				pContext.translate(pCanvas.width, 0);
+				pContext.rotate(Math.PI / 2);
+				pContext.scale(pCanvas.height / pCanvas.width, pCanvas.width / pCanvas.height);
+			}
 			world.DrawDebugData();
+			pContext.restore();
 			world.ClearForces();
 
 			};
