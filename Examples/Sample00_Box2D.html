@@ -251,14 +251,14 @@
 			}
 			
 			world.Step(1 / 60, 10, 10);
-			pContext.save();
+			/*pContext.save();
 			if (pCanvas.offsetWidth > pCanvas.offsetHeight) {
 				pContext.translate(pCanvas.width, 0);
 				pContext.rotate(Math.PI / 2);
 				pContext.scale(pCanvas.height / pCanvas.width, pCanvas.width / pCanvas.height);
-			}
+			}*/
 			world.DrawDebugData();
-			pContext.restore();
+			//pContext.restore();
 			world.ClearForces();
 
 			};
