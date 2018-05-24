@@ -209,7 +209,7 @@
 						y: ((XY.y)/ sizeFrom.height)* sizeTo.height}
 			}
 
-			document.addEventListener("deviceorientation", handleDeviceOrientation);
+			window.addEventListener("deviceorientation", handleDeviceOrientation);
 
 			function handleDeviceOrientation(e) {
 				var absolute = e.absolute;
