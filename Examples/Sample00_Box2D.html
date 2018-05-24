@@ -4,14 +4,12 @@
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
 		<title>Box2dWeb Demo</title>
 	</head>
-	<body onload="init();">
-		<canvas id="canvas" style="width: 100%; height: 96%; background-color:#333333; padding: 0; touch-action: none" ></canvas>
+	<body style="overflow: hidden; margin: 0;" onload="init();">
+		<canvas id="canvas" style="background-color:#333333; touch-action: none" ></canvas>
 	</body>
 	<script type="text/javascript" src="../libref/box2Dwebjs/Box2d.min.js"></script>
 	<script type="text/javascript">
 
-		var canvasBuffer;
-		
 		function init() {
 			var   b2Vec2 = Box2D.Common.Math.b2Vec2
 			,  b2AABB = Box2D.Collision.b2AABB
@@ -53,7 +51,6 @@
 			bodyDef.position.Set(21.8, 13);
 			world.CreateBody(bodyDef).CreateFixture(fixDef);
 			
-			
 			//create some objects
 			bodyDef.type = b2Body.b2_dynamicBody;
 			for(var i = 0; i < 32; ++i) {
@@ -75,11 +72,10 @@
 			
 			//setup debug draw
 			var debugDraw = new b2DebugDraw();
-			canvasBuffer = document.createElement("canvas");
-			canvasBuffer.id = "canvasBuffer";
-			canvasBuffer.width = 600;
-			canvasBuffer.height = 400;
-			debugDraw.SetSprite(canvasBuffer.getContext("2d"));
+			var pCanvas = document.getElementById("canvas");
+			pCanvas.width = 600;
+			pCanvas.height = 400;
+			debugDraw.SetSprite(pCanvas.getContext("2d"));
 			debugDraw.SetDrawScale(30.0);
 			debugDraw.SetFillAlpha(0.5);
 			debugDraw.SetLineThickness(1.0);
@@ -92,10 +88,44 @@
 
 			function handleWindowResize() {
 				var elemCanvas = document.getElementById("canvas");
-				elemCanvas.width = elemCanvas.offsetWidth;
-				elemCanvas.height = elemCanvas.offsetHeight;
-				console.log({w:elemCanvas.width, h:elemCanvas.height});
+				var szWin = { width: 0, height: 0 };
+				if (bolFullscreen) {
+				szWin.width = screen.width; szWin.height = screen.height;
+					if (szWin.width > szWin.height) { var tmp = szWin.width; szWin.width = sz.height; sz.height = tmp; }
+				} else { szWin.width = window.innerWidth; szWin.height = window.innerHeight }
+				elemCanvas.style.width = szWin.width + "px";
+				elemCanvas.style.height = szWin.height + "px";
+				console.log(szWin);
 			}			
+			var bolFullscreen = false;
+			function toggleFullScreen() {
+				if (!document.fullscreenElement &&    // alternative standard method
+					!document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {  // current working methods
+					if (document.documentElement.requestFullscreen) {
+						document.documentElement.requestFullscreen();
+					} else if (document.documentElement.msRequestFullscreen) {
+						document.documentElement.msRequestFullscreen();
+					} else if (document.documentElement.mozRequestFullScreen) {
+						document.documentElement.mozRequestFullScreen();
+					} else if (document.documentElement.webkitRequestFullscreen) {
+						document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+					}
+					bolFullscreen = true;
+				} else {
+					if (document.exitFullscreen) {
+						document.exitFullscreen();
+					} else if (document.msExitFullscreen) {
+						document.msExitFullscreen();
+					} else if (document.mozCancelFullScreen) {
+						document.mozCancelFullScreen();
+					} else if (document.webkitExitFullscreen) {
+						document.webkitExitFullscreen();
+					}
+					bolFullscreen = false;
+				}
+				handleWindowResize();
+			}
+
 			//mouse
 			
 			var mouseX, mouseY, mousePVec, isMouseDown, selectedBody, mouseJoint;
@@ -170,12 +200,26 @@
 			}
 			
 			function remapScreenToBuffer(XY) {
-				return remapCoords(XY, document.getElementById("canvas"), canvasBuffer);
+				var pCanvas = document.getElementById("canvas");
+				return remapCoords(XY, { width: pCanvas.offsetWidth, height: pCanvas.offsetHeight }, {width: pCanvas.width, height:pCanvas.height});
 			}
-			function remapCoords(XY, elemFrom, elemTo) {
+			function remapCoords(XY, sizeFrom, sizeTo) {
 				//console.log({elFrom:{w:elemFrom.width, h:elemFrom.height}, elTo:{w:elemTo.width, h:elemTo.height}});
-				return {x:elemTo.offsetLeft + ((XY.x - elemFrom.offsetLeft)/elemFrom.width)*elemTo.width,
-						y:elemTo.offsetTop + ((XY.y - elemFrom.offsetTop)/elemFrom.height)*elemTo.height}
+				return {x: ((XY.x)/ sizeFrom.width)* sizeTo.width,
+						y: ((XY.y)/ sizeFrom.height)* sizeTo.height}
+			}
+
+			document.addEventListener("deviceorientation", handleDeviceOrientation, true);
+
+			function handleDeviceOrientation(e) {
+				var absolute = e.absolute;
+				var alpha = e.alpha;
+				var beta = e.beta;
+				var gamma = e.gamma;
+				
+				if(window.innerWidth < window.innerHeight) {var tmp = beta; beta=gamma; gammer=tmp;};
+				var gravity = new b2.Vec2(beta, gamma);
+				world.SetGravity(gravity);
 			}
 
 			//update
@@ -209,11 +253,6 @@
 			world.DrawDebugData();
 			world.ClearForces();
 
-			var pCanvas = document.getElementById("canvas");
-			var context = pCanvas.getContext("2d");
-			context.clearRect(0,0, pCanvas.width, pCanvas.height);
-			context.drawImage(canvasBuffer, 0, 0, pCanvas.width, pCanvas.height);
-
 			};
 			
 			//helpers
@@ -238,7 +277,6 @@
 
 			return {x: x, y: y};
 			}
-
 
 		};
 
