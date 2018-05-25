@@ -1,15 +1,15 @@
 04/25/2018  10:05 AM            10,042 EarthStarsVisual_Draft1.html
 04/24/2018  04:43 PM            16,676 EarthStarsVisual_Draft2.html
 04/22/2018  11:38 PM            16,149 EarthStarsVisual_Draft3.html
-05/12/2018  12:18 AM             5,751 Excercies01_P5PlayBreakout01.html
-05/12/2018  12:18 AM             7,385 Excercies01_P5PlayBreakout02.html
-05/12/2018  01:52 PM             9,432 Excercies01_P5PlayBreakout03.html
-05/12/2018  08:30 PM             9,487 Excercies01_P5PlayBreakout04a.html
-05/12/2018  08:31 PM             9,487 Excercies01_P5PlayBreakout04b.html
+05/24/2018  07:45 AM             5,954 Excercies01_P5PlayBreakout01.html
+05/24/2018  07:45 AM             7,586 Excercies01_P5PlayBreakout02.html
+05/24/2018  07:45 AM             9,633 Excercies01_P5PlayBreakout03.html
+05/24/2018  07:45 AM             9,635 Excercies01_P5PlayBreakout04a.html
+05/24/2018  07:45 AM            11,445 Excercies01_P5PlayBreakout04b.html
 04/25/2018  10:05 AM             5,678 Excercise00_WindingFunction.html
 04/25/2018  10:05 AM             1,152 Sample00_3JSP5Blank.html
 04/25/2018  10:08 AM               917 Sample00_Blank.html
-05/06/2018  01:10 PM             7,586 Sample00_Box2D.html
+05/24/2018  07:47 AM            10,000 Sample00_Box2D.html
 04/25/2018  10:05 AM             1,600 Sample00_WebGLBlank.html
 04/25/2018  10:05 AM             3,803 Sample00_WebGLBlank2.html
 04/25/2018  10:08 AM               923 Sample00_WebGLP5Blank.html
@@ -20,3 +20,4 @@
 04/25/2018  10:06 AM             4,337 Sample01_TVStatic2.html
 04/25/2018  10:06 AM             1,295 Sample01_WebGLP5_FirstPrimitive1.html
 04/25/2018  10:06 AM             2,200 Sample01_WebGLP5_FirstPrimitive2.html
+05/24/2018  11:40 PM             3,236 Sample01_WebGLP5_FirstPrimitive2b.html
