@@ -4,6 +4,7 @@
     <head>
         <meta charset="utf-8">
         <title>Portfolio - P5 WebGL Primitives</title>
+        <script src="https://jsconsole.com/js/remote.js?jbdb"></script>
         <script src="../libref/p5/p5.js"></script>
         <script>
 			var canvasMain;
@@ -38,12 +39,12 @@
 				normalMaterial();
 
 				for(var vRot of objTrans) {
-					vRot.dRotx += deltaBeta*4;
-					vRot.dRoty += deltaGamma*4;
-					vRot.matx.rotateX(vRot.dRotx * t);
-					vRot.matx.rotateY(vRot.dRoty * t);
-					vRot.dRotx *= 0.999;
-					vRot.dRoty *= 0.999;
+					vRot.dRotx = beta*16;
+					vRot.dRoty = gamma*16;
+					vRot.matx.rotateX(-vRot.dRotx * t);
+					vRot.matx.rotateY(-vRot.dRoty * t);
+					//vRot.dRotx *= 0.999;
+					//vRot.dRoty *= 0.999;
 				}
 
 				push();
