@@ -1,83 +1,62 @@
-newMatrixAry = function (n) { return new Float32Array(n * n).fill().map((item, index) => (((index % (n + 1)) == 0)) ? 1 : 0); }
-p5.Matrix.prototype.rowStride = function(setValue) {
-	if(setValue) {
-		if(setValue == 3) {
-			if(this.mat3) return this.mat3;
-			if(this.mat4) {
-				this.mat3 = newMatrixAry(3)
-				for(var i = 0; i < 3; i++) {
-					for(var j =0; j < 3; j++) {
-						this.mat3[i * 3 + j] = this.mat4[i * 4 + j];
-					}
-				}
-				delete(this.mat4);
-				return this.mat3;
-			}
-			return null;
-		}
-		if(setValue == 4) {
-			if (this.mat4) return this.mat4;
-			if (this.mat3) {
-				this.mat4 = newMatrixAry(4);
-				for (var i = 0; i < 3; i++) {
-					for (var j = 0; j < 3; j++) {
-						this.mat4[i * 4 + j] = this.mat3[i * 3 + j];
-					}
-				}
-				delete(this.mat3);
-				return this.mat4;
-			}
-			return null;
-		}
-		return null;
-	} else {
-		if (this.mat3) return 3;
-		if (this.mat4) return 4;
-		return -1;
-	}	
+function isIterable(obj) {
+	if (obj == null) {
+		return false;
+	}
+	return typeof obj[Symbol.iterator] === 'function';
 }
-/*p5.Matrix.prototype.rowStride = function (setValue) {
+newMatrixAry = function (n) { return new Float32Array(n * n).fill().map((item, index) => (((index % (n + 1)) == 0)) ? 1 : 0); }
+p5.Matrix.prototype.rowStride = function (setValue) {
 	if (setValue) {
-		if (setValue == 3) {
-			if (this.mat3) return this.mat3;
-			if (this.mat4) {
-				this.mat3 = newMatrixAry(3)
-				for (var i = 0; i < 3; i++) {
-					for (var j = 0; j < 3; j++) {
-						this.mat3[i * 3 + j] = this.mat4[i * 4 + j];
-					}
-				}
-				delete (this.mat4);
-				return this.mat3;
-			}
-			return null;
+		var aryRet = [];
+		var aryValue = [];
+		if(setValue.length) {
+			for(var itm of setValue) {aryValue.push(floor(itm));}
+		} else {
+			aryValue.push(floor(setValue));
 		}
-		if (setValue == 4) {
-			if (this.mat4) return this.mat4;
-			if (this.mat3) {
-				this.mat4 = newMatrixAry(4);
-				for (var i = 0; i < 3; i++) {
-					for (var j = 0; j < 3; j++) {
-						this.mat4[i * 4 + j] = this.mat3[i * 3 + j];
+		var idx = 0;
+		for (var elemId in this) {
+			if(idx >= aryValue.length) {break;}
+			var elem = this[elemId];
+			if (isIterable(elem)) {
+				if (typeof(elem) !== "string") {
+					var dimOld = floor(elem.length ** 0.5);
+					var dimNew = aryValue[idx];
+					var dimMax = Math.max(dimOld, dimNew);
+					var idName = elemId.replace(/([\d\.\,])+$/, "");
+					var idNew = idName + dimNew.toString();
+					this[idNew] = newMatrixAry(dimNew);
+					for(var di = 0; di < dimMax; di++) {
+						for(var dj = 0; dj < dimMax; dj++) {
+							var idxOld = (di * dimOld) + dj;
+							var idxNew = (di * dimNew) + dj;
+							if(idxOld < this[elemId].length && idxNew < this[idNew].length) {
+								this[idNew][idxNew] = this[elemId][idxOld];
+							}
+						}
 					}
+					aryRet.push(this[idNew]);
+					delete this[elemId];
+					idx ++;
 				}
-				delete (this.mat3);
-				return this.mat4;
 			}
-			return null;
 		}
-		return null;
+		if (aryRet.length = 1) { aryRet = aryRet[0]; }
+		return aryRet;
 	} else {
 		var aryRet = [];
-		for(var elem in this) {
-			aryRet.push(.name);
-			//if(typeof(elem) === "Array") {
-			//	aryRet.push(aryData);
-			//}
+		for(var elemId in this) {
+			var elem = this[elemId];
+			if(isIterable(elem)) {
+				if(elem.__proto__ !== String) {
+					aryRet.push(floor(elem.length ** 0.5));
+				}
+			}
 		}
+		if(aryRet.length = 1) aryRet = aryRet[0];
 		return aryRet;
 	}
-} */
+}
 Object.defineProperty(p5.Matrix.prototype, "RowStride", {
 	get: function getRowStride() { return this.rowStride(); }, set: function setRowStride(value) { this.rowStride(value); }
 });
