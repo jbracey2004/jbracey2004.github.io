@@ -48,7 +48,7 @@ p5.Matrix.prototype.rowStride = function (setValue) {
 		for(var elemId in this) {
 			var elem = this[elemId];
 			if(isIterable(elem)) {
-				if(elem.__proto__ !== String) {
+				if (typeof (elem) !== "string") {
 					aryRet.push(floor(elem.length ** 0.5));
 				}
 			}
@@ -57,6 +57,43 @@ p5.Matrix.prototype.rowStride = function (setValue) {
 		return aryRet;
 	}
 }
+p5.Matrix.prototype.elemAry = function() {
+	var aryRet = [];
+	for (var elemId in this) {
+		var elem = this[elemId];
+		if (isIterable(elem)) {
+			if (typeof (elem) !== "string") {
+				aryRet.push(elem);
+			}
+		}
+	}
+	return aryRet;
+}
+p5.Matrix.prototype.rowAry = function(idxRow, setData) {
+	var rowStride = this.rowStride();
+	var aryElem = this.elemAry();
+	if(aryElem.length == 0) {return [];}
+	if(idxRow >=0 && idxRow < rowStride) {
+		if(setData) {
+			if (!isIterable(setData)) {return [];}
+			for (var di = 0; di < rowStride; di++) {
+				if(di < setData.length) {
+					aryElem[0][idxRow * rowStride + di] = setData[di];
+				}
+			}
+			return aryElem[0];
+		} else {
+			var aryRet = [];
+			for(var di = 0; di < rowStride; di ++) {
+				aryRet.push(aryElem[0][idxRow*rowStride + di]);
+			}
+			return aryRet;
+		}
+	}
+}
 Object.defineProperty(p5.Matrix.prototype, "RowStride", {
 	get: function getRowStride() { return this.rowStride(); }, set: function setRowStride(value) { this.rowStride(value); }
+});
+Object.defineProperty(p5.Matrix.prototype, "Row", {
+	get: function getRow(idxRow) { return this.rowAry(idxRow); }, set: function setRow(idxRow, value) { this.rowAry(idxRow, value); }
 });
