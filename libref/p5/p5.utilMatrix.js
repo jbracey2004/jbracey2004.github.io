@@ -70,8 +70,8 @@ p5.Matrix.prototype.elemAry = function() {
 	return aryRet;
 }
 p5.Matrix.prototype.rowAry = function(idxRow, setData) {
-	var rowStride = this.rowStride();
 	var aryElem = this.elemAry();
+	var rowStride = this.rowStride();
 	if(aryElem.length == 0) {return [];}
 	if(idxRow >=0 && idxRow < rowStride) {
 		if(setData) {
@@ -91,9 +91,17 @@ p5.Matrix.prototype.rowAry = function(idxRow, setData) {
 		}
 	}
 }
+p5.Matrix.prototype.Rows = function() {
+	var aryRet = [];
+	var aryElem = this.elemAry();
+	var rowStride = this.rowStride();
+	if (aryElem.length == 0) { return []; }
+	var rowCount = floor(aryElem[0].length / rowStride);
+	for(var di = 0; di < rowCount; di ++) {
+		aryRet.push(this.rowAry(di));
+	}
+	return aryRet;
+}
 Object.defineProperty(p5.Matrix.prototype, "RowStride", {
 	get: function getRowStride() { return this.rowStride(); }, set: function setRowStride(value) { this.rowStride(value); }
-});
-Object.defineProperty(p5.Matrix.prototype, "Row", {
-	get: function getRow(idxRow) { return this.rowAry(idxRow); }, set: function setRow(idxRow, value) { this.rowAry(idxRow, value); }
 });
