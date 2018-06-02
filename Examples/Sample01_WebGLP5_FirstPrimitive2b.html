@@ -39,20 +39,20 @@
 				normalMaterial();
 				
 				var tmpGamma, tmpBeta;
-					if(windowWidth > windowHeight) {
-						tmpGamma = beta;
-						tmpBeta = gamma;
-					} else {
-						tmpGamma = gamma;
-						tmpBeta = beta;
-					}
+				if(windowWidth > windowHeight) {
+					tmpGamma = beta;
+					tmpBeta = gamma;
+				} else {
+					tmpGamma = gamma;
+					tmpBeta = beta;
+				}
 					
 				for(var vRot of objTrans) {
 					var matxTmp = new p5.Matrix();
 					matxTmp.rotateY(tmpGamma * 16 * t);
 					matxTmp.rotateX(-tmpBeta * 16 * t);
 					matxTmp = vRot.mult(matxTmp.copy());
-				 	vRot = matxTmp.copy();
+					vRot = matxTmp.copy();
 				}
 
 				push();
@@ -102,6 +102,21 @@
 				//rotateY(ct * TAU * (1 / 2));
 				//rotateZ(ct * TAU * (1 / 26));
 				box(sw, sw * 0.75, sw * 0.5);
+				pop();
+
+				push();
+				translate(0, 96 - windowHeight*0.5);
+				fill("#00000080");
+				noStroke();
+				ellipse(0, 0, 128, 128);
+				fill("#00008080");
+				//var tmpGBAng = Math.atan2(tmpGamma, tmpBeta);
+				//var tmpGMPos = {X: Math.cos(tmpGBAng) * 64, Y: Math.sin(tmpGBAng) * 64};
+				var tmpGMPos = {X:tmpBeta, Y:tmpGamma};
+				var tmpGMDistInv = 1 / ((tmpGMPos.X ** 2 + tmpGMPos.Y ** 2) ** 0.5);
+				tmpGMPos.x *= tmpGMDistInv * 64;
+				tmpGMPos.y *= tmpGMDistInv * 64;
+				ellipse(tmpGMPos.X, tmpGMPos.Y, 32, 32);
 				pop();
 
 				pt = tn;
