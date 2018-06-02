@@ -17,7 +17,7 @@
 				canvasMain = p5objCanvas.elt;
 				canvasMain.style["touch-action"] = "none";
 				pixelDensity(1);
-				for(var i = 0; i < 6; i++) { objTrans.push({matx: new p5.Matrix(), dRotx:0, dRoty:0});}
+				for(var i = 0; i < 6; i++) { objTrans.push(new p5.Matrix());}
             }
 
             function draw() {
@@ -37,62 +37,70 @@
 				var sw = (1/10) * ((windowWidth ** 2 + windowHeight ** 2) ** 0.5);
 				var sp = sw * 2;
 				normalMaterial();
-
+				
+				var tmpGamma, tmpBeta;
+					if(windowWidth > windowHeight) {
+						tmpGamma = beta;
+						tmpBeta = gamma;
+					} else {
+						tmpGamma = gamma;
+						tmpBeta = beta;
+					}
+					
 				for(var vRot of objTrans) {
-					vRot.dRotx = beta*16;
-					vRot.dRoty = gamma*16;
-					vRot.matx.rotateX(-vRot.dRotx * t);
-					vRot.matx.rotateY(-vRot.dRoty * t);
-					//vRot.dRotx *= 0.999;
-					//vRot.dRoty *= 0.999;
+					var matxTmp = new p5.Matrix();
+					matxTmp.rotateY(tmpGamma * 16 * t);
+					matxTmp.rotateX(-tmpBeta * 16 * t);
+					matxTmp = vRot.mult(matxTmp.copy());
+				 	vRot = matxTmp.copy();
 				}
 
 				push();
 				translate(-sp, -0.5 * sp);
+				applyTransMatrix(objTrans[0]);
 				//rotateX(TAU * -(1 / 16));
 				//rotateY(ct*TAU*0.5);
-				applyTransMatrix(objTrans[0].matx);
 				box(sw);
 				pop();
 
 				push();
 				translate(0, -0.5 * sp);
+				applyTransMatrix(objTrans[1]);
 				//rotateY(TAU * (1 / 16));
 				//rotateX(ct * TAU * 0.25);
-				applyTransMatrix(objTrans[1].matx);
 				cone(sw*0.8,sw*1.2);
 				pop();
 
 				push();
 				translate(sp, -0.5 * sp);
+				applyTransMatrix(objTrans[2]);
 				//rotateX(ct * TAU * 0.7);
 				//rotateY(ct * TAU * 0.25);
-				applyTransMatrix(objTrans[2].matx);
 				ellipsoid(sw * 0.8, sw*0.9, sw * 0.7);
 				pop();
 
 				push();
 				translate(-sp, 0.5 * sp);
+				applyTransMatrix(objTrans[3]);
 				//rotateX(ct * TAU * ( 1 / 16));
 				//rotateY(ct * TAU * -0.25);
-				applyTransMatrix(objTrans[3].matx);
 				torus(sw * 0.6, sw * 0.25);
 				pop();
 
 				push();
 				translate(0, 0.5 * sp);
+				applyTransMatrix(objTrans[4]);
 				//rotateY(ct * TAU * (1 / 2));
 				//rotateZ(ct * TAU * (1 / 26));
-				applyTransMatrix(objTrans[4].matx);
 				cylinder(sw*0.5, sw*1.2);
 				pop();
 
 				push();
 				translate(sp, 0.5 * sp);
+				applyTransMatrix(objTrans[5]);
 				//rotateX(ct * TAU * (1 / 7));
 				//rotateY(ct * TAU * (1 / 2));
 				//rotateZ(ct * TAU * (1 / 26));
-				applyTransMatrix(objTrans[5].matx);
 				box(sw, sw * 0.75, sw * 0.5);
 				pop();
 
@@ -101,7 +109,7 @@
 
 			function applyTransMatrix(matx) {
 				var matxTmp = matx.copy();
-				matxTmp.mult(_renderer.uMVMatrix.copy());
+				matxTmp = matxTmp.mult(_renderer.uMVMatrix.copy());
 				_renderer.uMVMatrix = matxTmp.copy();
 			}
 
