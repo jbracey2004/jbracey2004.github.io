@@ -17,8 +17,88 @@
 				canvasMain = p5objCanvas.elt;
 				canvasMain.style["touch-action"] = "none";
 				pixelDensity(1);
-				for(var i = 0; i < 6; i++) { objTrans.push(new p5.Matrix());}
+				for(var i = 0; i < 6; i++) { objTrans.push({matx:new p5.Matrix(), draw:null});}
+				objTrans[0].draw = function (sw) { box(sw); };
+				objTrans[1].draw = function (sw) { cone(sw * 0.8, sw * 1.2); };
+				objTrans[2].draw = function (sw) { ellipsoid(sw * 0.8, sw * 0.9, sw * 0.7); };
+				objTrans[3].draw = function (sw) { torus(sw * 0.6, sw * 0.25); };
+				objTrans[4].draw = function (sw) { cylinder(sw * 0.5, sw * 1.2); };
+				objTrans[5].draw = function (sw) { box(sw, sw * 0.75, sw * 0.5); };
             }
+
+			var idxSelected = undefined;
+			var objSelectedMove = undefined;
+			function mousePressed(e) {
+				idxSelected = undefined;
+				objSelectedMove = undefined;
+				var vMouse = { X: e.clientX - windowWidth * 0.5, Y: e.clientY - windowHeight * 0.5 };
+				for(var vObjI = 0; vObjI < objTrans.length; vObjI ++) {
+					var vPos = SpacingPosition(vObjI);
+					var vDiff = {X:vPos.X - vMouse.X, Y:vPos.Y - vMouse.Y};
+					var dist = (vDiff.X**2 + vDiff.Y**2)**0.5;
+					var sw = SpacingWidth();
+					if(dist <= sw) {
+						idxSelected = vObjI;
+						objSelectedMove = { X: vDiff.X / sw, Y: vDiff.Y / sw };
+						break;
+					}
+				}
+				if(idxSelected === undefined) {
+					var areaGB = areaDeviceOriantation();
+					areaGB.X *= windowWidth;
+					areaGB.Y *= windowHeight;
+					vMouse.X += windowWidth*0.5;
+					vMouse.Y += windowHeight*0.5;
+					var vDiff = { X: areaGB.X - vMouse.X, Y: areaGB.Y - vMouse.Y };
+					if(Math.abs(vDiff.X) <= areaGB.W*0.75 && Math.abs(vDiff.Y) <= areaGB.H*0.75) {
+						idxSelected = -1;
+						objSelectedMove = { X: vDiff.X / (areaGB.W*0.5), Y: vDiff.Y / (areaGB.H*0.5) };
+					}
+				}
+			}
+			function mouseDragged(e) {
+				var vMouse = { X: e.clientX - windowWidth * 0.5, Y: e.clientY - windowHeight * 0.5 };
+				if(idxSelected !== undefined) {
+					if ((idxSelected >= 0) && (idxSelected < objTrans.length)) {
+						var objTmp = objTrans[idxSelected];
+						var vPos = SpacingPosition(idxSelected);
+						var vDiff = { X: vPos.X - vMouse.X, Y: vPos.Y - vMouse.Y };
+						var dist = (vDiff.X ** 2 + vDiff.Y ** 2) ** 0.5;
+						var sw = SpacingWidth();
+						objSelectedMove = {X:vDiff.X / sw, Y:vDiff.Y / sw};
+					}
+					if(idxSelected === -1) {
+						var areaGB = areaDeviceOriantation();
+						areaGB.X *= windowWidth;
+						areaGB.Y *= windowHeight;
+						vMouse.X += windowWidth * 0.5;
+						vMouse.Y += windowHeight * 0.5;
+						var vDiff = { X: areaGB.X - vMouse.X, Y: areaGB.Y - vMouse.Y };
+						objSelectedMove = { X: vDiff.X / (areaGB.W*0.5), Y: vDiff.Y / (areaGB.H*0.5) };
+					}
+				}
+			}
+			function mouseReleased(e) {
+				idxSelected = undefined;
+				objSelectedMove = undefined;
+			}
+
+			var SpacingWidth = function() {return (1 / 10) * ((windowWidth ** 2 + windowHeight ** 2) ** 0.5);}
+			var Spacing = function() {return SpacingWidth() * 2}
+			var SpacingStride = function() {return 3;}
+			var SpacingPosition = function(idx) {
+				var sw = SpacingWidth();
+				var sp = Spacing();
+				var spSt = SpacingStride();
+				var spxI = idx % spSt;
+				var spyI = floor(idx / spSt);
+				return {X: -sp + (spxI * sp), Y: -0.5 * sp + (spyI * sp)}
+			}
+			var areaDeviceOriantation = function() {
+				var ret = { X: 0.5, Y: 0.125, W: windowWidth * 0.125, H: windowHeight * 0.125 }
+				if (windowWidth > windowHeight) { var tmp = ret.X; ret.X = ret.Y; ret.Y = tmp; }
+				return ret;
+			}
 
             function draw() {
 				var tn = new Date(Date.now()).getTime()*0.001;
@@ -28,15 +108,23 @@
 
 				var beta = radians(rotationX);
 				var gamma = radians(rotationY);
-				var prevBeta = radians(pRotationX);
-				var prevGamma = radians(pRotationY);
-				var deltaBeta = beta - prevBeta;
-				var deltaGamma = gamma - prevGamma;
+				var alpha = radians(rotationZ);
+
+				if(idxSelected === -1) {
+					if(objSelectedMove) {
+						if (beta == 0 && gamma == 0) {
+							beta = radians(objSelectedMove.Y*-45);
+							gamma = radians(objSelectedMove.X*-45);
+						}
+					}
+				}
 
                 background(64);
-				var sw = (1/10) * ((windowWidth ** 2 + windowHeight ** 2) ** 0.5);
-				var sp = sw * 2;
 				normalMaterial();
+
+				var sw = SpacingWidth();
+				var sp = Spacing();
+				var spSt = SpacingStride();
 				
 				var tmpGamma, tmpBeta;
 				if(windowWidth > windowHeight) {
@@ -47,66 +135,40 @@
 					tmpBeta = beta;
 				}
 					
-				for(var vRot of objTrans) {
+				for(var vObj of objTrans) {
 					var matxTmp = new p5.Matrix();
 					matxTmp.rotateY(tmpGamma * 16 * t);
 					matxTmp.rotateX(-tmpBeta * 16 * t);
-					matxTmp = vRot.mult(matxTmp.copy());
-					vRot = matxTmp.copy();
+					matxTmp = vObj.matx.mult(matxTmp.copy());
+					vObj.matx = matxTmp.copy();
+				}
+
+				if(idxSelected !== undefined) {
+					if ((idxSelected >= 0) && (idxSelected < objTrans.length)) {
+						if (objSelectedMove) {
+							var objTmp = objTrans[idxSelected];
+							var matxTmp = new p5.Matrix();
+							matxTmp.rotateY(-2 * radians(objSelectedMove.X * 360) * t);
+							matxTmp.rotateX(2 * radians(objSelectedMove.Y * 360) * t);
+							matxTmp = objTmp.matx.mult(matxTmp.copy());
+							objTmp.matx = matxTmp.copy();
+						}
+					}
+				}
+
+				var vObjI = 0;
+				for (var vObj of objTrans) {
+					var vPos = SpacingPosition(vObjI);
+					push();
+					translate(vPos.X, vPos.Y);
+					applyTransMatrix(vObj.matx);
+					vObj.draw(sw);
+					pop();
+					vObjI ++;
 				}
 
 				push();
-				translate(-sp, -0.5 * sp);
-				applyTransMatrix(objTrans[0]);
-				//rotateX(TAU * -(1 / 16));
-				//rotateY(ct*TAU*0.5);
-				box(sw);
-				pop();
-
-				push();
-				translate(0, -0.5 * sp);
-				applyTransMatrix(objTrans[1]);
-				//rotateY(TAU * (1 / 16));
-				//rotateX(ct * TAU * 0.25);
-				cone(sw*0.8,sw*1.2);
-				pop();
-
-				push();
-				translate(sp, -0.5 * sp);
-				applyTransMatrix(objTrans[2]);
-				//rotateX(ct * TAU * 0.7);
-				//rotateY(ct * TAU * 0.25);
-				ellipsoid(sw * 0.8, sw*0.9, sw * 0.7);
-				pop();
-
-				push();
-				translate(-sp, 0.5 * sp);
-				applyTransMatrix(objTrans[3]);
-				//rotateX(ct * TAU * ( 1 / 16));
-				//rotateY(ct * TAU * -0.25);
-				torus(sw * 0.6, sw * 0.25);
-				pop();
-
-				push();
-				translate(0, 0.5 * sp);
-				applyTransMatrix(objTrans[4]);
-				//rotateY(ct * TAU * (1 / 2));
-				//rotateZ(ct * TAU * (1 / 26));
-				cylinder(sw*0.5, sw*1.2);
-				pop();
-
-				push();
-				translate(sp, 0.5 * sp);
-				applyTransMatrix(objTrans[5]);
-				//rotateX(ct * TAU * (1 / 7));
-				//rotateY(ct * TAU * (1 / 2));
-				//rotateZ(ct * TAU * (1 / 26));
-				box(sw, sw * 0.75, sw * 0.5);
-				pop();
-
-				push();
-				var areaGB = {X:0.5, Y:0.125, W:windowWidth*0.125, H:windowHeight*0.125}
-				if(windowWidth > windowHeight) {var tmp = areaGB.X; areaGB.X = areaGB.Y; areaGB.Y = tmp;}
+				var areaGB = areaDeviceOriantation();
 				translate(-windowWidth*0.5, -windowHeight*0.5);
 				push();
 				translate(areaGB.X*windowWidth, areaGB.Y*windowHeight);
