@@ -115,6 +115,7 @@
 						if (beta == 0 && gamma == 0) {
 							beta = radians(objSelectedMove.Y*-45);
 							gamma = radians(objSelectedMove.X*-45);
+							if(windowWidth > windowHeight) {var tmp = beta; beta = gamma; gamma = tmp;}
 						}
 					}
 				}

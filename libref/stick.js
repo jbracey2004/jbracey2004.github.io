@@ -20,7 +20,7 @@ function controlStick(parent) {
 	function onPointerStart(e) {
 		if(ref.objStartEvent) {return;}
 		var area = ref.ClientArea();
-		var posMouse = {X:e.clientX - this.offsetLeft, Y:e.clientY - this.offsetTop};
+		var posMouse = {X:mouseX - this.offsetLeft, Y:mouseY - this.offsetTop};
 		if ((posMouse.X >= area.Min.X && posMouse.X <= area.Max.X) &&
 			(posMouse.Y >= area.Min.Y && posMouse.Y <= area.Max.Y)) {
 			ref.objStartEvent = e;
@@ -35,7 +35,7 @@ function controlStick(parent) {
 		if(!(ref.objStartEvent)) {return;}
 		if(ref.objStartEvent.pointerId != e.pointerId) {return;}
 		var area = ref.ClientArea();
-		var posMouse = { X: e.clientX - this.offsetLeft, Y: e.clientY - this.offsetTop };
+		var posMouse = { X: mouseX - this.offsetLeft, Y: mouseY - this.offsetTop };
 		var uvPos = { X: (posMouse.X - area.Min.X) / area.Size.Width, Y: (posMouse.Y - area.Min.Y) / area.Size.Height };
 		uvPos.X = Math.max(Math.min(uvPos.X, 1), 0);
 		uvPos.Y = Math.max(Math.min(uvPos.Y, 1), 0);
