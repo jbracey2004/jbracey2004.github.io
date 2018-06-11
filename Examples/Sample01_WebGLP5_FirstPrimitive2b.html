@@ -30,7 +30,7 @@
 			function mousePressed(e) {
 				idxSelected = undefined;
 				objSelectedMove = undefined;
-				var vMouse = { X: e.clientX - windowWidth * 0.5, Y: e.clientY - windowHeight * 0.5 };
+				var vMouse = { X: mouseX - windowWidth * 0.5, Y: mouseY - windowHeight * 0.5 };
 				for(var vObjI = 0; vObjI < objTrans.length; vObjI ++) {
 					var vPos = SpacingPosition(vObjI);
 					var vDiff = {X:vPos.X - vMouse.X, Y:vPos.Y - vMouse.Y};
@@ -56,7 +56,7 @@
 				}
 			}
 			function mouseDragged(e) {
-				var vMouse = { X: e.clientX - windowWidth * 0.5, Y: e.clientY - windowHeight * 0.5 };
+				var vMouse = { X: mouseX - windowWidth * 0.5, Y: mouseY - windowHeight * 0.5 };
 				if(idxSelected !== undefined) {
 					if ((idxSelected >= 0) && (idxSelected < objTrans.length)) {
 						var objTmp = objTrans[idxSelected];
