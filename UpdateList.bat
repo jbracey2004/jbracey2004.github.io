@@ -1,1 +1,3 @@
-dir \b "Examples" | findstr /i ".html" > List.txt
+dir "Examples" "FreeCodeCamp" | findstr ".html" > "List.txt"
+dir "Examples" | findstr ".html" > "Examples\List.txt"
+dir "FreeCodeCamp" | findstr ".html" > "FreeCodeCamp\List.txt"

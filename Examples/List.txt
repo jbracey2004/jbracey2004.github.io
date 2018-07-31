@@ -21,4 +21,3 @@
 07/04/2018  08:24 AM             1,295 Sample01_WebGLP5_FirstPrimitive1.html
 07/04/2018  08:24 AM             2,200 Sample01_WebGLP5_FirstPrimitive2.html
 07/04/2018  08:24 AM             7,015 Sample01_WebGLP5_FirstPrimitive2b.html
-07/29/2018  10:21 PM                 0 Tribute_Sousa.html

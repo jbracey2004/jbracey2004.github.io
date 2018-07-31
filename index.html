@@ -42,11 +42,17 @@
         <script src="libref/p5/p5.min.js"></script>
         <script src="libref/p5/p5.dom.min.js"></script>
         <script>
-            var aryStrfiles;
+            var aryStrfiles = [];
             var elementList;
 
             function preload() {
-                aryStrfiles = loadStrings("List.txt");
+                var dirContent = document.getElementById("contentMain");
+                var aryDirContent = dirContent.children;
+                for (var dirElem of aryDirContent) {
+                    var strFileListPath = dirElem.id + "/List.txt";
+                    var strFileList = loadStrings(strFileListPath);
+                    aryStrfiles.push({ divElem:dirElem, lstFiles:strFileList });
+                }
                 console.log("Loading File References");
             }
 
@@ -54,36 +60,39 @@
 				var intCount = 0;
                 noCanvas();
                 console.log(aryStrfiles);
-                console.log(aryStrfiles.length + " File Lines Loaded");
-                var elementList = document.getElementById("divExamples");
-                for (var i = 0; i < aryStrfiles.length; i++) {
-					console.log("Reference"+i.toString());
-                    var args = {};
-                    var str = aryStrfiles[i];
-					var strmatch = {};
-					strmatch = str.match(/\b\w+\.\w+/);
-					if (strmatch == null) { continue; }
-                    args["name"] = strmatch[0];
-                    str = str.replace(strmatch, "");
-					strmatch = str.match(/\b\d{2}\/\d{2}\/\d{4}\s+\d{2}\:\d{2}\s\w{2}/);
-					if (strmatch == null) { continue; }
-                    args["date"] = strmatch;
-                    str = str.replace(strmatch, "");
-                    args["date"] = new Date(args["date"]);
-                    args["path"] = "Examples/" + args["name"];
-                    args["size"] = parseFloat(str.match(/\b(\d+(\,)?)+\b/g).toString().replace(",", ""));
-                    args["toString"] = args["name"] +  String.fromCharCode(9) + args["date"] + String.fromCharCode(9) + args["size"] + " bytes"
-                    console.log(args);
-					intCount++;
-                    var elementListItem = createElement("div", "");
-					elementListItem.style("padding","8px");
-                    var elementButtonItem = createA(args["path"].toString(), "");
-                    var elementButton = createButton(args["name"].toString());
-                    elementButton.parent(elementButtonItem);
-					elementButtonItem.parent(elementListItem);
-                    elementListItem.parent(elementList);
+                for (var aryDiv of aryStrfiles) {
+                    var elementList = document.createElement("div", "div" + aryDiv.divElem);
+                    elementList.style = "display: flex; flex-flow: wrap;";
+                    aryDiv.divElem.appendChild(elementList);
+                    for (var i = 0; i < aryDiv.lstFiles.length; i++) {
+					    console.log("Reference"+i.toString());
+                        var args = {};
+                        var str = aryDiv.lstFiles[i];
+					    var strmatch = {};
+					    strmatch = str.match(/\b\w+\.\w+/);
+					    if (strmatch == null) { continue; }
+                        args["name"] = strmatch[0];
+                        str = str.replace(strmatch, "");
+					    strmatch = str.match(/\b\d{2}\/\d{2}\/\d{4}\s+\d{2}\:\d{2}\s\w{2}/);
+					    if (strmatch == null) { continue; }
+                        args["date"] = strmatch;
+                        str = str.replace(strmatch, "");
+                        args["date"] = new Date(args["date"]);
+                        args["path"] = aryDiv.divElem.id + "/" + args["name"];
+                        args["size"] = parseFloat(str.match(/\b(\d+(\,)?)+\b/g).toString().replace(",", ""));
+                        args["toString"] = args["name"] +  String.fromCharCode(9) + args["date"] + String.fromCharCode(9) + args["size"] + " bytes"
+                        console.log(args);
+					    intCount++;
+                        var elementListItem = createElement("div", "");
+					    elementListItem.style("padding","8px");
+                        var elementButtonItem = createA(args["path"].toString(), "");
+                        var elementButton = createButton(args["name"].toString());
+                        elementButton.parent(elementButtonItem);
+					    elementButtonItem.parent(elementListItem);
+                        elementListItem.parent(elementList);
+                    }
+				    console.log(intCount.toString() + " References Loaded")
                 }
-				console.log(intCount.toString() + " References Loaded")
             }
         </script>
     </head>
@@ -102,6 +111,7 @@
 			<h2>Resources</h2>
 			<div id="divResources">
 				<ul>
+                    <li><a href="https://www.freecodecamp.org">FreeCodeCamp.org</a></li>
 					<li><a href="https://www.w3schools.com/">w3Schools.com</a></li>
 					<li><a href="https://p5js.org">P5js.org</a></li>
 					<li><a href="https://threejs.org">THREEjs.org</a></li>
@@ -112,9 +122,9 @@
 				</ul>				
 			</div>
 		</div>
-		<div id="content">
-			<h2>Examples - P5/Three/JS/HTML</h2>
-			<div id="divExamples" style="display: flex; flex-flow: wrap;"></div>
+		<div id="contentMain">
+			<div id="Examples"><h2>Examples - P5/Three/JS/HTML</h2></div>
+            <div id="FreeCodeCamp"><h2>FreeCodeCamp - Projects</h2></div>
 		</div>
     </body>
 </html>
