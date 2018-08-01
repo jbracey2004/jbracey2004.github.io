@@ -17,20 +17,21 @@
               background: #210;
             }
             img { 
-                max-width: 100%; 
-                display: block; 
-                width: 100%;
-                height: auto; 
-                margin: auto; 
+                display: block;
+                width: auto;
+                height: auto;
+                max-width: 800px;
+                max-height: 600px;
+                margin: auto;
             }
             #img-div {
-                margin:-5px;
-                margin-top:20px;
-                width:100%;
-                border:5px solid white;
+                display: block;
+                width: 100%;
+                height: auto;
+                border: none;
+                margin: auto;
             }
             table {
-                width: 100%;
                 border:none;
             }
         </style>
@@ -42,10 +43,10 @@
             <div>The American March King</div>
             <div id="img-div">
                 <img id="image" src="https://upload.wikimedia.org/wikipedia/commons/3/34/JohnPhilipSousa-Chickering.LOC.jpg" />
-                <span id="img-caption">John Philip Sousa, in 1900</span>
+                <div id="img-caption">John Philip Sousa, in 1900</div>
             </div>
             <div id="tribute-info">
-                <table id="timelineWorks_Marches">
+                <table id="timelineWorks_Marches" align="center">
                     <caption id="headline">Here are some marches written by Sousa</caption>
                     <thead><tr>
                         <th>Year Authored</th>
