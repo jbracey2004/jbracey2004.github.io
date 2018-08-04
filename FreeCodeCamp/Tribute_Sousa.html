@@ -32,19 +32,22 @@
                 border: none;
                 margin: auto;
             }
-            table#timelineWorks_Marches {
+            table.timeline {
                 border:none;
             }
-            table#timelineWorks_Marches th {
+            table.timeline th {
                 background-color : rgba(64,0,0,0.5);
             }
-            table#timelineWorks_Marches tr:nth-child(even) {
+            table.timeline td {
+                padding: 8px;
+            }
+            table.timeline tr:nth-child(even) {
                 background-color : rgba(0,0,0,0.25);
             }
-            table#timelineWorks_Marches tr:nth-child(odd) {
+            table.timeline tr:nth-child(odd) {
                 background-color : rgba(0,0,0,0.125);
             }
-            table#timelineWorks_Marches div {
+            table.timeline div {
                 display: inline;
                 float: left;
                 padding: 4px 8px 4px 8px;
@@ -61,8 +64,62 @@
                 <div id="img-caption">John Philip Sousa, in 1900</div>
             </div>
             <div id="tribute-info">
-                <table id="timelineWorks_Marches" align="center">
-                    <caption id="headline"><h2>Here are some marches written by Sousa</h2></caption>
+                <table id="timelineLife" class="timeline" align="center">
+                    <caption id="headlineLife"><h3>Here are some events along Sousa's timeline</h3></caption>
+                    <thead><tr>
+                        <th>Date</th>
+                        <th>Event</th>
+                        <th>Info</th>
+                    </tr></thead>
+                    <tr><td>November 6, 1854</td>
+                        <td>John Philip Sousa is Born</td>
+                        <td>Washington D.C, U.S<br />
+                            Father: John Anthony Sousa<br />
+                            Mother: Maria Elisabeth Trinkhaus
+                        </td>
+                    </tr>
+                    <tr><td>1860</td>
+                        <td>Begins Early music education</td>
+                        <td>Student of John Esputa and George Felix Benkert<br />
+                            Studied voice, violin, piano, flute, cornet, baritone, horn, trombone, and alto horn<br />
+                            He was also found to have perfect pitch.
+                        </td>
+                    </tr>
+                    <tr><td>June 6, 1867</td>
+                        <td>Enlisted in United States Marine Corps as music apprentice</td>
+                        <td>He almost joined a circus band, but this was averted</td>
+                    </tr>
+                    <tr><td>1871</td>
+                        <td>Completes honerably, his apprenticeship and first term in the U.S Marine Band</td>
+                        <td>He enlist for his second term in the Marines July 8, 1872</td>
+                    </tr>
+                    <tr><td>1873</td>
+                        <td>Early Compositions copyrights</td>
+                        <td>"The Review March" and "The Cuckoo Galop"</td>
+                    </tr>
+                    <tr><td>1874</td>
+                        <td>Completes honerably, his second term in the U.S Marine Band</td>
+                        <td></td>
+                    </tr>
+                    <tr><td> </td>
+                        <td>Continues music career</td>
+                        <td>Studies Composition<br />
+                            Conducts Opera House in Washington D.C<br />
+                            Conducts Road Company in Matt Morgan's "Living Pictures"<br />
+                            First Chair as violintist at Centennial Exposition in Philadelphia<br />
+                            Plays in Mrs. Drew's Arch Street Theater Orchestra in Philadelphia
+                        </td>
+                    </tr>
+                    <tr><td>March 6, 1932</td>
+                        <td>Sousa dies</td>
+                        <td>Age 77<br />
+                            Reading, Pennslyvania<br />
+                            This was after a rehersal of Ringgold Band, conducting the "THe Stars and Stripes Forever"
+                        </td>
+                    </tr>
+                </table>
+                <table id="timelineWorks_Marches" class="timeline" align="center">
+                    <caption id="headlineWorks_Marches"><h3>Here are some marches written by Sousa</h3></caption>
                     <thead><tr>
                         <th>Year Authored</th>
                         <th>March Name</th>
