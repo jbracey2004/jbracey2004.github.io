@@ -1,0 +1,142 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+        <title>FreeCodeCamp Project - Survey, Gaming</title>
+        <style>
+            html, body {
+                text-align: center;
+                font-size:large;
+                background-color:#210;
+                color: #888;
+            }
+            #form-outer {
+                margin: 0 auto;
+                border-radius: 8px;
+                width: 75%;
+                background-color:#410;
+                color: #888;
+            }
+            .divRow {
+                display:block;
+            }
+            .divLabel {
+                display: inline-block;
+                text-align: right;
+                width: 48%;
+                vertical-align: top;
+                padding: 8px;
+            }
+            .divField {
+                display: inline-block;
+                text-align: left;
+                width: 48%;
+                vertical-align: middle;
+            }
+        </style>
+        <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
+    </head>
+    <body>
+        <h1 id="title">Questionnaire</h1>
+        <div id="form-outer">
+            <p id="description">Questions on Gaming</p>
+            <form id="survey-form"  method="GET" action="https://crossorigin.me/https://freecodecamp.com">
+                <div class="divRow">
+                    <div class="divLabel"><label id="name-label" for="name">* Name: </label></div>
+                    <div class="divField"><input id="name" name="name" type="text" placeholder="Enter your Name" autofocus required /></div>
+                </div>
+                <div class="divRow">
+                    <div class="divLabel"><label id="email-label" for="email">* eMail: </label></div>
+                    <div class="divField"><input id="email" name="email" type="email" placeholder="Enter your eMail" autofocus required /></div>
+                </div>
+                <div class="divRow">
+                    <div class="divLabel"><label id="number-label" for="number">* Age: </label></div>
+                    <div class="divField"><input id="number" name="number" type="number" placeholder="Age" min="0" max="150" required /></div>
+                </div>
+                <div class="divRow">
+                    <div class="divLabel"><label id="dropdown-label" for="dropdown">Which best describes the level of gamer you are?</label></div>
+                    <div class="divField">
+                        <select id="dropdown" name="dropdown">
+                            <option disabled value="">Select an option</option>
+                            <option value="none">Non Gamer</option>
+                            <option value="casual">Casual Gamer</option>
+                            <option value="regular">Regular Gamer</option>
+                            <option value="pro">Professional Gamer</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="divRow">
+                    <div class="divLabel"><label id="platform-label" for="platformGame">Do you Game on any of these platforms?<br />(Check all that apply)</label></div>
+                    <div class="divField">
+                        <ul id="platformGame" style="list-style: none;">
+                            <li><input type="checkbox" id="platform_PC_Windows" name="platformGame" value="pc_win"/>Windows PC</li>
+                            <li><input type="checkbox" id="platform_PC_Linux" name="platformGame" value="pc_linux"/>Linux PC</li>
+                            <li><input type="checkbox" id="platform_PC_Mac" name="platformGame" value="pc_mac"/>Mac</li>
+                            <li><input type="checkbox" id="platform_Microsoft" name="platformGame" value="console_microsoft"/>Microsoft Console</li>
+                            <li><input type="checkbox" id="platform_Sony" name="platformGame" value="console_sony"/>Sony Console</li>
+                            <li><input type="checkbox" id="platform_Nintendo" name="platformGame" value="console_nintendo"/>Nintendo Console</li>
+                            <li><input type="checkbox" id="platform_MobileIOS" name="platformGame" value="mobile_ios"/>Mobile iOS</li>
+                            <li><input type="checkbox" id="platform_MobileAndroid" name="platformGame" value="mobile_android"/>Mobile Android</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="divRow">
+                    <div class="divLabel"><label id="streamer-label" for="streamer">Do you stream?</label></div>
+                    <div class="divField">
+                        <ul id="streamer" style="list-style: none;">
+                            <li><input type="radio" id="streamer_none" name="streamer" value="none"/>No</li>
+                            <li><input type="radio" id="streamer_games" name="streamer" value="games" />I stream games</li>
+                            <li><input type="radio" id="streamer_other" name="streamer" value="other" />I stream other content</li>
+                            <li><input type="radio" id="streamer_all" name="streamer" value="all"/>I stream games and other content</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="divRow">
+                    <div class="divLabel"><label id="dropdownDev-label" for="dropdownDev">Are you a developer?</label></div>
+                    <div class="divField">
+                        <select id="dropdownDev" name="dropdownDev">
+                            <option disabled value="">Select an option</option>
+                            <option value="none">No</option>
+                            <option value="indie">I am an Indie Developer</option>
+                            <option value="teamSmall">I Develop as part of a small team</option>
+                            <option value="teamLarge">I Develop as part of a large team</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="divRow">
+                    <div class="divLabel"><label id="platformDev-label" for="platformDev">Do you Develop for any of these platforms?<br />(Check all that apply)</label></div>
+                    <div class="divField">
+                        <ul id="platformDev" style="list-style: none;">
+                            <li><input type="checkbox" id="platformDev_PC_Windows" name="platformDev" value="pc_win" />Windows PC</li>
+                            <li><input type="checkbox" id="platformDev_PC_Linux" name="platformDev" value="pc_linux" />Linux PC</li>
+                            <li><input type="checkbox" id="platformDev_PC_Mac" name="platformDev" value="pc_mac" />Mac</li>
+                            <li><input type="checkbox" id="platformDev_Microsoft" name="platformDev" value="console_microsoft" />Microsoft Console</li>
+                            <li><input type="checkbox" id="platformDev_Sony" name="platformDev" value="console_sony" />Sony Console</li>
+                            <li><input type="checkbox" id="platformDev_Nintendo" name="platformDev" value="console_nintendo" />Nintendo Console</li>
+                            <li><input type="checkbox" id="platformDev_MobileIOS" name="platformDev" value="mobile_ios" />Mobile iOS</li>
+                            <li><input type="checkbox" id="platformDev_MobileAndroid" name="platformDev" value="mobile_android" />Mobile Android</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="divRow">
+                    <div class="divLabel"><label id="competitionDev-label" for="competitionDev">Do you think a developing would make a gamer a better competitor?</label></div>
+                    <div class="divField">
+                        <ul id="competitionDev" style="list-style: none;">
+                            <li><input type="radio" id="competitionDev_Yes" name="competitionDev" value="yes" />Yes</li>
+                            <li><input type="radio" id="competitionDev_No" name="competitionDev" value="no" />No</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="divRow">
+                    <div class="divLabel"><label for="comments">Comments about Gaming and/or Developers?</label></div>
+                    <div class="divField">
+                        <textarea id="comments" class="input-field" style="height:50px;resize:both;" name="comment" placeholder="Enter your comments here..."></textarea>
+                    </div>
+                </div>
+                <button id="submit" type="submit">Submit</button>
+            </form>
+        </div>
+    </body>
+</html>
