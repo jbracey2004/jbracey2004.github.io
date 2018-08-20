@@ -1,6 +1,10 @@
 (function () {
     'use strict';
 
+    window.strCodeFromElement = function (idElement) {
+        return document.getElementById(id).textContent.replace(/^\s+|\s+$/g, '');
+    }
+
     window.getShaderSource = function(id) {
         return document.getElementById(id).textContent.replace(/^\s+|\s+$/g, '');
     };

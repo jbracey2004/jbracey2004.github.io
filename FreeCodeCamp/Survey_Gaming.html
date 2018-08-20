@@ -7,32 +7,71 @@
         <style>
             html, body {
                 text-align: center;
-                font-size:large;
+                font-size: x-large;
                 background-color:#210;
                 color: #888;
             }
             #form-outer {
+                display:block;
                 margin: 0 auto;
                 border-radius: 8px;
-                width: 75%;
                 background-color:#410;
                 color: #888;
+                width: 85%;
             }
             .divRow {
                 display:block;
+                width: 100%;
+                padding: 8px 0 8px 0;
             }
             .divLabel {
                 display: inline-block;
                 text-align: right;
-                width: 48%;
+                width: 45%;
                 vertical-align: top;
                 padding: 8px;
             }
             .divField {
                 display: inline-block;
                 text-align: left;
-                width: 48%;
+                width: 45%;
                 vertical-align: middle;
+            }
+            input[type="text"], input[type="email"], input[type="number"], select {
+                width: 80%;
+            }
+            input[type="checkbox"], input[type="radio"] {
+                position: relative;
+                display: block;
+                float: left;
+                left: -32px;
+                margin-right: -16px;
+            }
+
+            @media screen and (max-width: 833px) {
+                .divField {
+                    width: 80%;
+                }
+                select {
+                    width: 90%;
+                }
+            }
+
+            @media screen and (max-width: 520px) {
+                .divLabel {
+                    width: 100%;
+                    text-align: left;
+                }
+                .divRow {
+                    width: 80%;
+                    float: left;
+                }
+                .divField {
+                    width: 100%;
+                }
+                select {
+                    width: 100%;
+                }
             }
         </style>
         <script src="https://cdn.freecodecamp.org/testable-projects-fcc/v1/bundle.js"></script>
@@ -135,7 +174,9 @@
                         <textarea id="comments" class="input-field" style="height:50px;resize:both;" name="comment" placeholder="Enter your comments here..."></textarea>
                     </div>
                 </div>
-                <button id="submit" type="submit">Submit</button>
+                <div class="divRow">
+                    <button id="submit" type="submit">Submit</button>
+                </div>
             </form>
         </div>
     </body>
