@@ -3,56 +3,21 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width">
-		<title>Portfolio - Breakout Sprites - Matter.js </title>
+		<title>Portfolio - Matter.js Sample </title>
 		<script src="../libref/p5/p5.min.js"></script>
-		<script src="../libref/p5/p5.sound.min.js"></script>
 		<script src="../libref/p5/p5.dom.min.js"></script>
         <script src="../libref/matterjs/matter.min.js"></script>
         <script src="../libref/Utility_Physics/matter.js"></script>
 		<script>
 			var canvasMain;
 			var contextMain;
-			var wavPing_Paddle;
-			var wavPing_Bounds;
-			var wavPing_Brick;
-			var wavPing_GroupClear;
-			var wavPing_Lost;
-            var groupBricks = [];
             var physics;
 			var pt = 0;
-			var ct = 0;
-            var score = 0;
+            var ct = 0;
+            var bodyGround;
 
-			var PlayScreen_Width = 1000;
-			var PlayScreen_Height = 1000;
-			var MAX_SPEED = Math.sqrt(PlayScreen_Width * PlayScreen_Height)/10;
-			var WALL_THICKNESS = 50;
-			var BRICK_W = 40;
-			var BRICK_H = 20;
-			var BRICK_MARGIN = 4;
-			var ROWS = 9;
-			var COLUMNS = 16;
-			var paddle, ball, wallTop, wallBottom, wallLeft, wallRight, bricks;
-			var gradientBall, gradientPaddle, gradientBrick;
-
-			var fxnDrawBall = function() {
-				noStroke();
-				contextMain.fillStyle = gradientBall;
-				ellipse(0,0, 16, 16);
-			};
-			var fxnDrawPaddle = function () {
-				noStroke();
-				contextMain.fillStyle = gradientPaddle;
-				rect(0,0,paddle.width, paddle.height);
-			}
-			var fxnDrawBrick = function(group) {
-				return function() {
-					contextMain.fillStyle = gradientBrick;
-					stroke(group);
-					strokeWeight(2);
-					rect(0, 0, BRICK_W, BRICK_H);
-				}
-			};
+			var PlayScreen_Width = 1600;
+			var PlayScreen_Height = 1200;
 
 			function setup() {
 				var p5objCanvas = createCanvas(windowWidth, windowHeight);
@@ -64,48 +29,11 @@
 				canvasMain.style.height = windowHeight + "px";
 				canvasMain.style["touch-action"] = "none";
 
-				gradientBall = contextMain.createRadialGradient(0,0,0,0,0,16);
-				gradientBall.addColorStop(0, "#8080FF");
-				gradientBall.addColorStop(1, "#000040");
-				gradientPaddle = contextMain.createLinearGradient(0,-5,0,5);
-				gradientPaddle.addColorStop(0, "#000000")
-				gradientPaddle.addColorStop(0.5, "#FFFFFF");
-				gradientPaddle.addColorStop(1, "#000000");
-				gradientBrick = contextMain.createLinearGradient(0, -BRICK_H*0.5, 0, BRICK_H*0.5);
-				gradientBrick.addColorStop(0, "#00CC00");
-                gradientBrick.addColorStop(1, "#00FF00");
-
                 physics = new Physics2D.Engine();
                 physics.AutoRun_Start();
                 physics.AutoRender_Start();
                 physics.setPlayArea({ width: PlayScreen_Width, height: PlayScreen_Height });
-                wallBottom = physics.CreateBody_Rectangle(PlayScreen_Width * 0.01, PlayScreen_Height * 0.9, PlayScreen_Width*0.98, PlayScreen_Height * 0.08, {isStatic: true});
-				
-				wavPing_Paddle = new p5.Oscillator();
-				wavPing_Paddle.setType("square");
-				wavPing_Paddle.start();
-				wavPing_Paddle.freq(256);
-				wavPing_Paddle.amp(0);
-				wavPing_Brick = new p5.Oscillator();
-				wavPing_Brick.setType("triangle");
-				wavPing_Brick.start();
-				wavPing_Brick.freq(512);
-				wavPing_Brick.amp(0);
-				wavPing_Bounds = new p5.Oscillator();
-				wavPing_Bounds.setType("sine");
-				wavPing_Bounds.start();
-				wavPing_Bounds.freq(1024);
-				wavPing_Bounds.amp(0);
-				wavPing_Lost = new p5.Oscillator();
-				wavPing_Lost.setType("triangle");
-				wavPing_Lost.start();
-				wavPing_Lost.freq(128);
-				wavPing_Lost.amp(0);
-				wavPing_GroupClear = new p5.Oscillator();
-				wavPing_GroupClear.setType("triangle");
-				wavPing_GroupClear.start();
-				wavPing_GroupClear.freq(768);
-				wavPing_GroupClear.amp(0);
+                bodyGround = physics.CreateBody_Rectangle(0 , PlayScreen_Height * 0.9, PlayScreen_Width, PlayScreen_Height*0.1, {isStatic: true});
 
 				var comFullscreen = createButton("[]");
 				comFullscreen.style("position: absolute");
@@ -124,28 +52,13 @@
 
                 background("#404040");
 
-                push();
-				if (canvasMain.offsetWidth > canvasMain.offsetHeight) {
-					translate(canvasMain.width, 0);
-					rotate(PI / 2);
-					scale(canvasMain.height / canvasMain.width, canvasMain.width / canvasMain.height);
-				}
                 physics.RenderDebug(contextMain);
-                pop();
-
-				textSize(32);
-				stroke("#FFFFFF");
-				strokeWeight(2);
-                text(score.toString(), canvasMain.width / 2, 36);
 
 				pt = tn;
             }
 
             function ClientToPlayField(pos, viewport) {
                 let posRet = {x:pos.x/canvasMain.offsetWidth, y:pos.y/canvasMain.offsetHeight} ;
-                if (canvasMain.offsetWidth > canvasMain.offsetHeight) {
-                    posRet = {x: posRet.y, y: 1.0 - posRet.x };
-                }
                 posRet.x *= viewport.width;
                 posRet.y *= viewport.height;
                 return posRet;
@@ -158,12 +71,11 @@
                 AddBody( ClientToPlayField({ x: event.clientX, y: event.clientY }, {width: PlayScreen_Width, height: PlayScreen_Height}));
             }
             function AddBody(pos) {
-                physics.CreateBody_Rectangle(0, 0,
-                    random(0.02, 0.1) * (PlayScreen_Width),
-                    random(0.02, 0.1) * (PlayScreen_Height), {
-                    position: pos,
-                    mass: random(1,8),
-                    friction: 0.6,
+                physics.CreateBody_Polygon(0, 0, floor(random(2,8)),
+                    random(0.01, 0.05) * (PlayScreen_Width ** 2 + PlayScreen_Height) ** 0.5, {
+                    position: pos, 
+                    mass: random(1,16),
+                    friction: 0.5,
                     restitution: 0.2
                 });
             }
