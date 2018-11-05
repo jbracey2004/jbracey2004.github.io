@@ -15,6 +15,7 @@
 			var pt = 0;
             var ct = 0;
             var bodyGround;
+            var instanceMouse;
 
 			var PlayScreen_Width = 1600;
 			var PlayScreen_Height = 1200;
@@ -33,7 +34,15 @@
                 physics.AutoRun_Start();
                 physics.AutoRender_Start();
                 physics.setPlayArea({ width: PlayScreen_Width, height: PlayScreen_Height });
-                bodyGround = physics.CreateBody_Rectangle(0 , PlayScreen_Height * 0.9, PlayScreen_Width, PlayScreen_Height*0.1, {isStatic: true});
+                bodyGround = physics.CreateBody_Rectangle(0, PlayScreen_Height * 0.9, PlayScreen_Width, PlayScreen_Height * 0.1, { isStatic: true });
+
+                instanceMouse = Matter.Mouse.create(canvasMain)
+                Matter.Mouse.setScale(instanceMouse, {x:PlayScreen_Width / windowWidth , y: PlayScreen_Height / windowHeight });
+                constraintMouse = Matter.MouseConstraint.create(physics.instance, {
+                    mouse: instanceMouse,
+                    constraint: { stiffness: 0.2 }
+                });
+                Matter.World.add(physics.instance.world, constraintMouse);
 
 				var comFullscreen = createButton("[]");
 				comFullscreen.style("position: absolute");
@@ -65,16 +74,26 @@
             }
 
             function mousePressed(event) {
-                AddBody( ClientToPlayField({ x: event.clientX, y: event.clientY }, {width: PlayScreen_Width, height: PlayScreen_Height}));
+                let pos = ClientToPlayField({ x: event.clientX, y: event.clientY }, {width: PlayScreen_Width, height: PlayScreen_Height});
+                let ret = Matter.Query.ray(Matter.Composite.allBodies(physics.instance.world), pos, {x:pos.x+1, y:pos.y+1});
+                if (ret.length === 0) {
+                    AddBody( pos );
+                } else {
+                    console.log(ret);
+                }
             }
             function mouseDragged(event) {
-                AddBody( ClientToPlayField({ x: event.clientX, y: event.clientY }, {width: PlayScreen_Width, height: PlayScreen_Height}));
+                let pos = ClientToPlayField({ x: event.clientX, y: event.clientY }, {width: PlayScreen_Width, height: PlayScreen_Height});
+                let ret = Matter.Query.ray(Matter.Composite.allBodies(physics.instance.world), pos, {x:pos.x+1, y:pos.y+1});
+                if (ret.length === 0) {
+                    AddBody( pos );
+                }
             }
             function AddBody(pos) {
                 physics.CreateBody_Polygon(0, 0, floor(random(2,8)),
                     random(0.01, 0.05) * (PlayScreen_Width ** 2 + PlayScreen_Height) ** 0.5, {
                     position: pos, 
-                    mass: random(1,16),
+                    mass: random(1,8),
                     friction: 0.5,
                     restitution: 0.2
                 });
@@ -89,6 +108,7 @@
 				canvasMain.style.width = szWin.width + "px";
                 canvasMain.style.height = szWin.height + "px";
                 resizeCanvas(szWin.width, szWin.height);
+                Matter.Mouse.setScale(instanceMouse, {x:PlayScreen_Width / szWin.width , y: PlayScreen_Height / szWin.height });
 				console.log(szWin);
 			}
 
