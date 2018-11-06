@@ -1,11 +1,16 @@
 var Physics2D = {};
+Physics2D.Composite_lstInstances = [];
+Physics2D.Body_lstInstances = [];
+Physics2D.Composite_fromInstance = function (objInstance) { return Physics2D.Composite_lstInstances.filter(itm => (itm.instance === objInstance)); };
+Physics2D.Body_fromInstance = function (objInstance) { return Physics2D.Body_lstInstances.filter(itm => (itm.instance === objInstance)); };
 Physics2D.Engine = function (objInstance) {
-    this.__proto__ = Physics2D.Engine.__proto__;
+    //this.__proto__ = Physics2D.Engine.__proto__;
     if (objInstance) {
         this.instance = objInstance;
     } else {
         this.instance = Matter.Engine.create();
     }
+    this.World = new Physics2D.Composite(this.instance.world);
     this.AutoRun_Start = function () {
         this.runner = Matter.Runner.create();
         Matter.Runner.start(this.runner, this.instance);
@@ -79,47 +84,72 @@ Physics2D.Engine = function (objInstance) {
             context.drawImage(this.render.canvas,viewport.x,viewport.y,viewport.width,viewport.height, 0, 0, context.canvas.width, context.canvas.height);
         }
     };
+};
+Physics2D.Composite = function (objInstance, objOptions) {
+    //this.__proto__ = Physics2D.Composite.__proto__;
+    if (!objOptions) objOptions = {};
+    if (objInstance) { this.instance = objInstance; } else { this.instance = Matter.Composite.create(objOptions); }
+    this.SetWrapBounds = function (bounds) {
+        this.WrapBounds = bounds;
+        for (let obj of Matter.Composite.allBodies(this.instance)) {
+            if (this.WrapBounds) {
+                obj.plugin.wrap = this.WrapBounds;
+            } else {
+                obj.plugin.wrap = null;
+                delete obj.plugin.wrap;
+            }
+        }
+    };
+    this.AddObject = function (obj) {
+        obj.AddTo(this);
+        if (this.WrapBounds) { obj.instance.plugin.wrap = this.WrapBounds; }
+    };
     this.CreateBody = function (objOptions) {
-        if (!objOptions) objOptions = {}; 
+        if (!objOptions) objOptions = {};
         let objRet = new Physics2D.Body(Matter.Body.create(objOptions));
-        Matter.World.add(this.instance.world, objRet.instance);
+        this.AddObject(objRet);
         return objRet;
     };
     this.CreateBody_Rectangle = function (x, y, w, h, objOptions) {
         if (!objOptions) objOptions = {};
-        let objRet = new Physics2D.Body(Matter.Bodies.rectangle(x + w*0.5, y + h*0.5, w, h, objOptions));
-        Matter.World.add(this.instance.world, objRet.instance);
+        let objRet = new Physics2D.Body(Matter.Bodies.rectangle(x + w * 0.5, y + h * 0.5, w, h, objOptions));
+        this.AddObject(objRet);
         return objRet;
     };
     this.CreateBody_Polygon = function (x, y, sides, r, objOptions) {
         if (!objOptions) objOptions = {};
         let objRet = new Physics2D.Body(Matter.Bodies.polygon(x, y, sides, r, objOptions));
-        Matter.World.add(this.instance.world, objRet.instance);
+        this.AddObject(objRet);
         return objRet;
     };
     this.CreateBody_Circle = function (x, y, r, objOptions) {
         if (!objOptions) objOptions = {};
         let objRet = new Physics2D.Body(Matter.Bodies.circle(x, y, r, objOptions));
-        Matter.World.add(this.instance.world, objRet.instance);
+        this.AddObject(objRet);
         return objRet;
     };
     this.CreateBody_Ellipse = function (x, y, rx, ry, segs, objOptions) {
         if (!objOptions) objOptions = {};
         let vrt = []; for (let i = 0; i < segs; i++) { let a = (i / segs) * 2 * PI; vrt.push({ x: rx * cos(a), y: ry * sin(a) }); }
         let objRet = new Physics2D.Body(Matter.Bodies.fromVerticies(x, y, vrt, objOptions));
-        Matter.World.add(this.instance.world, objRet.instance);
+        this.AddObject(objRet);
         return objRet;
     };
     this.CreateBody_Verticies = function (x, y, vrts, objOptions) {
         if (!objOptions) objOptions = {};
         let objRet = new Physics2D.Body(Matter.Bodies.fromVerticies(x, y, vrts, objOptions));
-        Matter.World.add(this.instance.world, objRet.instance);
+        this.AddObject(objRet);
         return objRet;
     };
+    this.Delete = function () {
+        Physics2D.Composite_lstInstances = Physics2D.Composite_lstInstances.filter(itm => (itm.instance !== this));
+    };
+    Physics2D.Composite_lstInstances.push(this);
 };
-Physics2D.Body = function (objInstance) {
-    this.__proto__ = Physics2D.Body.__proto__;
-    this.instance = objInstance;
+Physics2D.Body = function (objInstance, objOptions) {
+    //this.__proto__ = Physics2D.Body.__proto__;
+    if (!objOptions) objOptions = {};
+    if (objInstance) { this.instance = objInstance; } else { this.instance = Matter.Body.create(objOptions); }
     this.AddParts = function (aryBodies) {
         let aryTmp = this.instance.parts;
         for (let objBody of aryBodies) {
@@ -137,4 +167,17 @@ Physics2D.Body = function (objInstance) {
         let aryTmp = this.instance.parts.filter(x => !aryBodies.includes(x));
         return this.instance.setParts(aryTmp);
     };
+    this.AddTo = function (objComposite) {
+        Matter.Composite.add(objComposite.instance, this.instance);
+        this.Composite = objComposite;
+    };
+    this.Delete = function (bolDeep) {
+        if (this.Composite) {
+            if (bolDeep) { bolDeep = true; } else { bolDeep = false; }
+            Matter.Composite.remove(this.Composite.instance, this.instance, bolDeep);
+            delete this.instance;
+        }
+        Physics2D.Body_lstInstances = Physics2D.Body_lstInstances.filter(itm => (itm.instance !== this));
+    };
+    Physics2D.Body_lstInstances.push(this);
 };

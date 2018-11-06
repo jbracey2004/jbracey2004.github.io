@@ -7,15 +7,17 @@
 		<script src="../libref/p5/p5.min.js"></script>
 		<script src="../libref/p5/p5.dom.min.js"></script>
         <script src="../libref/matterjs/matter.min.js"></script>
+        <script src="../libref/matterjs/matter-wrap.min.js"></script>
         <script src="../libref/Utility_Physics/matter.js"></script>
 		<script>
 			var canvasMain;
 			var contextMain;
             var physics;
-			var pt = 0;
-            var ct = 0;
             var bodyGround;
             var instanceMouse;
+            var bodyHighlight;
+            var pt = 0;
+            var ct = 0;
 
 			var PlayScreen_Width = 1600;
 			var PlayScreen_Height = 1200;
@@ -30,19 +32,21 @@
 				canvasMain.style.height = windowHeight + "px";
 				canvasMain.style["touch-action"] = "none";
 
+                Matter.use('matter-wrap');
                 physics = new Physics2D.Engine();
                 physics.AutoRun_Start();
                 physics.AutoRender_Start();
                 physics.setPlayArea({ width: PlayScreen_Width, height: PlayScreen_Height });
-                bodyGround = physics.CreateBody_Rectangle(0, PlayScreen_Height * 0.9, PlayScreen_Width, PlayScreen_Height * 0.1, { isStatic: true });
+                physics.World.SetWrapBounds({ min: { x: 0, y: 0 }, max: { x: PlayScreen_Width, y: PlayScreen_Height } });
+                bodyGround = physics.World.CreateBody_Rectangle(PlayScreen_Width*-0.25, PlayScreen_Height * 0.9, PlayScreen_Width*1.25, PlayScreen_Height * 0.1, { isStatic: true });
 
                 instanceMouse = Matter.Mouse.create(canvasMain)
                 Matter.Mouse.setScale(instanceMouse, {x:PlayScreen_Width / windowWidth , y: PlayScreen_Height / windowHeight });
                 constraintMouse = Matter.MouseConstraint.create(physics.instance, {
                     mouse: instanceMouse,
-                    constraint: { stiffness: 0.2 }
+                    constraint: { stiffness: 0.05 }
                 });
-                Matter.World.add(physics.instance.world, constraintMouse);
+                Matter.World.add(physics.World.instance, constraintMouse);
 
 				var comFullscreen = createButton("[]");
 				comFullscreen.style("position: absolute");
@@ -62,6 +66,9 @@
                 background("#404040");
 
                 physics.RenderDebug(contextMain);
+                if (bodyHighlight) {
+                    if (!bodyHighlight.update()) { bodyHighlight = null; }
+                }
 
 				pt = tn;
             }
@@ -72,31 +79,84 @@
                 posRet.y *= viewport.height;
                 return posRet;
             }
+            function PlayFieldToClient(pos, viewport) {
+                let posRet = {x:pos.x/viewport.width, y:pos.y/viewport.height} ;
+                posRet.x *= canvasMain.offsetWidth;
+                posRet.y *= canvasMain.offsetHeight;
+                return posRet;
+            }
 
-            function mousePressed(event) {
-                let pos = ClientToPlayField({ x: event.clientX, y: event.clientY }, {width: PlayScreen_Width, height: PlayScreen_Height});
-                let ret = Matter.Query.ray(Matter.Composite.allBodies(physics.instance.world), pos, {x:pos.x+1, y:pos.y+1});
-                if (ret.length === 0) {
-                    AddBody( pos );
+            function touchStarted(event) {
+                let pos = [];
+                if (event.touches) {
+                    for (let touchI of event.touches) {
+                        pos.push(ClientToPlayField({ x: touchI.clientX, y: touchI.clientY }, { width: PlayScreen_Width, height: PlayScreen_Height }));
+                    }
                 } else {
-                    console.log(ret);
+                    pos.push(ClientToPlayField({ x: event.clientX, y: event.clientY }, { width: PlayScreen_Width, height: PlayScreen_Height }));
+                }
+                if (bodyHighlight) {
+                    document.body.removeChild(bodyHighlight.hud);
+                    delete bodyHighlight.hud;
+                }
+                bodyHighlight = null;
+                for (let posI of pos) {
+                    let ret = Matter.Query.ray(Matter.Composite.allBodies(physics.World.instance), posI, {x:posI.x+1, y:posI.y+1});
+                    if (ret.length === 0) {
+                        AddBody( posI );
+                    } else {
+                        let refBody = Physics2D.Body_fromInstance(ret[0].body);
+                        if (refBody.length != 0) {
+                            bodyHighlight = {};
+                            bodyHighlight.refBody = ret[0].body;
+                            bodyHighlight.body = refBody[0];
+                            bodyHighlight.hud = document.createElement("div");
+                            bodyHighlight.hud.style.pointerEvents = "none";
+                            bodyHighlight.buttonDelete = document.createElement("button");
+                            bodyHighlight.buttonDelete.style.pointerEvents = "auto";
+                            bodyHighlight.buttonDelete.innerText = "X";
+                            bodyHighlight.hud.appendChild(bodyHighlight.buttonDelete);
+                            document.body.appendChild(bodyHighlight.hud);
+                            bodyHighlight.buttonDelete.onmousedown = function (event) {
+                                bodyHighlight.body.Delete(true);
+                                delete bodyHighlight.body;
+                                delete bodyHighlight.refBody;
+                            }
+                            bodyHighlight.update = function () {
+                                if (this.refBody) {
+                                    let rect = {
+                                        min: PlayFieldToClient(this.refBody.bounds.min, { width: PlayScreen_Width, height: PlayScreen_Height }),
+                                        max: PlayFieldToClient(this.refBody.bounds.max, { width: PlayScreen_Width, height: PlayScreen_Height })
+                                    };
+                                    rect.size = { width: rect.max.x - rect.min.x, height: rect.max.y - rect.min.y };
+                                    this.hud.style.position = "absolute";
+                                    this.hud.style.left = rect.min.x + "px";
+                                    this.hud.style.top = rect.min.y + "px";
+                                    this.hud.style.width = rect.size.width + "px";
+                                    this.hud.style.height = rect.size.height + "px";
+                                    this.hud.style.border = "solid yellow";
+                                    this.hud.style.pointerEvents = "none";
+                                    return true;
+                                } else {
+                                    document.body.removeChild(bodyHighlight.hud);
+                                    return false;
+                                }
+                            }
+                            bodyHighlight.update();
+                        }
+                    }
                 }
             }
-            function mouseDragged(event) {
-                let pos = ClientToPlayField({ x: event.clientX, y: event.clientY }, {width: PlayScreen_Width, height: PlayScreen_Height});
-                let ret = Matter.Query.ray(Matter.Composite.allBodies(physics.instance.world), pos, {x:pos.x+1, y:pos.y+1});
-                if (ret.length === 0) {
-                    AddBody( pos );
-                }
-            }
+
             function AddBody(pos) {
-                physics.CreateBody_Polygon(0, 0, floor(random(2,8)),
-                    random(0.01, 0.05) * (PlayScreen_Width ** 2 + PlayScreen_Height) ** 0.5, {
+                let ret = physics.World.CreateBody_Polygon(0, 0, floor(random(2,8)),
+                    random(0.01, 0.05) * (PlayScreen_Width**2 + PlayScreen_Height**2) ** 0.5, {
                     position: pos, 
                     mass: random(1,8),
-                    friction: 0.5,
+                    friction: 0.2,
                     restitution: 0.2
-                });
+                    });
+                return ret;
             }
 
 			function windowResized() {

@@ -79,7 +79,7 @@
                 physics.AutoRun_Start();
                 physics.AutoRender_Start();
                 physics.setPlayArea({ width: PlayScreen_Width, height: PlayScreen_Height });
-                wallBottom = physics.CreateBody_Rectangle(PlayScreen_Width * 0.01, PlayScreen_Height * 0.9, PlayScreen_Width*0.98, PlayScreen_Height * 0.08, {isStatic: true});
+                wallBottom = physics.World.CreateBody_Rectangle(PlayScreen_Width * 0.01, PlayScreen_Height * 0.9, PlayScreen_Width*0.98, PlayScreen_Height * 0.08, {isStatic: true});
 				
 				wavPing_Paddle = new p5.Oscillator();
 				wavPing_Paddle.setType("square");
@@ -158,7 +158,7 @@
                 AddBody( ClientToPlayField({ x: event.clientX, y: event.clientY }, {width: PlayScreen_Width, height: PlayScreen_Height}));
             }
             function AddBody(pos) {
-                physics.CreateBody_Rectangle(0, 0,
+                physics.World.CreateBody_Rectangle(0, 0,
                     random(0.02, 0.1) * (PlayScreen_Width),
                     random(0.02, 0.1) * (PlayScreen_Height), {
                     position: pos,
