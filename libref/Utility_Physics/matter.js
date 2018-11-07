@@ -4,7 +4,7 @@ Physics2D.Body_lstInstances = [];
 Physics2D.Composite_fromInstance = function (objInstance) { return Physics2D.Composite_lstInstances.filter(itm => (itm.instance === objInstance)); };
 Physics2D.Body_fromInstance = function (objInstance) { return Physics2D.Body_lstInstances.filter(itm => (itm.instance === objInstance)); };
 Physics2D.Engine = function (objInstance) {
-    //this.__proto__ = Physics2D.Engine.__proto__;
+    this.__proto__ = Physics2D.Engine.__proto__;
     if (objInstance) {
         this.instance = objInstance;
     } else {
@@ -60,7 +60,7 @@ Physics2D.Engine = function (objInstance) {
             }
             let bodies = Matter.Composite.allBodies(this.instance.world);
             context.save();
-            context.scale(context.canvas.width/viewport.width, context.canvas.height/viewport.height);
+            context.scale(context.canvas.width / viewport.width, context.canvas.height/viewport.height);
             context.translate(-viewport.x, -viewport.y);
             for (let i = 0; i < bodies.length; i += 1) {
                 var vertices = bodies[i].vertices;
@@ -86,7 +86,7 @@ Physics2D.Engine = function (objInstance) {
     };
 };
 Physics2D.Composite = function (objInstance, objOptions) {
-    //this.__proto__ = Physics2D.Composite.__proto__;
+    this.__proto__ = Physics2D.Composite.__proto__;
     if (!objOptions) objOptions = {};
     if (objInstance) { this.instance = objInstance; } else { this.instance = Matter.Composite.create(objOptions); }
     this.SetWrapBounds = function (bounds) {
@@ -147,7 +147,7 @@ Physics2D.Composite = function (objInstance, objOptions) {
     Physics2D.Composite_lstInstances.push(this);
 };
 Physics2D.Body = function (objInstance, objOptions) {
-    //this.__proto__ = Physics2D.Body.__proto__;
+    this.__proto__ = Physics2D.Body.__proto__;
     if (!objOptions) objOptions = {};
     if (objInstance) { this.instance = objInstance; } else { this.instance = Matter.Body.create(objOptions); }
     this.AddParts = function (aryBodies) {

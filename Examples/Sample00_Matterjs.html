@@ -19,8 +19,8 @@
             var pt = 0;
             var ct = 0;
 
-			var PlayScreen_Width = 1600;
-			var PlayScreen_Height = 1200;
+			var PlayScreen_Width = 1024;
+			var PlayScreen_Height = 768;
 
 			function setup() {
 				var p5objCanvas = createCanvas(windowWidth, windowHeight);
@@ -38,7 +38,7 @@
                 physics.AutoRender_Start();
                 physics.setPlayArea({ width: PlayScreen_Width, height: PlayScreen_Height });
                 physics.World.SetWrapBounds({ min: { x: 0, y: 0 }, max: { x: PlayScreen_Width, y: PlayScreen_Height } });
-                bodyGround = physics.World.CreateBody_Rectangle(PlayScreen_Width*-0.25, PlayScreen_Height * 0.9, PlayScreen_Width*1.25, PlayScreen_Height * 0.1, { isStatic: true });
+                bodyGround = physics.World.CreateBody_Rectangle(PlayScreen_Width*-0.25, PlayScreen_Height * 0.9, PlayScreen_Width*1.5, PlayScreen_Height * 0.1, { isStatic: true });
 
                 instanceMouse = Matter.Mouse.create(canvasMain)
                 Matter.Mouse.setScale(instanceMouse, {x:PlayScreen_Width / windowWidth , y: PlayScreen_Height / windowHeight });
@@ -65,7 +65,7 @@
 
                 background("#404040");
 
-                physics.RenderDebug(contextMain);
+                physics.RenderDebug(contextMain, {x:0, y:0, width: PlayScreen_Width, height: PlayScreen_Height});
                 if (bodyHighlight) {
                     if (!bodyHighlight.update()) { bodyHighlight = null; }
                 }
@@ -115,12 +115,19 @@
                             bodyHighlight.buttonDelete = document.createElement("button");
                             bodyHighlight.buttonDelete.style.pointerEvents = "auto";
                             bodyHighlight.buttonDelete.innerText = "X";
+                            bodyHighlight.buttonDelete.style.backgroundColor = "#00000000";
+                            bodyHighlight.buttonDelete.style.color = "white";
+                            bodyHighlight.buttonDelete.style.fontWeight = "bold";
+                            bodyHighlight.buttonDelete.style.width = "16px";
+                            bodyHighlight.buttonDelete.style.height = "16px";
+                            bodyHighlight.buttonDelete.style.padding = "0";
                             bodyHighlight.hud.appendChild(bodyHighlight.buttonDelete);
                             document.body.appendChild(bodyHighlight.hud);
                             bodyHighlight.buttonDelete.onmousedown = function (event) {
                                 bodyHighlight.body.Delete(true);
                                 delete bodyHighlight.body;
                                 delete bodyHighlight.refBody;
+                                event.stopPropagation();
                             }
                             bodyHighlight.update = function () {
                                 if (this.refBody) {
@@ -150,7 +157,7 @@
 
             function AddBody(pos) {
                 let ret = physics.World.CreateBody_Polygon(0, 0, floor(random(2,8)),
-                    random(0.01, 0.05) * (PlayScreen_Width**2 + PlayScreen_Height**2) ** 0.5, {
+                    random(0.02, 0.05) * ((PlayScreen_Width ** 2 + PlayScreen_Height ** 2) ** 0.5), {
                     position: pos, 
                     mass: random(1,8),
                     friction: 0.2,
