@@ -9,6 +9,7 @@
         <script src="../libref/matterjs/matter.min.js"></script>
         <script src="../libref/matterjs/matter-wrap.min.js"></script>
         <script src="../libref/Utility_Physics/matter.js"></script>
+        <script src="../libref/Utility_Physics/matter_gui.js"></script>
 		<script>
 			var canvasMain;
 			var contextMain;
@@ -96,8 +97,7 @@
                     pos.push(ClientToPlayField({ x: event.clientX, y: event.clientY }, { width: PlayScreen_Width, height: PlayScreen_Height }));
                 }
                 if (bodyHighlight) {
-                    document.body.removeChild(bodyHighlight.hud);
-                    delete bodyHighlight.hud;
+                    bodyHighlight.Delete();
                 }
                 bodyHighlight = null;
                 for (let posI of pos) {
@@ -107,49 +107,7 @@
                     } else {
                         let refBody = Physics2D.Body_fromInstance(ret[0].body);
                         if (refBody.length != 0) {
-                            bodyHighlight = {};
-                            bodyHighlight.refBody = ret[0].body;
-                            bodyHighlight.body = refBody[0];
-                            bodyHighlight.hud = document.createElement("div");
-                            bodyHighlight.hud.style.pointerEvents = "none";
-                            bodyHighlight.buttonDelete = document.createElement("button");
-                            bodyHighlight.buttonDelete.style.pointerEvents = "auto";
-                            bodyHighlight.buttonDelete.innerText = "X";
-                            bodyHighlight.buttonDelete.style.backgroundColor = "#00000000";
-                            bodyHighlight.buttonDelete.style.color = "white";
-                            bodyHighlight.buttonDelete.style.fontWeight = "bold";
-                            bodyHighlight.buttonDelete.style.width = "16px";
-                            bodyHighlight.buttonDelete.style.height = "16px";
-                            bodyHighlight.buttonDelete.style.padding = "0";
-                            bodyHighlight.hud.appendChild(bodyHighlight.buttonDelete);
-                            document.body.appendChild(bodyHighlight.hud);
-                            bodyHighlight.buttonDelete.onmousedown = function (event) {
-                                bodyHighlight.body.Delete(true);
-                                delete bodyHighlight.body;
-                                delete bodyHighlight.refBody;
-                                event.stopPropagation();
-                            }
-                            bodyHighlight.update = function () {
-                                if (this.refBody) {
-                                    let rect = {
-                                        min: PlayFieldToClient(this.refBody.bounds.min, { width: PlayScreen_Width, height: PlayScreen_Height }),
-                                        max: PlayFieldToClient(this.refBody.bounds.max, { width: PlayScreen_Width, height: PlayScreen_Height })
-                                    };
-                                    rect.size = { width: rect.max.x - rect.min.x, height: rect.max.y - rect.min.y };
-                                    this.hud.style.position = "absolute";
-                                    this.hud.style.left = rect.min.x + "px";
-                                    this.hud.style.top = rect.min.y + "px";
-                                    this.hud.style.width = rect.size.width + "px";
-                                    this.hud.style.height = rect.size.height + "px";
-                                    this.hud.style.border = "solid yellow";
-                                    this.hud.style.pointerEvents = "none";
-                                    return true;
-                                } else {
-                                    document.body.removeChild(bodyHighlight.hud);
-                                    return false;
-                                }
-                            }
-                            bodyHighlight.update();
+                            bodyHighlight = new BodyGadget(refBody[0]);
                         }
                     }
                 }
