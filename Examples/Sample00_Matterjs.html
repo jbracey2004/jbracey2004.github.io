@@ -89,7 +89,7 @@
                 return posRet;
             }
 
-            function updateGravity(event) {
+            var updateGravity = function (event) {
                 var orientation = typeof window.orientation !== 'undefined' ? window.orientation : 0,
                     gravity = engine.world.gravity;
 
@@ -134,7 +134,7 @@
             }
 
             function AddBody(pos) {
-                let ret = physics.World.CreateBody_Polygon(0, 0, floor(random(2,8)),
+                let ret = physics.World.CreateBody_Polygon(0, 0, floor(random(2,9)),
                     random(0.02, 0.05) * ((PlayScreen_Width ** 2 + PlayScreen_Height ** 2) ** 0.5), {
                     position: pos, 
                     mass: random(1,8),
