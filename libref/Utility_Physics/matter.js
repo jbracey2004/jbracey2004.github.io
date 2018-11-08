@@ -14,6 +14,7 @@ Physics2D.Engine = function (objInstance) {
     this.AutoRun_Start = function () {
         this.runner = Matter.Runner.create();
         Matter.Runner.start(this.runner, this.instance);
+        return this.runner;
     };
     this.AutoRun_Pause = function (bolPause) {
         this.runner.enabled = !bolPause;
@@ -21,19 +22,25 @@ Physics2D.Engine = function (objInstance) {
     this.AutoRun_Stop = function () {
         Matter.Runner.stop(this.runner);
         delete this.runner;
+        return null;
     };
     this.AutoRender_Start = function (objOptions) {
         if (objOptions) {
             objOptions.engine = this.instance;
             this.render = Matter.Render.create(objOptions);
+        } else if(this.refRender) {
+            this.render = this.refRender;
+            delete this.refRender;
         } else {
             this.render = Matter.Render.create({ engine: this.instance });
         }
         Matter.Render.run(this.render);
+        return this.render;
     };
     this.AutoRender_Stop = function () {
+        this.refRender = this.render;
         Matter.Render.stop(this.render);
-        delete this.render;
+        return null;
     };
     this.StepSimulation = function (dt=15, correction=1) {
         Matter.Engine.update(this.instance, dt, correction);
