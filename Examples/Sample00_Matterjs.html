@@ -39,8 +39,11 @@
                 physics.AutoRender_Start({ options: { wireframes: false, showDebug: true, showAngleIndicator: true, showCollisions: true, showConvexHulls: true, showPositions: true, showVelocity: true } });
                 physics.setPlayArea({ width: PlayScreen_Width, height: PlayScreen_Height });
                 physics.World.SetWrapBounds({ min: { x: 0, y: 0 }, max: { x: PlayScreen_Width, y: PlayScreen_Height } });
-                //bodyGround = physics.World.CreateBody_Rectangle(PlayScreen_Width*-0.25, PlayScreen_Height * 0.9, PlayScreen_Width*1.5, PlayScreen_Height * 0.1, { isStatic: true });
-                bodyGround = physics.World.CreateBody_Rectangle(PlayScreen_Width*0.25, PlayScreen_Height * 0.25, PlayScreen_Width*0.5, PlayScreen_Height * 0.5, { isStatic: true });
+                if(typeof(window.deviceorientation = "undefined")) {
+                    bodyGround = physics.World.CreateBody_Rectangle(PlayScreen_Width*-0.25, PlayScreen_Height * 0.9, PlayScreen_Width*1.5, PlayScreen_Height * 0.1, { isStatic: true });
+                } else {
+                    bodyGround = physics.World.CreateBody_Rectangle(PlayScreen_Width*0.25, PlayScreen_Height * 0.5, PlayScreen_Width*0.5, PlayScreen_Height * 0.25, { isStatic: true });
+                }
 
                 instanceMouse = Matter.Mouse.create(canvasMain)
                 Matter.Mouse.setScale(instanceMouse, {x:PlayScreen_Width / windowWidth , y: PlayScreen_Height / windowHeight });
