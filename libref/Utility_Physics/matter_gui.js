@@ -4,24 +4,26 @@
     this.refBody = objBody.instance;
     this.hud = document.createElement("div");
     this.hud.style.pointerEvents = "none";
-    this.buttonDelete = document.createElement("button");
-    this.buttonDelete.style.pointerEvents = "auto";
-    this.buttonDelete.innerText = "X";
-    this.buttonDelete.style.backgroundColor = "#00000000";
-    this.buttonDelete.style.color = "white";
-    this.buttonDelete.style.fontWeight = "bold";
-    this.buttonDelete.style.width = "16px";
-    this.buttonDelete.style.height = "16px";
-    this.buttonDelete.style.padding = "0";
-    this.buttonDelete.subject = this;
-    this.hud.appendChild(this.buttonDelete);
-    document.body.appendChild(this.hud);
-    this.buttonDelete.onmousedown = function (event) {
-        this.subject.body.Delete(true);
-        delete this.subject.body;
-        delete this.subject.refBody;
-        event.stopPropagation();
-    };
+    if(!this.refBody.isStatic) {
+	    this.buttonDelete = document.createElement("button");
+	    this.buttonDelete.style.pointerEvents = "auto";
+	    this.buttonDelete.innerText = "X";
+	    this.buttonDelete.style.backgroundColor = "#00000000";
+	    this.buttonDelete.style.color = "white";
+	    this.buttonDelete.style.fontWeight = "bold";
+	    this.buttonDelete.style.width = "16px";
+	    this.buttonDelete.style.height = "16px";
+	    this.buttonDelete.style.padding = "0";
+	    this.buttonDelete.subject = this;
+	    this.hud.appendChild(this.buttonDelete);
+	    this.buttonDelete.onmousedown = function (event) {
+	        this.subject.body.Delete(true);
+	        delete this.subject.body;
+	        delete this.subject.refBody;
+	        event.stopPropagation();
+	    };
+	   }
+	   document.body.appendChild(this.hud);
     this.update = function () {
         if (this.refBody) {
             let rect = {
