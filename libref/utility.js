@@ -2,11 +2,11 @@
     'use strict';
 
     window.strCodeFromElement = function (idElement) {
-        return document.getElementById(id).textContent.replace(/^\s+|\s+$/g, '');
+        return document.getElementById(idElement).textContent.replace(/^\s+|\s+$/g, '');
     };
 
-    window.getShaderSource = function(id) {
-        return document.getElementById(id).textContent.replace(/^\s+|\s+$/g, '');
+    window.getShaderSource = function (idElement) {
+        return document.getElementById(idElement).textContent.replace(/^\s+|\s+$/g, '');
     };
 
     function createShader(gl, source, type) {

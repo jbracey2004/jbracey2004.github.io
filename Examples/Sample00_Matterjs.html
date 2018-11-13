@@ -145,8 +145,9 @@
                 let ret = physics.World.CreateBody_Polygon(0, 0, Math.round(random(2,8)),
                     random(0.02, 0.05) * ((PlayScreen_Width ** 2 + PlayScreen_Height ** 2) ** 0.5), {
                     position: pos, 
-                    density: random(0.0001, 0.004),
+                    density: random(0.0001, 0.001),
                     friction: 0.75,
+                    frictionStatic: 0.75,
                     restitution: 0.75
                 });
                 ret.instance.render.lineWidth = ret.instance.mass;
