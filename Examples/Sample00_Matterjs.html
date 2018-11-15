@@ -114,7 +114,7 @@
                     gravity.x = clamp(-event.beta, -90, 90) / 90;
                     gravity.y = clamp(event.gamma, -90, 90) / 90;
                 }
-            };
+            }
             function touchStarted(event) {
                 let pos = [];
                 if (event.touches) {
@@ -136,7 +136,16 @@
                         let refBody = Physics2D.Body_fromInstance(ret[0].body);
                         if (refBody.length != 0) {
                             bodyHighlight = new BodyGadget(refBody[0]);
-                            if (refBody[0].isStatic) { console.log("STATIC BODY");}
+                        }
+                    }
+                }
+            }
+            function touchMoved(event) {
+                if (bodyHighlight) {
+                    if (bodyHighlight.refBody) {
+                        if (bodyHighlight.refBody.isStatic) {
+                            let mov = ClientToPlayField({ x: event.movementX, y: event.movementY }, { width: PlayScreen_Width, height: PlayScreen_Height });
+                            Matter.Body.translate(bodyHighlight.refBody, mov);
                         }
                     }
                 }
