@@ -147,5 +147,10 @@
             }
         }
     });
+    this.hudMain_buttonDelete = document.createElement("button");
+    this.hudMain_buttonDelete.innerText = "Delete Body";
+    this.hudMain_buttonDelete.subject = this;
+    this.hudMain_buttonDelete.onmousedown = this.buttonDelete.onmousedown;
+    this.hudMain.appendChild(this.hudMain_buttonDelete);
     this.update();
 };
