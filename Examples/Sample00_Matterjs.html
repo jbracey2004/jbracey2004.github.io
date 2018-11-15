@@ -136,6 +136,7 @@
                         let refBody = Physics2D.Body_fromInstance(ret[0].body);
                         if (refBody.length != 0) {
                             bodyHighlight = new BodyGadget(refBody[0]);
+                            if (refBody[0].isStatic) { console.log("STATIC BODY");}
                         }
                     }
                 }
@@ -150,8 +151,6 @@
                     frictionStatic: 0.75,
                     restitution: 0.75
                 });
-                ret.instance.render.lineWidth = ret.instance.mass;
-                ret.instance.render.strokeStyle = "#00000080";
                 return ret;
             }
 
