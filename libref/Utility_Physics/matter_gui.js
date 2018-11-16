@@ -20,7 +20,6 @@
         this.subject.body.Delete(true);
         delete this.subject.body;
         delete this.subject.refBody;
-        event.stopPropagation();
     };
     document.body.appendChild(this.hudBody);
     this.hudMain = document.createElement("div");
@@ -32,12 +31,11 @@
     this.hudMain.style.width = "auto";
     this.hudMain.style.height = "auto";
     this.hudMain.style.padding = "0";
-    this.hudMain.onmousedown = function (event) { event.stopPropagation(); };
     document.body.appendChild(this.hudMain);
     this.hudMain_buttonClose = document.createElement("button");
     this.hudMain_buttonClose.innerText = "Close";
     this.hudMain_buttonClose.subject = this;
-    this.hudMain_buttonClose.onmousedown = function (event) { this.subject.Delete(); event.stopPropagation(); };
+    this.hudMain_buttonClose.onmousedown = function (event) { this.subject.Delete(); };
     this.hudMain.appendChild(this.hudMain_buttonClose);
     this.hudMain_tableMain = document.createElement("table");
     this.hudMain_tableMain.width = "100%";
@@ -88,10 +86,12 @@
         delete this.refBody;
     };
 
-    this.hudMain_AppendField("Label", "text", "label","", this.refBody.label, function (event) {
-        if (this.subject) {if (this.subject.refBody) {
-            this.subject.refBody.label = this.value;
-        }}
+    this.hudMain_AppendField("Label", "text", "label", "", this.refBody.label, function (event) {
+        if (this.subject) {
+            if (this.subject.refBody) {
+                this.subject.refBody.label = this.value;
+            }
+        }
     });
     this.hudMain_AppendHeading("Physics");
     this.hudMain_AppendField("Static", "checkbox", "isstatic","", this.refBody.isStatic, function (event) {
@@ -104,46 +104,58 @@
     this.hudMain_AppendField("Density", "number", "density","step=\"0.000000000000000001\"", this.refBody.density, function (event) {
         if (this.subject) {
             if (this.subject.refBody) {
-                Matter.Body.setDensity(this.subject.refBody, this.value);
-                let fieldRet = document.getElementById("hudField_mass");
-                if (fieldRet) { fieldRet.value = this.subject.refBody.mass; }
+                if (this.value) {
+                    Matter.Body.setDensity(this.subject.refBody, this.value);
+                    let fieldRet = document.getElementById("hudField_mass");
+                    if (fieldRet) { fieldRet.value = this.subject.refBody.mass; }
+                }
             }
         }
     });
     this.hudMain_AppendField("Mass", "number", "mass", "step=\"0.000000000000000001\"", this.refBody.mass, function (event) {
         if (this.subject) {
             if (this.subject.refBody) {
-                Matter.Body.setMass(this.subject.refBody, this.value);
-                let fieldRet = document.getElementById("hudField_density");
-                if (fieldRet) { fieldRet.value = this.subject.refBody.density; }
+                if (this.value) {
+                    Matter.Body.setMass(this.subject.refBody, this.value);
+                    let fieldRet = document.getElementById("hudField_density");
+                    if (fieldRet) { fieldRet.value = this.subject.refBody.density; }
+                }
             }
         }
     });
     this.hudMain_AppendField("Contact Friction", "number", "frictionContact", "step=\"0.000000000000000001\"", this.refBody.friction, function (event) {
         if (this.subject) {
             if (this.subject.refBody) {
-                this.subject.refBody.friction = this.value;
+                if (this.value) {
+                    this.subject.refBody.friction = this.value;
+                }
             }
         }
     });
     this.hudMain_AppendField("Air Friction", "number", "frictionAir", "step=\"0.000000000000000001\"", this.refBody.frictionAir, function (event) {
         if (this.subject) {
             if (this.subject.refBody) {
-                this.subject.refBody.frictionAir = this.value;
+                if (this.value) {
+                    this.subject.refBody.frictionAir = this.value;
+                }
             }
         }
     });
     this.hudMain_AppendField("Static Friction", "number", "frictionStatic", "step=\"0.000000000000000001\"", this.refBody.frictionStatic, function (event) {
         if (this.subject) {
             if (this.subject.refBody) {
-                this.subject.refBody.frictionStatic = this.value;
+                if (this.value) {
+                    this.subject.refBody.frictionStatic = this.value;
+                }
             }
         }
     });
     this.hudMain_AppendField("Restitution", "number", "restitution", "step=\"0.000000000000000001\"", this.refBody.restitution, function (event) {
         if (this.subject) {
             if (this.subject.refBody) {
-                this.subject.refBody.restitution = this.value;
+                if (this.value) {
+                    this.subject.refBody.restitution = this.value;
+                }
             }
         }
     });
