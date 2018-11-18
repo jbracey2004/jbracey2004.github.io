@@ -16,7 +16,7 @@
     this.buttonDelete.style.padding = "0";
     this.buttonDelete.subject = this;
     this.hudBody.appendChild(this.buttonDelete);
-    this.buttonDelete.onmousedown = function (event) {
+    this.buttonDelete.onclick = function (event) {
         this.subject.body.Delete(true);
         delete this.subject.body;
         delete this.subject.refBody;
@@ -36,16 +36,17 @@
     this.hudMain_buttonClose = document.createElement("button");
     this.hudMain_buttonClose.innerText = "Close";
     this.hudMain_buttonClose.subject = this;
-    this.hudMain_buttonClose.onmousedown = function (event) { this.subject.Delete(); };
+    this.hudMain_buttonClose.onclick = function (event) { this.subject.Delete(); };
     this.hudMain.appendChild(this.hudMain_buttonClose);
     this.hudMain_tableMain = document.createElement("table");
     this.hudMain_tableMain.width = "100%";
     this.hudMain.appendChild(this.hudMain_tableMain);
-    this.hudMain_AppendHeading = function (str) {
+    this.hudMain_AppendHeading = function (str, idHeading) {
         let ret = document.createElement("tr");
-        ret.innerHTML = "<td colspan=\"2\"><strong>"+str+"</strong></td>";
+        ret.innerHTML = "<td colspan=\"2\"><span id=\"" + "hudHeading_" + idHeading + "\"><strong>"+str+"</strong></span></td>";
         this.hudMain_tableMain.appendChild(ret);
-        return ret;
+        let headingRet = document.getElementById("hudHeading_" + idHeading);
+        return { elem: ret, field: headingRet };
     };
     this.hudMain_AppendField = function (str, typeField, idField, strAttr, objValue, FxnonChange) {
         let ret = document.createElement("tr");
@@ -163,7 +164,7 @@
     this.hudMain_buttonDelete = document.createElement("button");
     this.hudMain_buttonDelete.innerText = "Delete Body";
     this.hudMain_buttonDelete.subject = this;
-    this.hudMain_buttonDelete.onmousedown = this.buttonDelete.onmousedown;
+    this.hudMain_buttonDelete.onclick = this.buttonDelete.onclick;
     this.hudMain.appendChild(this.hudMain_buttonDelete);
     this.update();
 };

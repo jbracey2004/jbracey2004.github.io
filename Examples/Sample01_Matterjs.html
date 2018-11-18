@@ -63,8 +63,9 @@
                 window.addEventListener('deviceorientation', updateGravity);
                 canvas.addEventListener('touchstart', canvas_onTouchStart);
                 canvas.addEventListener('mousedown', canvas_onTouchStart);
-                canvas.addEventListener('touchmove', canvas_onTouchMove);
-                canvas.addEventListener('mousemove', canvas_onTouchMove);
+                Matter.Events.on(constraintMouse, "startdrag", body_onDragStart);
+                Matter.Events.on(constraintMouse, "mousemove", body_onDrag);
+                Matter.Events.on(constraintMouse, "enddrag", body_onDragEnd);
 			}
 
 			function draw() {
@@ -149,33 +150,38 @@
                     }
                 }
             }
-            function canvas_onTouchMove(event) {
+            var bodyDragging = null;
+            function body_onDragStart(event) {
+                bodyDragging = {
+                    body: event.body, offset: {
+                        x: event.body.position.x - event.mouse.position.x,
+                        y: event.body.position.y - event.mouse.position.y
+                    },
+                    IsStatic: event.body.isStatic
+                };
                 if (bodyHighlight) {
-                    if (bodyHighlight.refBody) {
-                        if (bodyHighlight.refBody.isStatic) {
-                            let pos = null;
-                            if (event.touches) {
-                                if (bodyHighlight.infoTouch) {
-                                    if (bodyHighlight.infoTouch.idTouch) {
-                                        for (let touchI of event.touches) {
-                                            if (touchI.identifier === bodyHighlight.infoTouch.idTouch) {
-                                                pos = ClientToPlayField({ x: touchI.clientX, y: touchI.clientY }, { width: PlayScreen_Width, height: PlayScreen_Height });
-                                            }
-                                        }
-                                    } 
-                                }
-                            } else {
-                                if (event.buttons) {
-                                    if (event.buttons !== 0) {
-                                        pos = ClientToPlayField({ x: event.clientX, y: event.clientY }, { width: PlayScreen_Width, height: PlayScreen_Height });
-                                    }
-                                }
-                            }
-                            if (pos) {
-                                let posOffset = { x: bodyHighlight.infoTouch.offsetX, y: bodyHighlight.infoTouch.offsetY };
-                                let posMoveTo = { x:pos.x + posOffset.x, y: pos.y + posOffset.y };
-                                Matter.Body.setPosition(bodyHighlight.refBody, posMoveTo);
-                            }
+                    if (bodyHighlight.hudMain) {
+                        bodyHighlight.hudMain.style.pointerEvents = "none";
+                    }
+                }
+            }
+            function body_onDragEnd(event) {
+                bodyDragging = null;
+                if (bodyHighlight) {
+                    if (bodyHighlight.hudMain) {
+                        bodyHighlight.hudMain.style.pointerEvents = "auto";
+                    }
+                }
+            }
+            function body_onDrag(event) {
+                if (bodyDragging) {
+                    if (bodyDragging.body) {
+                        if (bodyDragging.body.isStatic) {
+                            let pos = {
+                                x: event.mouse.position.x + bodyDragging.offset.x,
+                                y: event.mouse.position.y + bodyDragging.offset.y
+                            };
+                            Matter.Body.setPosition(bodyDragging.body, pos);
                         }
                     }
                 }
