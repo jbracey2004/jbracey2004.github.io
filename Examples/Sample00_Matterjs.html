@@ -50,7 +50,7 @@
                 Matter.Mouse.setScale(instanceMouse, {x:PlayScreen_Width / windowWidth , y: PlayScreen_Height / windowHeight });
                 constraintMouse = Matter.MouseConstraint.create(physics.instance, {
                     mouse: instanceMouse,
-                    constraint: { stiffness: 0.05 }
+                    constraint: { stiffness: 0.025 }
                 });
                 Matter.World.add(physics.World.instance, constraintMouse);
 
@@ -145,7 +145,6 @@
                             bodyHighlight.infoTouch = posI;
                             bodyHighlight.infoTouch.offsetX = ret[0].body.position.x - posI.x;
                             bodyHighlight.infoTouch.offsetY = ret[0].body.position.y - posI.y;
-                            event.stopPropagation();
                         }
                     }
                 }
@@ -198,6 +197,7 @@
 				var szWin = {width: 0, height: 0};
 				if(bolFullscreen) 
 				{szWin.width = displayWidth; szWin.height = displayHeight;
+				if(windowWidth > windowHeight) {let tmp = szWin.width; szWin.width = szWin.height; szWin.height = tmp; }
 				} else 
 				{szWin.width = windowWidth; szWin.height = windowHeight}
 				canvasMain.style.width = szWin.width + "px";

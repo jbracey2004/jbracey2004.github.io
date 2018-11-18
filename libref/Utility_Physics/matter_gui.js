@@ -25,6 +25,7 @@
     this.hudMain = document.createElement("div");
     this.hudMain.style.pointerEvents = "auto";
     this.hudMain.style.backgroundColor = "#20202080";
+    this.hudMain.style.color = "white";
     this.hudMain.style.position = "absolute";
     this.hudMain.style.left = "0px";
     this.hudMain.style.top = "24px";
@@ -48,7 +49,7 @@
     };
     this.hudMain_AppendField = function (str, typeField, idField, strAttr, objValue, FxnonChange) {
         let ret = document.createElement("tr");
-        ret.innerHTML = "<td style=\"width:auto\">" + str + "</td><td><input id=\"" + "hudField_"+idField + "\" type=\"" + typeField + "\" style=\"width:100%; background-color:#ffffff20; \" "+strAttr+" /></td>";
+        ret.innerHTML = "<td style=\"width:auto\">" + str + "</td><td><input id=\"" + "hudField_"+idField + "\" type=\"" + typeField + "\" style=\"width:100%; background-color:#ffffff20; color:white; \" "+strAttr+" /></td>";
         this.hudMain_tableMain.appendChild(ret);
         let fieldRet = document.getElementById("hudField_" + idField);
         if (typeField === "checkbox") { fieldRet.checked = objValue; } else { fieldRet.value = objValue; }
