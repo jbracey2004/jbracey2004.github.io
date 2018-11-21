@@ -181,7 +181,10 @@
                                 x: event.mouse.position.x + bodyDragging.offset.x,
                                 y: event.mouse.position.y + bodyDragging.offset.y
                             };
+                            let ppos = bodyDragging.body.position;
+                            let vel = {x:pos.x-ppos.x, y:pos.y-ppos.y};
                             Matter.Body.setPosition(bodyDragging.body, pos);
+                            //Matter.Body.setVelocity(bodyDragging.body, vel);
                         }
                     }
                 }

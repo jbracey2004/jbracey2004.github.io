@@ -23,8 +23,10 @@
 			var ct = 0;
             var score = 0;
 
-			var PlayScreen_Width = 1000;
-			var PlayScreen_Height = 1000;
+			var PlayScreen_Width = 768;
+			var PlayScreen_Height = 1024;
+			var PaddleWidth = PlayScreen_Width*0.15;
+			var PaddleThickness = PlayScreen_Height*0.0125;
 			var MAX_SPEED = Math.sqrt(PlayScreen_Width * PlayScreen_Height)/10;
 			var WALL_THICKNESS = 50;
 			var BRICK_W = 40;
@@ -32,7 +34,7 @@
 			var BRICK_MARGIN = 4;
 			var ROWS = 9;
 			var COLUMNS = 16;
-			var paddle, ball, wallTop, wallBottom, wallLeft, wallRight, bricks;
+			var compositePlayer, bodyPaddle, bodyBall, constraintPaddle, wallTop, wallBottom, wallLeft, wallRight, compositeBricks;
 			var gradientBall, gradientPaddle, gradientBrick;
 
 			var fxnDrawBall = function() {
@@ -79,7 +81,24 @@
                 physics.AutoRun_Start();
                 physics.AutoRender_Start();
                 physics.setPlayArea({ width: PlayScreen_Width, height: PlayScreen_Height });
-                wallBottom = physics.World.CreateBody_Rectangle(PlayScreen_Width * 0.01, PlayScreen_Height * 0.9, PlayScreen_Width*0.98, PlayScreen_Height * 0.08, {isStatic: true});
+				physics.instance.world.gravity.x = 0;
+				physics.instance.world.gravity.y = 0;
+				
+				bodyPaddle = physics.World.CreateBody_Rectangle((PlayScreen_Width-PaddleWidth)*0.5, PlayScreen_Height-PaddleThickness*3, PaddleWidth, PaddleThickness, {density:0.01});
+				let paddlepos = bodyPaddle.instance.position;
+				bodyBall = physics.World.CreateBody_Circle(paddlepos.x, paddlepos.y-(PaddleThickness*1.75), PlayScreen_Height*0.0125, {density:0.001});
+				bodyPaddle.AddParts(bodyBall.instance);
+				//compositePlayer = Matter.Body.create({parts:[bodyPaddle.instance, bodyBall.instance]});
+				//Matter.World.add(physics.World.instance, compositePlayer);
+				
+				let wallsize = {x:PlayScreen_Width * 0.125, 
+				y:PlayScreen_Height * 0.125};
+				let wallinside = {x:wallsize.x * 0.125,
+				y:wallsize.y * 0.125};
+				wallTop = physics.World.CreateBody_Rectangle(wallinside.x-wallsize.x, wallinside.y-wallsize.y, PlayScreen_Width + 2*wallsize.x, wallsize.y,{isStatic:true});
+				wallLeft = physics.World.CreateBody_Rectangle(wallinside.x-wallsize.x, wallinside.y-wallsize.y, wallsize.x, PlayScreen_Height + 2*wallsize.y,{isStatic:true});
+				wallRight = physics.World.CreateBody_Rectangle(PlayScreen_Width - wallinside.x, wallinside.y-wallsize.y, wallsize.x, PlayScreen_Height + 2*wallsize.y,{isStatic:true});
+				wallBottom = physics.World.CreateBody_Rectangle(-wallsize.x, PlayScreen_Height+wallsize.y, PlayScreen_Width + 2*wallsize.x, wallsize.y,{isStatic:true});
 				
 				wavPing_Paddle = new p5.Oscillator();
 				wavPing_Paddle.setType("square");
@@ -150,22 +169,25 @@
                 posRet.y *= viewport.height;
                 return posRet;
             }
-
-            function mousePressed(event) {
-                AddBody( ClientToPlayField({ x: event.clientX, y: event.clientY }, {width: PlayScreen_Width, height: PlayScreen_Height}));
+            function PlayFieldToClient(pos, viewport) {
+                let posRet = {x:pos.x/viewport.width, y:pos.y/viewport.height} ;
+                if (canvasMain.offsetWidth > canvasMain.offsetHeight) {
+                    posRet = {x: posRet.y, y: 1.0 - posRet.x };
+                }
+                posRet.x *= canvasMain.offsetWidth;
+                posRet.y *= canvasMain.offsetHeight;
+                return posRet;
             }
+            function aspectOrientation(aspect) { let fAsp = Math.abs(aspect); return (fAsp >= 0 && fAsp <= 1 ) ? "portrait":"landscape"; }
+								function clamp(x, a, b) {return Math.max(a, Math.min(x, b))};
             function mouseDragged(event) {
-                AddBody( ClientToPlayField({ x: event.clientX, y: event.clientY }, {width: PlayScreen_Width, height: PlayScreen_Height}));
-            }
-            function AddBody(pos) {
-                physics.World.CreateBody_Rectangle(0, 0,
-                    random(0.02, 0.1) * (PlayScreen_Width),
-                    random(0.02, 0.1) * (PlayScreen_Height), {
-                    position: pos,
-                    mass: random(1,8),
-                    friction: 0.6,
-                    restitution: 0.2
-                });
+            			 let ppos = ClientToPlayField({ x: pmouseX, y: pmouseY }, { width: PlayScreen_Width, height: PlayScreen_Height });
+            			 let pos = ClientToPlayField({ x: mouseX, y: mouseY }, { width: PlayScreen_Width, height: PlayScreen_Height });
+                let vel = {x:pos.x-ppos.x, y:pos.y-ppos.y};
+                //vel.x*=0.1;
+                vel.x = clamp(vel.x, -PaddleWidth, PaddleWidth);
+                vel.y = 0;
+                Matter.Body.setVelocity(bodyPaddle.instance, vel);
             }
 
 			function windowResized() {

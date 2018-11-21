@@ -100,6 +100,11 @@
         if (this.subject) {
             if (this.subject.refBody) {
                 Matter.Body.setStatic(this.subject.refBody, this.checked);
+									let fieldRet; 
+									fieldRet = document.getElementById("hudField_mass");
+                    if (fieldRet) { fieldRet.value = this.subject.refBody.mass; }
+             fieldRet = document.getElementById("hudField_density");
+                    if (fieldRet) { fieldRet.value = this.subject.refBody.density; }
             }
         }
     });
