@@ -23,7 +23,7 @@
 			var ct = 0;
             var score = 0;
 
-			var PlayScreen_Width = 768;
+			var PlayScreen_Width = 708;
 			var PlayScreen_Height = 1024;
 			var PaddleWidth = PlayScreen_Width*0.15;
 			var PaddleThickness = PlayScreen_Height*0.0125;
@@ -31,10 +31,12 @@
 			var MAX_SPEED = Math.sqrt(PlayScreen_Width * PlayScreen_Height)/10;
 			var BRICK_W = 40;
 			var BRICK_H = 20;
-			var BRICK_MARGIN = 4;
-			var ROWS = 9;
+			var BRICK_MARGIN = 3;
+			var ROWS = 12;
 			var COLUMNS = 16;
-			var constraintPaddle, bodyPaddle, bodyBall, PaddleGuard, wallTop, wallBottom, wallLeft, wallRight, compositeBricks;
+			var constraintPaddle, bodyPaddle, bodyBall, PaddleGuard, 
+                wallTop, wallBottom, wallLeft, wallRight, 
+                compositeBricks, aryBricks, aryBrickGroups;
 			var gradientBall, gradientPaddle, gradientBrick;
 
 			var fxnDrawBall = function() {
@@ -46,14 +48,14 @@
 				noStroke();
 				contextMain.fillStyle = gradientPaddle;
 				rect(0,0,paddle.width, paddle.height);
-			}
+			};
 			var fxnDrawBrick = function(group) {
 				return function() {
 					contextMain.fillStyle = gradientBrick;
 					stroke(group);
 					strokeWeight(2);
 					rect(0, 0, BRICK_W, BRICK_H);
-				}
+				};
 			};
 
 			function setup() {
@@ -86,9 +88,9 @@
 				
 				bodyPaddle = physics.World.CreateBody_Rectangle((PlayScreen_Width-PaddleWidth)*0.5, PlayScreen_Height-PaddleThickness*3, PaddleWidth, PaddleThickness, {density:10, frictionAir:0.1, restitution:1, inertia:Infinity, collisionFilter:{category:0x1}});
 				let paddlepos = bodyPaddle.instance.position;
-				bodyBall = physics.World.CreateBody_Circle(paddlepos.x, paddlepos.y-(PaddleThickness*1.5), PlayScreen_Height*0.0125, {density:0.0001, frictionAir:0, restitution:1.01, collisionFilter:{category:0x1, mask:0x1}});
-				PaddleGuard = physics.World.CreateBody_Rectangle(0, PlayScreen_Height-PaddleThickness*2, PlayScreen_Width, PaddleThickness, {isStatic:true, render:{opacity:0, strokeStyle:"none"}, collisionFilter:{category:0x2}});
-				constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-(PaddleThickness*1.5)}, bodyB:bodyBall.instance, pointB:{x:0, y:0}});
+				bodyBall = physics.World.CreateBody_Circle(paddlepos.x, paddlepos.y-(PaddleThickness*1.5), PlayScreen_Height*0.0125, {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
+				PaddleGuard = physics.World.CreateBody_Rectangle(0, PlayScreen_Height-PaddleThickness*2.5, PlayScreen_Width, PaddleThickness, {isStatic:true, render:{opacity:0, strokeStyle:"none"}, collisionFilter:{category:0x2}});
+				constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-(PaddleThickness*1.5)}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:false}});
 				Matter.World.add(physics.World.instance, constraintPaddle);
 				
 				let wallsize = {x:PlayScreen_Width * 0.125, 
@@ -100,6 +102,14 @@
 				wallRight = physics.World.CreateBody_Rectangle(PlayScreen_Width - wallinside.x, wallinside.y-wallsize.y, wallsize.x, PlayScreen_Height + 2*wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
 				wallBottom = physics.World.CreateBody_Rectangle(-wallsize.x, PlayScreen_Height+wallsize.y, PlayScreen_Width + 2*wallsize.x, wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
 				
+                aryBricks = [];
+                compositeBricks = Matter.Composites.stack(wallinside.x, 40, COLUMNS, ROWS, BRICK_MARGIN, BRICK_MARGIN, function(x, y) {
+                    let objRet = Matter.Bodies.rectangle(x, y, BRICK_W, BRICK_H);
+                    aryBricks.push(objRet);
+                    return objRet;
+                });
+                Matter.World.add(physics.World.instance, compositeBricks);
+
 				Matter.Events.on(physics.instance, "beforeUpdate", physics_onTick);
 				Matter.Events.on(physics.instance, "collisionEnd", physics_onCollision);
 				
@@ -162,53 +172,76 @@
 
 				pt = tn;
             }
+
+            function clamp(x, a, b) {return Math.max(a, Math.min(x, b))};
             
-      function physics_onTick(e) {
-      	if(!constraintPaddle) {
-      		let velprops = VectorProps(bodyBall.instance.velocity);
-      		let vel = {x: velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed};
-      		Matter.Body.setVelocity(bodyBall.instance, vel);
-      	}
-      	//let pos = bodyPaddle.instance.position;
-      	//pos.y = PlayScreen_Height - PaddleThickness*3;
-      	//Matter.Body.setPosition(bodyPaddle.instance, pos);
-      }
-      function physics_onCollision(e) {
-      	for(let cI of e.pairs) {
-      		let cI_bodies = [cI.bodyA,cI.bodyB];
-      		if(cI_bodies.includes(bodyBall.instance)) {
-      			if(cI_bodies.includes(wallBottom.instance)) {onBottomHit();}
-      			if(cI_bodies.includes(bodyPaddle.instanve)) {onPaddleHit();}
-      		}
-      	}
-      }
+            function physics_onTick(e) {
+      	        if(!constraintPaddle) {
+      		        let velprops = VectorProps(bodyBall.instance.velocity);
+      		        let vel = {x: velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed};
+      		        Matter.Body.setVelocity(bodyBall.instance, vel);
+      	        }
+            }
+            function physics_onCollision(e) {
+      	        for(let cI of e.pairs) {
+      		        let cI_bodies = [cI.bodyA,cI.bodyB];
+      		        if(cI_bodies.includes(bodyBall.instance)) {
+                        cI_bodies.splice(cI_bodies.indexOf(bodyBall.instance), 1);
+      			        if(cI_bodies.includes(wallBottom.instance)) {onBottomHit();}
+                        if(cI_bodies.includes(wallTop.instance)) {onBoundsHit();}
+                        if(cI_bodies.includes(wallLeft.instance)) {onBoundsHit();}
+                        if(cI_bodies.includes(wallRight.instance)) {onBoundsHit();}
+      			        if(cI_bodies.includes(bodyPaddle.instance)) {onPaddleHit();}
+                        for(cI_Body of cI_bodies) {
+                            if(aryBricks.includes(cI_Body)) {onBrickHit(cI_Body);}
+                        }
+      		        }
+      	        }
+            }
       
-      function onBrickHit() {
+            function onBrickHit(brick) {
+                wavPing_Brick.freq(512);
+				wavPing_Brick.amp(1, 0.05);
+				wavPing_Brick.amp(0, 0.2);
+                Matter.World.remove(compositeBricks, brick);
+                brick = undefined;
+            }
+            function onBoundsHit() {
+                if(!constraintPaddle) {
+                    wavPing_Bounds.amp(0.25, 0.05);
+				    wavPing_Bounds.amp(0, 0.1);
+                }
+            }
+            function onPaddleHit() {
+                if(!constraintPaddle) {
+                    wavPing_Paddle.amp(0.1, 0.1);
+				    wavPing_Paddle.amp(0, 0.25);
+                    var vecTmp = bodyBall.instance.velocity;
+					var speedTmp = VectorProps(vecTmp).mag;
+					var swing = (bodyBall.instance.position.x-bodyPaddle.instance.position.x)/4;
+                    vecTmp.x += swing;
+                    var normTmp = VectorProps(vecTmp).norm;
+                    Matter.Body.setVelocity(bodyBall.instance, {x:normTmp.x*speedTmp, y:normTmp.y*speedTmp});
+                }
+            }
+            function onBottomHit() {
+                wavPing_Lost.amp(1, 0.1);
+				wavPing_Lost.amp(0, 0.5);
+                let pos = bodyPaddle.instance.position;
+                Matter.Body.setVelocity(bodyBall.instance, {x:0, y:0});
+                Matter.Body.setPosition(bodyBall.instance, {x:pos.x, y:pos.y-(PaddleThickness*1.5)});
+                constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-(PaddleThickness*1.5)}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:false}});
+                Matter.World.add(physics.World.instance, constraintPaddle);
+            }
+            function onTopHit() {
       
-      }
-      function onBoundsHit() {
-      
-      }
-      function onPaddleHit() {
-      	//let pos = bodyPaddle.instance.position;
-      	//pos.y = PlayScreen_Height - PaddleThickness*3;
-      	//Matter.Body.setPosition(bodyPaddle.instance, pos);
-      }
-      function onBottomHit() {
-      	let pos = bodyPaddle.instance.position;
-      	Matter.Body.setVelocity(bodyBall.instance, {x:0, y:0});
-      	Matter.Body.setPosition(bodyBall.instance, {x:pos.x, y:pos.y-(PaddleThickness*1.5)});
-      	constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-(PaddleThickness*1.5)}, bodyB:bodyBall.instance, pointB:{x:0, y:0}});
-				Matter.World.add(physics.World.instance, constraintPaddle);
-      }
-      function onTopHit() {
-      
-      }
-								function VectorProps(vec) {
-									let mvec = (vec.x**2 + vec.y**2)**0.5;
-             let mvecinv = 1.0/mvec;
-             return {norm:{x:vec.x*mvecinv, y:vec.y*mvecinv}, mag:mvec, maginv: mvecinv};
-								}
+            }
+			
+            function VectorProps(vec) {
+		        let mvec = (vec.x**2 + vec.y**2)**0.5;
+                let mvecinv = 1.0/mvec;
+                return {norm:{x:vec.x*mvecinv, y:vec.y*mvecinv}, mag:mvec, maginv: mvecinv};
+			}
             function ClientToPlayField(pos, viewport) {
                 let posRet = {x:pos.x/canvasMain.offsetWidth, y:pos.y/canvasMain.offsetHeight} ;
                 if (canvasMain.offsetWidth > canvasMain.offsetHeight) {
@@ -227,28 +260,26 @@
                 posRet.y *= canvasMain.offsetHeight;
                 return posRet;
             }
-            function aspectOrientation(aspect) { let fAsp = Math.abs(aspect); return (fAsp >= 0 && fAsp <= 1 ) ? "portrait":"landscape"; }
-								function clamp(x, a, b) {return Math.max(a, Math.min(x, b))};
             function mouseDragged(event) {
-            				let ppos = ClientToPlayField({ x: pmouseX, y: pmouseY }, { width: PlayScreen_Width, height: PlayScreen_Height });
-            			 let pos = ClientToPlayField({ x: mouseX, y: mouseY }, { width: PlayScreen_Width, height: PlayScreen_Height });
+                let ppos = ClientToPlayField({ x: pmouseX, y: pmouseY }, { width: PlayScreen_Width, height: PlayScreen_Height });
+                let pos = ClientToPlayField({ x: mouseX, y: mouseY }, { width: PlayScreen_Width, height: PlayScreen_Height });
                 let vel = {x:pos.x-ppos.x, y:pos.y-ppos.y};
                 let velprops = VectorProps(vel);
                 vel.x = clamp(vel.x, -PaddleWidth, PaddleWidth);
-	              if(constraintPaddle) {
+	            if(constraintPaddle) {
 	                if(vel.y < -10) {
-	                		Matter.World.remove(physics.World.instance, constraintPaddle);
-	                		constraintPaddle = null;
-	                		BallSpeed = clamp(velprops.mag, 10, 25);
-	                		Matter.Body.setVelocity(bodyBall.instance, {x:velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed});
-	                		vel.x = 0;
+	                	Matter.World.remove(physics.World.instance, constraintPaddle);
+	                	constraintPaddle = null;
+	                	BallSpeed = clamp(velprops.mag, 10, 25);
+	                	Matter.Body.setVelocity(bodyBall.instance, {x:velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed});
+	                	vel.x = 0;
 	                }
                 }
                 vel.y = 0;
                 Matter.Body.setVelocity(bodyPaddle.instance, vel);
             }
             function mouseMoved(event) {
-            			let pos = ClientToPlayField({ x: mouseX, y: mouseY }, { width: PlayScreen_Width, height: PlayScreen_Height });
+                let pos = ClientToPlayField({ x: mouseX, y: mouseY }, { width: PlayScreen_Width, height: PlayScreen_Height });
                 Matter.Body.setPosition(bodyPaddle.instance, {x:pos.x, y:PlayScreen_Height-PaddleThickness*3});
             }
 
