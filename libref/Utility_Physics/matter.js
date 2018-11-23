@@ -168,11 +168,11 @@ Physics2D.Body = function (objInstance, objOptions) {
                 }
             }
         }
-        return this.instance.setParts(aryTmp);
+        return Matter.Body.setParts(this.instance, aryTmp);
     };
     this.RemoveParts = function (aryBodies) {
         let aryTmp = this.instance.parts.filter(x => !aryBodies.includes(x));
-        return this.instance.setParts(aryTmp);
+        return Matter.Body.setParts(this.instance, aryTmp);
     };
     this.AddTo = function (objComposite) {
         Matter.Composite.add(objComposite.instance, this.instance);
