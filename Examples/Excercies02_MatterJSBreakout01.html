@@ -105,6 +105,7 @@
                 aryBricks = [];
                 compositeBricks = Matter.Composites.stack(wallinside.x, 40, COLUMNS, ROWS, BRICK_MARGIN, BRICK_MARGIN, function(x, y) {
                     let objRet = Matter.Bodies.rectangle(x, y, BRICK_W, BRICK_H);
+                    objRet.points = ROWS - floor((y-40)/BRICK_H) + 1;
                     aryBricks.push(objRet);
                     return objRet;
                 });
@@ -203,6 +204,9 @@
                 wavPing_Brick.freq(512);
 				wavPing_Brick.amp(1, 0.05);
 				wavPing_Brick.amp(0, 0.2);
+											if(brick.points) {
+											     score += brick.points;
+											}
                 Matter.World.remove(compositeBricks, brick);
                 brick = undefined;
             }
