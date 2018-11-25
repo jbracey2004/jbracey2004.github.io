@@ -60,7 +60,18 @@
 
             var clsBrickGroup = function() {
                 this.bricks = [];
-                this.points = function() {this.bricks.reduce(function(sum, itm) {return itm.hitPoints + sum;}, 0)};
+                this.bonus = 1;
+                this.hits = 0;
+                this.points = function () { return this.bonus * this.hits; };
+                this.add = function (brick) { this.bricks.push(brick); brick.group = this; this.hits += brick.hits; };
+                this.bricksLive = function () { return this.bricks.filter(function (itm) { return (itm.body); }); };
+                this.reload = function () {
+                    for (let bI of this.bricks) {
+                        bI.body = Matter.Bodies.rectangle(bI.posStart.x, bI.posStart.y, BRICK_W, BRICK_H);
+                        bI.body.subject = bI;
+                        Matter.Composite.add(compositeBricks, bI.body);
+                    }
+                };
             };
 
 			function setup() {
@@ -86,15 +97,17 @@
 
                 physics = new Physics2D.Engine();
                 physics.AutoRun_Start();
-                physics.AutoRender_Start({ options: { wireframes: false, showDebug: true, showAngleIndicator: false, showCollisions: false, showConvexHulls: true, showPositions: false, showVelocity: false }});
+                physics.AutoRender_Start({ options: { wireframes: false, showDebug: false, showAngleIndicator: false, showCollisions: false, showConvexHulls: false, showPositions: false, showVelocity: false }});
                 physics.setPlayArea({ width: PlayScreen_Width, height: PlayScreen_Height });
 				physics.instance.world.gravity.x = 0;
 				physics.instance.world.gravity.y = 0;
 				
 				bodyPaddle = physics.World.CreateBody_Rectangle((PlayScreen_Width-PaddleWidth)*0.5, PlayScreen_Height-PaddleThickness*3, PaddleWidth, PaddleThickness, {density:10, frictionAir:0.1, restitution:1, inertia:Infinity, collisionFilter:{category:0x1}});
 				let paddlepos = bodyPaddle.instance.position;
-				bodyBall = physics.World.CreateBody_Circle(paddlepos.x, paddlepos.y-(PaddleThickness*1.5), PlayScreen_Height*0.0125, {density:0.0001, frictionAir:0, restitution:1, inertia:Infinity, collisionFilter:{category:0x1, mask:0x1}});
-				PaddleGuard = physics.World.CreateBody_Rectangle(0, PlayScreen_Height-PaddleThickness*2.5, PlayScreen_Width, PaddleThickness, {isStatic:true, render:{opacity:0, strokeStyle:"none"}, collisionFilter:{category:0x2}});
+				bodyBall = physics.World.CreateBody_Circle(paddlepos.x, paddlepos.y-(PaddleThickness*1.5), PlayScreen_Height*0.0125, {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
+                //bodyBall = physics.World.CreateBody_Rectangle(paddlepos.x-(PaddleThickness*1.5), paddlepos.y-(PaddleThickness*1.5), PlayScreen_Height*0.0245,PlayScreen_Height*0.0245,  {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
+                //bodyBall = physics.World.CreateBody_Polygon(paddlepos.x, paddlepos.y-(PaddleThickness*1.5), 3, PlayScreen_Height*0.02,  {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
+                PaddleGuard = physics.World.CreateBody_Rectangle(0, PlayScreen_Height - PaddleThickness * 2.5, PlayScreen_Width, PaddleThickness, { isStatic: true, render: { opacity: 0, strokeStyle: "none" }, collisionFilter: { category: 0x2 } });
 				constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-(PaddleThickness*1.5)}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:false}});
 				Matter.World.add(physics.World.instance, constraintPaddle);
 				
@@ -109,12 +122,20 @@
 				
                 aryBricks = [];
                 aryBrickGroups = [];
+                for (let gI = 0; gI < ROWS; gI++) {
+                    aryBrickGroups.push(new clsBrickGroup());
+                }
                 compositeBricks = Matter.Composites.stack(wallinside.x, 40, COLUMNS, ROWS, BRICK_MARGIN, BRICK_MARGIN, function(x, y) {
-                    let objRet = Matter.Bodies.rectangle(x, y, BRICK_W, BRICK_H);
-                    let intRow = ROWS - (floor((y-40)/BRICK_H) + 1);
+                    let objRet = {};
+                    objRet.body = Matter.Bodies.rectangle(x, y, BRICK_W, BRICK_H);
+                    objRet.body.subject = objRet;
+                    objRet.posStart = {x: x, y: y};
+                    let intRow = ROWS - (floor((y - 40) / (BRICK_H+BRICK_MARGIN))+1);
                     objRet.points = intRow + 1;
+                    objRet.hits = floor(intRow / 2) + 1;
+                    aryBrickGroups[intRow].add(objRet);
                     aryBricks.push(objRet);
-                    return objRet;
+                    return objRet.body;
                 });
                 Matter.World.add(physics.World.instance, compositeBricks);
 
@@ -184,9 +205,9 @@
             function clamp(x, a, b) {return Math.max(a, Math.min(x, b))};
             
             function physics_onTick(e) {
-      	        if(!constraintPaddle) {
+                if (!constraintPaddle) {
       		        let velprops = VectorProps(bodyBall.instance.velocity);
-      		        if(Math.abs(velprops.norm.y) < 0.5) {velprops.norm.y += Math.sign(velprops.norm.y)*0.01;}
+                    if (Math.abs(velprops.norm.y) < 0.75) { velprops.norm.y += Math.sign(velprops.norm.y)*0.01; }
       		        velprops = VectorProps(velprops.norm);
       		        let vel = {x: velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed};
       		        Matter.Body.setVelocity(bodyBall.instance, vel);
@@ -203,21 +224,34 @@
                         if(cI_bodies.includes(wallRight.instance)) {onBoundsHit();}
       			        if(cI_bodies.includes(bodyPaddle.instance)) {onPaddleHit();}
                         for(cI_Body of cI_bodies) {
-                            if(aryBricks.includes(cI_Body)) {onBrickHit(cI_Body);}
+                            if(cI_Body.subject) {onBrickHit(cI_Body.subject);}
                         }
       		        }
       	        }
             }
       
             function onBrickHit(brick) {
-                wavPing_Brick.freq(512);
-				wavPing_Brick.amp(1, 0.05);
-				wavPing_Brick.amp(0, 0.2);
-											if(brick.points) {
-											     score += brick.points;
-											}
-                Matter.World.remove(compositeBricks, brick);
-                brick = undefined;
+                if (brick.body) {
+                    brick.hits--;
+                    if (brick.hits > 0) {
+                        wavPing_Brick.freq(440);
+					    wavPing_Brick.amp(1, 0.05);
+					    wavPing_Brick.amp(0, 0.1)
+                    } else {
+                        wavPing_Brick.freq(512);
+					    wavPing_Brick.amp(1, 0.05);
+                        wavPing_Brick.amp(0, 0.2);
+                        score += brick.points;
+                        Matter.World.remove(compositeBricks, brick.body);
+                        brick.body = undefined;
+                        if (brick.group.bricksLive().length <= 0) {
+                            wavPing_GroupClear.amp(1, 0.1);
+							wavPing_GroupClear.amp(0, 0.5)
+							score += brick.group.points();
+                            brick.group.reload();
+                        }
+                    }
+                }
             }
             function onBoundsHit() {
                 if(!constraintPaddle) {
@@ -242,7 +276,8 @@
 				wavPing_Lost.amp(0, 0.5);
                 let pos = bodyPaddle.instance.position;
                 Matter.Body.setVelocity(bodyBall.instance, {x:0, y:0});
-                Matter.Body.setPosition(bodyBall.instance, {x:pos.x, y:pos.y-(PaddleThickness*1.5)});
+                Matter.Body.setPosition(bodyBall.instance, { x: pos.x, y: pos.y - (PaddleThickness * 1.5) });
+                Matter.Body.setAngularVelocity(bodyBall.instance, 0);
                 constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-(PaddleThickness*1.5)}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:false}});
                 Matter.World.add(physics.World.instance, constraintPaddle);
             }
