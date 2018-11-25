@@ -88,7 +88,7 @@
 				
 				bodyPaddle = physics.World.CreateBody_Rectangle((PlayScreen_Width-PaddleWidth)*0.5, PlayScreen_Height-PaddleThickness*3, PaddleWidth, PaddleThickness, {density:10, frictionAir:0.1, restitution:1, inertia:Infinity, collisionFilter:{category:0x1}});
 				let paddlepos = bodyPaddle.instance.position;
-				bodyBall = physics.World.CreateBody_Circle(paddlepos.x, paddlepos.y-(PaddleThickness*1.5), PlayScreen_Height*0.0125, {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
+				bodyBall = physics.World.CreateBody_Circle(paddlepos.x, paddlepos.y-(PaddleThickness*1.5), PlayScreen_Height*0.0125, {density:0.0001, frictionAir:0, restitution:1, inertia:Infinity, collisionFilter:{category:0x1, mask:0x1}});
 				PaddleGuard = physics.World.CreateBody_Rectangle(0, PlayScreen_Height-PaddleThickness*2.5, PlayScreen_Width, PaddleThickness, {isStatic:true, render:{opacity:0, strokeStyle:"none"}, collisionFilter:{category:0x2}});
 				constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-(PaddleThickness*1.5)}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:false}});
 				Matter.World.add(physics.World.instance, constraintPaddle);
@@ -100,12 +100,13 @@
 				wallTop = physics.World.CreateBody_Rectangle(wallinside.x-wallsize.x, wallinside.y-wallsize.y, PlayScreen_Width + 2*wallsize.x, wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
 				wallLeft = physics.World.CreateBody_Rectangle(wallinside.x-wallsize.x, wallinside.y-wallsize.y, wallsize.x, PlayScreen_Height + 2*wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
 				wallRight = physics.World.CreateBody_Rectangle(PlayScreen_Width - wallinside.x, wallinside.y-wallsize.y, wallsize.x, PlayScreen_Height + 2*wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
-				wallBottom = physics.World.CreateBody_Rectangle(-wallsize.x, PlayScreen_Height+wallsize.y, PlayScreen_Width + 2*wallsize.x, wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
+				wallBottom = physics.World.CreateBody_Rectangle(-PlayScreen_Width*0.5, PlayScreen_Height+wallsize.y, PlayScreen_Width*2, 2*wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
 				
                 aryBricks = [];
                 compositeBricks = Matter.Composites.stack(wallinside.x, 40, COLUMNS, ROWS, BRICK_MARGIN, BRICK_MARGIN, function(x, y) {
                     let objRet = Matter.Bodies.rectangle(x, y, BRICK_W, BRICK_H);
-                    objRet.points = ROWS - floor((y-40)/BRICK_H) + 1;
+                    let intRow = ROWS - floor((y-40)/BRICK_H) + 1;
+                    objRet.points = intRow;
                     aryBricks.push(objRet);
                     return objRet;
                 });
@@ -179,6 +180,8 @@
             function physics_onTick(e) {
       	        if(!constraintPaddle) {
       		        let velprops = VectorProps(bodyBall.instance.velocity);
+      		        if(Math.abs(velprops.norm.y) < 0.5) {velprops.norm.y += Math.sign(velprops.norm.y)*0.01;}
+      		        velprops = VectorProps(velprops.norm);
       		        let vel = {x: velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed};
       		        Matter.Body.setVelocity(bodyBall.instance, vel);
       	        }
