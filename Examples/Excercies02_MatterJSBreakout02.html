@@ -25,15 +25,17 @@
 
 			var PlayScreen_Width = 708;
 			var PlayScreen_Height = 1024;
-			var PaddleWidth = PlayScreen_Width*0.15;
+			var PaddleWidth = PlayScreen_Width*0.2;
 			var PaddleThickness = PlayScreen_Height*0.0125;
 			var BallSpeed = 10;
-			var MAX_SPEED = Math.sqrt(PlayScreen_Width * PlayScreen_Height)/10;
-			var BRICK_W = 40;
-			var BRICK_H = 20;
-			var BRICK_MARGIN = 3;
+            var MAX_SPEED = Math.sqrt(PlayScreen_Width * PlayScreen_Height) / 10;
+            var wallsize = {x:PlayScreen_Width * 0.125, y:PlayScreen_Height * 0.125};
+			var wallinside = {x:wallsize.x * 0.125, y:wallsize.y * 0.125};
+			var BRICK_MARGIN = 2.5;
 			var ROWS = 12;
-			var COLUMNS = 16;
+            var COLUMNS = 16;
+            var BRICK_W = ((PlayScreen_Width - 2*wallinside.x) / (COLUMNS+1)) - BRICK_MARGIN;
+			var BRICK_H = 20;
 			var constraintPaddle, bodyPaddle, bodyBall, PaddleGuard, 
                 wallTop, wallBottom, wallLeft, wallRight, 
                 compositeBricks, aryBricks, aryBrickGroups;
@@ -104,17 +106,13 @@
 				
 				bodyPaddle = physics.World.CreateBody_Rectangle((PlayScreen_Width-PaddleWidth)*0.5, PlayScreen_Height-PaddleThickness*3, PaddleWidth, PaddleThickness, {density:10, frictionAir:0.1, restitution:1, inertia:Infinity, collisionFilter:{category:0x1}});
 				let paddlepos = bodyPaddle.instance.position;
-				bodyBall = physics.World.CreateBody_Circle(paddlepos.x, paddlepos.y-(PaddleThickness*1.5), PlayScreen_Height*0.0125, {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
+				//bodyBall = physics.World.CreateBody_Circle(paddlepos.x, paddlepos.y-(PaddleThickness*1.5), PlayScreen_Height*0.0125, {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
                 //bodyBall = physics.World.CreateBody_Rectangle(paddlepos.x-(PaddleThickness*1.5), paddlepos.y-(PaddleThickness*1.5), PlayScreen_Height*0.0245,PlayScreen_Height*0.0245,  {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
-                //bodyBall = physics.World.CreateBody_Polygon(paddlepos.x, paddlepos.y-(PaddleThickness*1.5), 3, PlayScreen_Height*0.02,  {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
+                bodyBall = physics.World.CreateBody_Polygon(paddlepos.x, paddlepos.y-(PaddleThickness*1.5), 2, PlayScreen_Height*0.0125,  {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
                 PaddleGuard = physics.World.CreateBody_Rectangle(0, PlayScreen_Height - PaddleThickness * 2.5, PlayScreen_Width, PaddleThickness, { isStatic: true, render: { opacity: 0, strokeStyle: "none" }, collisionFilter: { category: 0x2 } });
 				constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-(PaddleThickness*1.5)}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:false}});
 				Matter.World.add(physics.World.instance, constraintPaddle);
 				
-				let wallsize = {x:PlayScreen_Width * 0.125, 
-				y:PlayScreen_Height * 0.125};
-				let wallinside = {x:wallsize.x * 0.125,
-				y:wallsize.y * 0.125};
 				wallTop = physics.World.CreateBody_Rectangle(wallinside.x-wallsize.x, wallinside.y-wallsize.y, PlayScreen_Width + 2*wallsize.x, wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
 				wallLeft = physics.World.CreateBody_Rectangle(wallinside.x-wallsize.x, wallinside.y-wallsize.y, wallsize.x, PlayScreen_Height + 2*wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
 				wallRight = physics.World.CreateBody_Rectangle(PlayScreen_Width - wallinside.x, wallinside.y-wallsize.y, wallsize.x, PlayScreen_Height + 2*wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
@@ -125,9 +123,9 @@
                 for (let gI = 0; gI < ROWS; gI++) {
                     aryBrickGroups.push(new clsBrickGroup());
                 }
-                compositeBricks = Matter.Composites.stack(wallinside.x, 40, COLUMNS, ROWS, BRICK_MARGIN, BRICK_MARGIN, function(x, y) {
+                compositeBricks = Matter.Composites.stack(wallinside.x + BRICK_W*0.5, (BRICK_H + BRICK_MARGIN)*2, COLUMNS, ROWS, BRICK_MARGIN, BRICK_MARGIN, function(x, y) {
                     let objRet = {};
-                    objRet.body = Matter.Bodies.rectangle(x, y, BRICK_W, BRICK_H);
+                    objRet.body = Matter.Bodies.rectangle(x, y, BRICK_W, BRICK_H, { frictionAir: 0.01, restitution:1});
                     objRet.body.subject = objRet;
                     objRet.posStart = {x: x, y: y};
                     let intRow = ROWS - (floor((y - 40) / (BRICK_H+BRICK_MARGIN))+1);
