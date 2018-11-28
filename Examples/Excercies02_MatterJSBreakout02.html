@@ -135,7 +135,15 @@
                     aryBricks.push(objRet);
                     return objRet.body;
                 });
-                Matter.World.add(physics.World.instance, compositeBricks);
+				Matter.World.add(physics.World.instance, compositeBricks);
+
+				instanceMouse = Matter.Mouse.create(canvasMain)
+                Matter.Mouse.setScale(instanceMouse, {x:PlayScreen_Width / windowWidth , y: PlayScreen_Height / windowHeight });
+                constraintMouse = Matter.MouseConstraint.create(physics.instance, {
+                    mouse: instanceMouse,
+                    constraint: { stiffness: 0.025 }
+                });
+                Matter.World.add(physics.World.instance, constraintMouse);
 
 				Matter.Events.on(physics.instance, "beforeUpdate", physics_onTick);
 				Matter.Events.on(physics.instance, "collisionEnd", physics_onCollision);
@@ -203,31 +211,31 @@
             function clamp(x, a, b) {return Math.max(a, Math.min(x, b))};
             
             function physics_onTick(e) {
-                if (!constraintPaddle) {
-      		        let velprops = VectorProps(bodyBall.instance.velocity);
-                    if (Math.abs(velprops.norm.y) < 0.75) { velprops.norm.y += Math.sign(velprops.norm.y)*0.01; }
-      		        velprops = VectorProps(velprops.norm);
-      		        let vel = {x: velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed};
-      		        Matter.Body.setVelocity(bodyBall.instance, vel);
-      	        }
+				if (!constraintPaddle) {
+					let velprops = VectorProps(bodyBall.instance.velocity);
+					if (Math.abs(velprops.norm.y) < 0.75) { velprops.norm.y += Math.sign(velprops.norm.y)*0.01; }
+					velprops = VectorProps(velprops.norm);
+					let vel = {x: velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed};
+					Matter.Body.setVelocity(bodyBall.instance, vel);
+				}
             }
             function physics_onCollision(e) {
-      	        for(let cI of e.pairs) {
-      		        let cI_bodies = [cI.bodyA,cI.bodyB];
-      		        if(cI_bodies.includes(bodyBall.instance)) {
-                        cI_bodies.splice(cI_bodies.indexOf(bodyBall.instance), 1);
-      			        if(cI_bodies.includes(wallBottom.instance)) {onBottomHit();}
-                        if(cI_bodies.includes(wallTop.instance)) {onBoundsHit();}
-                        if(cI_bodies.includes(wallLeft.instance)) {onBoundsHit();}
-                        if(cI_bodies.includes(wallRight.instance)) {onBoundsHit();}
-      			        if(cI_bodies.includes(bodyPaddle.instance)) {onPaddleHit();}
-                        for(cI_Body of cI_bodies) {
-                            if(cI_Body.subject) {onBrickHit(cI_Body.subject);}
-                        }
-      		        }
-      	        }
-            }
-      
+				for(let cI of e.pairs) {
+					let cI_bodies = [cI.bodyA,cI.bodyB];
+					if(cI_bodies.includes(bodyBall.instance)) {
+						cI_bodies.splice(cI_bodies.indexOf(bodyBall.instance), 1);
+						if(cI_bodies.includes(wallBottom.instance)) {onBottomHit();}
+						if(cI_bodies.includes(wallTop.instance)) {onTopHit();}
+						if(cI_bodies.includes(wallLeft.instance)) {onBoundsHit();}
+						if(cI_bodies.includes(wallRight.instance)) {onBoundsHit();}
+						if(cI_bodies.includes(bodyPaddle.instance)) {onPaddleHit();}
+						for(cI_Body of cI_bodies) {
+							if(cI_Body.subject) {onBrickHit(cI_Body.subject);}
+						}
+					}
+				}
+			}
+
             function onBrickHit(brick) {
                 if (brick.body) {
                     brick.hits--;
@@ -243,6 +251,7 @@
                         Matter.World.remove(compositeBricks, brick.body);
                         brick.body = undefined;
                         if (brick.group.bricksLive().length <= 0) {
+							wavPing_GroupClear.freq(768);
                             wavPing_GroupClear.amp(1, 0.1);
 							wavPing_GroupClear.amp(0, 0.5)
 							score += brick.group.points();
@@ -280,7 +289,13 @@
                 Matter.World.add(physics.World.instance, constraintPaddle);
             }
             function onTopHit() {
-      
+				wavPing_GroupClear.freq(512);
+				wavPing_GroupClear.amp(1, 0.01);
+				wavPing_GroupClear.amp(1, 0.45);
+				wavPing_GroupClear.amp(0, 0.5);
+				for(let gI of aryBrickGroups) {
+					score += gI.bonus;
+				}
             }
 			
             function VectorProps(vec) {
