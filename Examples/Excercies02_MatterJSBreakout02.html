@@ -12,11 +12,6 @@
 		<script>
 			var canvasMain;
 			var contextMain;
-			var wavPing_Paddle;
-			var wavPing_Bounds;
-			var wavPing_Brick;
-			var wavPing_GroupClear;
-			var wavPing_Lost;
             var groupBricks = [];
             var physics;
 			var pt = 0;
@@ -39,6 +34,8 @@
 			var constraintPaddle, bodyPaddle, bodyBall, PaddleGuard, 
                 wallTop, wallBottom, wallLeft, wallRight, 
                 compositeBricks, aryBricks, aryBrickGroups;
+			var wavPing_Paddle, wavPing_Bounds, wavPing_Brick,
+				wavPing_GroupClear, wavPing_GroupClear_Osc, wavPing_Lost;
 			var gradientBall, gradientPaddle, gradientBrick;
 
 			var fxnDrawBall = function() {
@@ -125,7 +122,7 @@
                 }
                 compositeBricks = Matter.Composites.stack(wallinside.x + BRICK_W*0.5, (BRICK_H + BRICK_MARGIN)*2, COLUMNS, ROWS, BRICK_MARGIN, BRICK_MARGIN, function(x, y) {
                     let objRet = {};
-                    objRet.body = Matter.Bodies.rectangle(x, y, BRICK_W, BRICK_H, { frictionAir: 0.01, restitution:1});
+                    objRet.body = Matter.Bodies.rectangle(x, y, BRICK_W, BRICK_H, {frictionAir: 0.01, restitution:1});
                     objRet.body.subject = objRet;
                     objRet.posStart = {x: x, y: y};
                     let intRow = ROWS - (floor((y - 40) / (BRICK_H+BRICK_MARGIN))+1);
@@ -173,6 +170,13 @@
 				wavPing_GroupClear.start();
 				wavPing_GroupClear.freq(768);
 				wavPing_GroupClear.amp(0);
+				wavPing_GroupClear_Osc = new p5.Oscillator();
+				wavPing_GroupClear_Osc.setType("square");
+				wavPing_GroupClear_Osc.disconnect();
+				wavPing_GroupClear_Osc.freq(32);
+				wavPing_GroupClear_Osc.amp(1);
+				wavPing_GroupClear_Osc.start();
+				wavPing_GroupClear_Osc.scale(-1, 1, 1, 0);
 
 				var comFullscreen = createButton("[]");
 				comFullscreen.style("position: absolute");
@@ -249,7 +253,7 @@
                         wavPing_Brick.amp(0, 0.2);
                         score += brick.points;
                         Matter.World.remove(compositeBricks, brick.body);
-                        brick.body = undefined;
+                        brick.body = null;
                         if (brick.group.bricksLive().length <= 0) {
 							wavPing_GroupClear.freq(768);
                             wavPing_GroupClear.amp(1, 0.1);
@@ -289,10 +293,11 @@
                 Matter.World.add(physics.World.instance, constraintPaddle);
             }
             function onTopHit() {
-				wavPing_GroupClear.freq(512);
-				wavPing_GroupClear.amp(1, 0.01);
-				wavPing_GroupClear.amp(1, 0.45);
-				wavPing_GroupClear.amp(0, 0.5);
+				wavPing_GroupClear.freq(880);
+				wavPing_GroupClear.amp(0);
+				wavPing_GroupClear.amp(wavPing_GroupClear_Osc);
+				wavPing_GroupClear_Osc.amp(1, 0.01);
+				wavPing_GroupClear_Osc.amp(0, 0.25);
 				for(let gI of aryBrickGroups) {
 					score += gI.bonus;
 				}
