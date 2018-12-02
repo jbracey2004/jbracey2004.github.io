@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width">
-		<title>Portfolio - Breakout Sandbox - Matter.js </title>
+		<title>Portfolio - Breakout Sprites - Matter.js </title>
 		<script src="../libref/p5/p5.min.js"></script>
 		<script src="../libref/p5/p5.sound.min.js"></script>
 		<script src="../libref/p5/p5.dom.min.js"></script>
@@ -31,12 +31,14 @@
             var COLUMNS = 16;
             var BRICK_W = ((PlayScreen_Width - 2*wallinside.x) / (COLUMNS+1)) - BRICK_MARGIN;
 			var BRICK_H = 20;
-			var constraintPaddle, bodyPaddle, bodyBall, PaddleGuard, 
+			var constraintPaddle, constraintMouse;
+			var bodyPaddle, bodyBall, PaddleGuard, 
                 wallTop, wallBottom, wallLeft, wallRight, 
                 compositeBricks, aryBricks, aryBrickGroups;
 			var wavPing_Paddle, wavPing_Bounds, wavPing_Brick,
 				wavPing_GroupClear, wavPing_GroupClear_Osc, wavPing_Lost;
 			var gradientBall, gradientPaddle, gradientBrick;
+			var aryTouches = [];
 
 			var fxnDrawBall = function() {
 				noStroke();
@@ -137,6 +139,12 @@
 
 				Matter.Events.on(physics.instance, "beforeUpdate", physics_onTick);
 				Matter.Events.on(physics.instance, "collisionEnd", physics_onCollision);
+				canvasMain.addEventListener("touchstart", canvas_onTouchStart);
+                canvasMain.addEventListener("mousedown", canvas_onTouchStart);
+				canvasMain.addEventListener("touchmove", canvas_onTouchMoved);
+				canvasMain.addEventListener("mousemove", canvas_onTouchMoved);
+                canvasMain.addEventListener("touchend", canvas_onTouchEnd);
+                canvasMain.addEventListener("mouseup", canvas_onTouchEnd);
 				
 				wavPing_Paddle = new p5.Oscillator();
 				wavPing_Paddle.setType("square");
@@ -198,9 +206,10 @@
                 pop();
 
 				textSize(32);
+				noFill();
 				stroke("#FFFFFF");
 				strokeWeight(2);
-                text(score.toString(), canvasMain.width / 2, 36);
+				text(score.toString(), canvasMain.width / 2, 36);
 
 				pt = tn;
             }
@@ -250,7 +259,7 @@
                         if (brick.group.bricksLive().length <= 0) {
 							wavPing_GroupClear.freq(768);
                             wavPing_GroupClear.amp(1, 0.1);
-							wavPing_GroupClear.amp(0, 0.5)
+							wavPing_GroupClear.amp(0, 0.5);
 							score += brick.group.points();
                             brick.group.reload();
                         }
@@ -318,8 +327,78 @@
                 posRet.x *= canvasMain.offsetWidth;
                 posRet.y *= canvasMain.offsetHeight;
                 return posRet;
-            }
-            function mouseDragged(event) {
+			}
+			function canvas_onTouchStart(event) {
+				if (event.changedTouches) {
+					for (let tI of event.changedTouches) {
+						let pt = ClientToPlayField({ x: tI.clientX, y: tI.clientY }, { width: PlayScreen_Width, height: PlayScreen_Height });
+						let ary = aryTouches.filter(function (itm) { let ret = false; if (itm.touch) { ret = (itm.touch.identifier === tI.identifier) }; return ret; });
+						if (ary.length === 0) {
+							let objRet = {};
+							objRet.touch = tI;
+							let aryBodies = Matter.Query.point(Matter.Composite.allBodies(physics.World.instance), pt);
+							if (aryBodies.length > 0) {
+								let constraintRet = Matter.Constraint.create({
+									bodyA: aryBodies[0],
+									pointB: pt,
+									stiffness: 0.25
+								});
+								objRet.body = aryBodies[0];
+								objRet.constraint = constraintRet;
+								Matter.World.add(physics.World.instance, constraintRet);
+							}
+							aryTouches.push(objRet);
+						}
+					}
+				} else {
+					let pt = ClientToPlayField({ x: event.clientX, y: event.clientY }, { width: PlayScreen_Width, height: PlayScreen_Height });
+					let aryBodies = Matter.Query.point(Matter.Composite.allBodies(physics.World.instance), pt);
+					if (aryBodies.length > 0) {
+						constraintMouse = Matter.Constraint.create({
+							bodyA: aryBodies[0],
+							pointB: pt,
+							stiffness: 0.25
+						});
+						Matter.World.add(physics.World.instance, constraintMouse);
+					}
+				}
+			}
+			function canvas_onTouchMoved(event) {
+				if (event.changedTouches) {
+					for (let tI of event.changedTouches) {
+						let pt = ClientToPlayField({ x: tI.clientX, y: tI.clientY }, { width: PlayScreen_Width, height: PlayScreen_Height });
+						let ary = aryTouches.filter(function (itm) { let ret = false; if (itm.touch) { ret = (itm.touch.identifier === tI.identifier) }; return ret; });
+						for (let itm of ary) {
+							if (itm.constraint) {
+								itm.constraint.pointB = pt;
+							}	
+						}	
+					}
+				} else {
+					let pt = ClientToPlayField({ x: event.clientX, y: event.clientY }, { width: PlayScreen_Width, height: PlayScreen_Height });
+					if (constraintMouse) {
+						constraintMouse.pointB = pt;
+					}	
+				}
+			}
+			function canvas_onTouchEnd(event) {
+				if (event.changedTouches) {
+					for (let tI of event.changedTouches) {
+						let ary = aryTouches.filter(function (itm) { let ret = false; if (itm.touch) { ret = (itm.touch.identifier === tI.identifier) }; return ret; });
+						for (let itm of ary) {
+							aryTouches.splice(aryTouches.indexOf(itm), 1)
+							if (itm.constraint) { Matter.World.remove(physics.World.instance, itm.constraint); delete itm.constraint; }
+							if (itm.body) { delete itm.body; }
+						}							
+					}
+				} else {
+					if (constraintMouse) {
+						Matter.World.remove(physics.World.instance, constraintMouse);
+					}
+					constraintMouse = null;
+				}
+			}
+			function mouseDragged() {
                 let ppos = ClientToPlayField({ x: pmouseX, y: pmouseY }, { width: PlayScreen_Width, height: PlayScreen_Height });
                 let pos = ClientToPlayField({ x: mouseX, y: mouseY }, { width: PlayScreen_Width, height: PlayScreen_Height });
                 let vel = {x:pos.x-ppos.x, y:pos.y-ppos.y};
@@ -337,10 +416,10 @@
                 vel.y = 0;
                 Matter.Body.setVelocity(bodyPaddle.instance, vel);
             }
-            function mouseMoved(event) {
+            function mouseMoved() {
                 let pos = ClientToPlayField({ x: mouseX, y: mouseY }, { width: PlayScreen_Width, height: PlayScreen_Height });
                 Matter.Body.setPosition(bodyPaddle.instance, {x:pos.x, y:PlayScreen_Height-PaddleThickness*3});
-            }
+			}
 
 			function aspectOrientation(aspect) { let fAsp = Math.abs(aspect); return (fAsp >= 0 && fAsp <= 1 ) ? "portrait":"landscape"; }
 			function windowResized() {

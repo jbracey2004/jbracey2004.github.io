@@ -61,8 +61,8 @@
                 comFullscreen.mouseClicked(onFullScreenToggleClick);
 
                 window.addEventListener('deviceorientation', updateGravity);
-                canvas.addEventListener('touchstart', canvas_onTouchStart);
-                canvas.addEventListener('mousedown', canvas_onTouchStart);
+                canvasMain.addEventListener('touchstart', canvas_onTouchStart);
+                canvasMain.addEventListener('mousedown', canvas_onTouchStart);
                 Matter.Events.on(constraintMouse, "startdrag", body_onDragStart);
                 Matter.Events.on(constraintMouse, "mousemove", body_onDrag);
                 Matter.Events.on(constraintMouse, "enddrag", body_onDragEnd);
