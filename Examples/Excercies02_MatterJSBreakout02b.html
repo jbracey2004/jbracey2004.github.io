@@ -113,7 +113,7 @@
                 //bodyBall = physics.World.CreateBody_Rectangle(paddlepos.x-(PaddleThickness*1.5), paddlepos.y-(PaddleThickness*1.5), PlayScreen_Height*0.0245,PlayScreen_Height*0.0245,  {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
                 bodyBall = physics.World.CreateBody_Polygon(paddlepos.x, paddlepos.y-BallSize, BallPolygonShape, BallSize,  {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
                 PaddleGuard = physics.World.CreateBody_Rectangle(0, PlayScreen_Height - PaddleThickness * 2.5, PlayScreen_Width, PaddleThickness, { isStatic: true, render: { opacity: 0, strokeStyle: "none" }, collisionFilter: { category: 0x2 } });
-				constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-BallSize*1.25}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:false}});
+				constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-BallSize*1.25}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:true}});
 				Matter.World.add(physics.World.instance, constraintPaddle);
 				
 				wallTop = physics.World.CreateBody_Rectangle(wallinside.x-wallsize.x, wallinside.y-wallsize.y, PlayScreen_Width + 2*wallsize.x, wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
@@ -294,7 +294,7 @@
                 Matter.Body.setVelocity(bodyBall.instance, {x:0, y:0});
                 Matter.Body.setPosition(bodyBall.instance, { x: pos.x, y: pos.y - BallSize });
                 Matter.Body.setAngularVelocity(bodyBall.instance, 0);
-                constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-BallSize*1.25}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:false}});
+                constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-BallSize*1.25}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:true}});
                 Matter.World.add(physics.World.instance, constraintPaddle);
             }
             function onTopHit() {
@@ -396,15 +396,15 @@
 						let ary = aryTouches.filter(function (itm) { let ret = false; if (itm.touch) { ret = (itm.touch.identifier === tI.identifier) }; return ret; });
 						for (let itm of ary) {
 							aryTouches.splice(aryTouches.indexOf(itm), 1)
-							if(VectorDiffProps(itm.touch.clientStart, pt).mag <= 4) {onTouchClicked(pt, itm.constraint);}
+							if (VectorDiffProps(itm.touch.clientStart, pt).mag <= 4) {onTouchClicked(pt, itm.constraint);}
 							if (itm.constraint) { Matter.World.remove(physics.World.instance, itm.constraint); delete itm.constraint; }
 							if (itm.body) { delete itm.body; }
 						}							
 					}
 				} else {
 					let pt = ClientToPlayField({ x: event.clientX, y: event.clientY }, { width: PlayScreen_Width, height: PlayScreen_Height });
-					if(pointMouseDown) {
-						if(VectorDiffProps(pointMouseDown, pt).mag <= 4) {onTouchClicked(pt, constraintMouse);}
+					if (pointMouseDown) {
+						if (VectorDiffProps(pointMouseDown, pt).mag <= 4) {onTouchClicked(pt, constraintMouse);}
 					}
 					if (constraintMouse) {
 						Matter.World.remove(physics.World.instance, constraintMouse);
@@ -414,21 +414,21 @@
 				}
 			}
 			function onTouchClicked(posIn, constraintIn) {
-				if(constraintIn) {
-					if(constraintIn.bodyA) {
-						if(constraintIn.bodyA === bodyBall.instance) {
+				if (constraintIn) {
+					if (constraintIn.bodyA) {
+						if (constraintIn.bodyA === bodyBall.instance) {
 							wavPing_GroupClear.freq(256);
 							wavPing_GroupClear.amp(0);
 							wavPing_GroupClear.amp(wavPing_GroupClear_Osc);
 							wavPing_GroupClear_Osc.amp(1, 0.01);
 							wavPing_GroupClear_Osc.amp(0, 0.1);
 							BallPolygonShape = BallPolygonShape + 1;
-							if(BallPolygonShape > 12) {BallPolygonShape = 3;}
+							if (BallPolygonShape > 12) {BallPolygonShape = 3;}
 							let aryV = [];
-							for(let vI = 0; vI < BallPolygonShape; vI ++) {
+							for (let vI = 0; vI < BallPolygonShape; vI ++) {
 								let vAng = (vI/BallPolygonShape) * 2 * Math.PI;
 								aryV.push({x:BallSize * Math.cos(vAng),
-															 y:BallSize * Math.sin(vAng)});
+											y:BallSize * Math.sin(vAng)});
 							}
 							Matter.Body.setVertices(bodyBall.instance, aryV);
 						}
@@ -441,8 +441,8 @@
                 let vel = {x:pos.x-ppos.x, y:pos.y-ppos.y};
                 let velprops = VectorProps(vel);
                 vel.x = clamp(vel.x, -PaddleWidth, PaddleWidth);
-	            if(constraintPaddle) {
-	                if(vel.y < -10) {
+	            if (constraintPaddle) {
+	                if (vel.y < -10) {
 	                	Matter.World.remove(physics.World.instance, constraintPaddle);
 	                	constraintPaddle = null;
 	                	BallSpeed = clamp(velprops.mag, 10, 25);
