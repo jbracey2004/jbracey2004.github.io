@@ -3,7 +3,7 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width">
-		<title>Portfolio - Breakout Sprites - Matter.js </title>
+		<title>Portfolio - Breakout Sandbox - Matter.js </title>
 		<script src="../libref/p5/p5.min.js"></script>
 		<script src="../libref/p5/p5.sound.min.js"></script>
 		<script src="../libref/p5/p5.dom.min.js"></script>
@@ -111,9 +111,9 @@
 				let paddlepos = bodyPaddle.instance.position;
 				//bodyBall = physics.World.CreateBody_Circle(paddlepos.x, paddlepos.y-(PaddleThickness*1.5), PlayScreen_Height*0.0125, {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
                 //bodyBall = physics.World.CreateBody_Rectangle(paddlepos.x-(PaddleThickness*1.5), paddlepos.y-(PaddleThickness*1.5), PlayScreen_Height*0.0245,PlayScreen_Height*0.0245,  {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
-                bodyBall = physics.World.CreateBody_Polygon(paddlepos.x, paddlepos.y-BallSize, BallPolygonShape, BallSize,  {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
+                bodyBall = physics.World.CreateBody_Polygon(paddlepos.x, paddlepos.y-(PaddleThickness*0.5 + BallSize), BallPolygonShape, BallSize,  {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
                 PaddleGuard = physics.World.CreateBody_Rectangle(0, PlayScreen_Height - PaddleThickness * 2.5, PlayScreen_Width, PaddleThickness, { isStatic: true, render: { opacity: 0, strokeStyle: "none" }, collisionFilter: { category: 0x2 } });
-				constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-BallSize*1.25}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:true}});
+				constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-(PaddleThickness*0.5 +BallSize)}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:true}});
 				Matter.World.add(physics.World.instance, constraintPaddle);
 				
 				wallTop = physics.World.CreateBody_Rectangle(wallinside.x-wallsize.x, wallinside.y-wallsize.y, PlayScreen_Width + 2*wallsize.x, wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
@@ -292,9 +292,9 @@
 				wavPing_Lost.amp(0, 0.5);
                 let pos = bodyPaddle.instance.position;
                 Matter.Body.setVelocity(bodyBall.instance, {x:0, y:0});
-                Matter.Body.setPosition(bodyBall.instance, { x: pos.x, y: pos.y - BallSize });
+                Matter.Body.setPosition(bodyBall.instance, { x: pos.x, y: pos.y - (PaddleThickness*0.5 +BallSize) });
                 Matter.Body.setAngularVelocity(bodyBall.instance, 0);
-                constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-BallSize*1.25}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:true}});
+                constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-(PaddleThickness*0.5 +BallSize)}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:true}});
                 Matter.World.add(physics.World.instance, constraintPaddle);
             }
             function onTopHit() {
@@ -396,7 +396,7 @@
 						let ary = aryTouches.filter(function (itm) { let ret = false; if (itm.touch) { ret = (itm.touch.identifier === tI.identifier) }; return ret; });
 						for (let itm of ary) {
 							aryTouches.splice(aryTouches.indexOf(itm), 1)
-							if (VectorDiffProps(itm.touch.clientStart, pt).mag <= 4) {onTouchClicked(pt, itm.constraint);}
+							//if (VectorDiffProps(itm.touch.clientStart, pt).mag <= 4) {onTouchClicked(pt, itm.constraint);}
 							if (itm.constraint) { Matter.World.remove(physics.World.instance, itm.constraint); delete itm.constraint; }
 							if (itm.body) { delete itm.body; }
 						}							
