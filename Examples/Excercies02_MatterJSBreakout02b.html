@@ -29,10 +29,10 @@
             var wallsize = {x:PlayScreen_Width * 0.125, y:PlayScreen_Height * 0.125};
 			var wallinside = {x:wallsize.x * 0.125, y:wallsize.y * 0.125};
 			var BRICK_MARGIN = 2.5;
-			var ROWS = 12;
-            var COLUMNS = 16;
+			var ROWS = 10; 
+            var COLUMNS = 12;
             var BRICK_W = ((PlayScreen_Width - 2*wallinside.x) / (COLUMNS+1)) - BRICK_MARGIN;
-			var BRICK_H = 20;
+			var BRICK_H = 24;
 			var constraintPaddle, constraintMouse;
 			var bodyPaddle, bodyBall, PaddleGuard, 
                 wallTop, wallBottom, wallLeft, wallRight, 
@@ -109,10 +109,11 @@
 				
 				bodyPaddle = physics.World.CreateBody_Rectangle((PlayScreen_Width-PaddleWidth)*0.5, PlayScreen_Height-PaddleThickness*3, PaddleWidth, PaddleThickness, {density:10, frictionAir:0.1, restitution:1, inertia:Infinity, collisionFilter:{category:0x1}});
 				let paddlepos = bodyPaddle.instance.position;
-				//bodyBall = physics.World.CreateBody_Circle(paddlepos.x, paddlepos.y-(PaddleThickness*1.5), PlayScreen_Height*0.0125, {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
-                //bodyBall = physics.World.CreateBody_Rectangle(paddlepos.x-(PaddleThickness*1.5), paddlepos.y-(PaddleThickness*1.5), PlayScreen_Height*0.0245,PlayScreen_Height*0.0245,  {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
                 bodyBall = physics.World.CreateBody_Polygon(paddlepos.x, paddlepos.y-(PaddleThickness*0.5 + BallSize), BallPolygonShape, BallSize,  {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
-                PaddleGuard = physics.World.CreateBody_Rectangle(0, PlayScreen_Height - PaddleThickness * 2.5, PlayScreen_Width, PaddleThickness, { isStatic: true, render: { opacity: 0, strokeStyle: "none" }, collisionFilter: { category: 0x2 } });
+				PaddleGuard = new Physics2D.Composite(Matter.Composite.create());
+				Matter.World.add(physics.World.instance, PaddleGuard.instance);
+				PaddleGuard.CreateBody_Rectangle(0, bodyPaddle.instance.bounds.max.y, PlayScreen_Width, PaddleThickness, { isStatic: true, render: { visible: false }, collisionFilter: { category: 0x2 } });
+				PaddleGuard.CreateBody_Rectangle(0, bodyPaddle.instance.bounds.min.y - PaddleThickness, PlayScreen_Width, PaddleThickness, { isStatic: true, render: { visible: false }, collisionFilter: { category: 0x2 } });
 				constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-(PaddleThickness*0.5 +BallSize)}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:true}});
 				Matter.World.add(physics.World.instance, constraintPaddle);
 				
@@ -125,13 +126,14 @@
                 aryBrickGroups = [];
                 for (let gI = 0; gI < ROWS; gI++) {
                     aryBrickGroups.push(new clsBrickGroup());
-                }
-                compositeBricks = Matter.Composites.stack(wallinside.x + BRICK_W*0.5, (BRICK_H + BRICK_MARGIN)*2, COLUMNS, ROWS, BRICK_MARGIN, BRICK_MARGIN, function(x, y) {
+				}
+				let BricksStart = (BRICK_H + BRICK_MARGIN) * 2;
+                compositeBricks = Matter.Composites.stack(wallinside.x + BRICK_W*0.5, BricksStart, COLUMNS, ROWS, BRICK_MARGIN, BRICK_MARGIN, function(x, y) {
                     let objRet = {};
                     objRet.body = Matter.Bodies.rectangle(x, y, BRICK_W, BRICK_H, {frictionAir: 0.01, restitution:1});
                     objRet.body.subject = objRet;
                     objRet.posStart = {x: x, y: y};
-                    let intRow = ROWS - (floor((y - 40) / (BRICK_H+BRICK_MARGIN))+1);
+                    let intRow = ROWS - (floor((y - BricksStart) / (BRICK_H+BRICK_MARGIN))+1);
                     objRet.points = intRow + 1;
                     objRet.hits = floor(intRow / 2) + 1;
                     aryBrickGroups[intRow].add(objRet);
@@ -345,14 +347,16 @@
 							objRet.touch.clientStart = pt;
 							let aryBodies = Matter.Query.point(Matter.Composite.allBodies(physics.World.instance), pt);
 							if (aryBodies.length > 0) {
-								let constraintRet = Matter.Constraint.create({
-									bodyA: aryBodies[0],
-									pointB: pt,
-									stiffness: 0.25
-								});
-								objRet.body = aryBodies[0];
-								objRet.constraint = constraintRet;
-								Matter.World.add(physics.World.instance, constraintRet);
+								if (aryBodies[0] !== bodyPaddle.instance) {
+									let constraintRet = Matter.Constraint.create({
+										bodyA: aryBodies[0],
+										pointB: pt,
+										stiffness: 0.25
+									});
+									objRet.body = aryBodies[0];
+									objRet.constraint = constraintRet;
+									Matter.World.add(physics.World.instance, constraintRet);
+								}
 							}
 							aryTouches.push(objRet);
 						}
@@ -362,12 +366,14 @@
 					pointMouseDown = pt;
 					let aryBodies = Matter.Query.point(Matter.Composite.allBodies(physics.World.instance), pt);
 					if (aryBodies.length > 0) {
-						constraintMouse = Matter.Constraint.create({
-							bodyA: aryBodies[0],
-							pointB: pt,
-							stiffness: 0.25
-						});
-						Matter.World.add(physics.World.instance, constraintMouse);
+						if (aryBodies[0] !== bodyPaddle.instance) {
+							constraintMouse = Matter.Constraint.create({
+								bodyA: aryBodies[0],
+								pointB: pt,
+								stiffness: 0.25
+							});
+							Matter.World.add(physics.World.instance, constraintMouse);
+						}
 					}
 				}
 			}
