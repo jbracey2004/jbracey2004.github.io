@@ -214,7 +214,9 @@
 				noFill();
 				stroke("#FFFFFF");
 				strokeWeight(2);
-				text(score.toString(), canvasMain.width / 2, 36);
+				let strScore = score.toString();
+				let lenScore = textWidth(strScore);
+				text(strScore, (canvasMain.width-lenScore) / 2, 36);
 
 				pt = tn;
             }
@@ -224,11 +226,11 @@
             function physics_onTick(e) {
 				if (!constraintPaddle) {
 					let velprops = VectorProps(bodyBall.instance.velocity);
-					if (Math.abs(velprops.norm.y) < 0.75) { velprops.norm.y += Math.sign(velprops.norm.y)*0.01; }
-					velprops = VectorProps(velprops.norm);
-					let vel = {x: velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed};
-					Matter.Body.setVelocity(bodyBall.instance, vel);
-				}
+						if (Math.abs(velprops.norm.y) < 0.75) { velprops.norm.y += Math.sign(velprops.norm.y)*0.01; }
+						velprops = VectorProps(velprops.norm);
+						let vel = {x: velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed};
+						Matter.Body.setVelocity(bodyBall.instance, vel);
+					}
             }
             function physics_onCollision(e) {
 				for(let cI of e.pairs) {
@@ -313,7 +315,7 @@
             function VectorProps(vec) {
 		        let mvec = (vec.x**2 + vec.y**2)**0.5;
                 let mvecinv = 1.0/mvec;
-                return {norm:{x:vec.x*mvecinv, y:vec.y*mvecinv}, mag:mvec, maginv: mvecinv};
+                return {value:vec, norm:{x:vec.x*mvecinv, y:vec.y*mvecinv}, mag:mvec, maginv: mvecinv};
 			}
 			function VectorDiffProps(vecA, vecB) {
 				return VectorProps({x:vecB.x - vecA.x, y:vecB.y - vecA.y});
@@ -347,15 +349,17 @@
 							objRet.touch.clientStart = pt;
 							let aryBodies = Matter.Query.point(Matter.Composite.allBodies(physics.World.instance), pt);
 							if (aryBodies.length > 0) {
-								if (aryBodies[0] !== bodyPaddle.instance) {
-									let constraintRet = Matter.Constraint.create({
-										bodyA: aryBodies[0],
-										pointB: pt,
-										stiffness: 0.25
-									});
-									objRet.body = aryBodies[0];
-									objRet.constraint = constraintRet;
-									Matter.World.add(physics.World.instance, constraintRet);
+								if(!aryBodies[0].isStatic) {
+									if (aryBodies[0] !== bodyPaddle.instance) {
+										let constraintRet = Matter.Constraint.create({
+											bodyA: aryBodies[0],
+											pointB: pt,
+											stiffness: 0.25
+										});
+										objRet.body = aryBodies[0];
+										objRet.constraint = constraintRet;
+										Matter.World.add(physics.World.instance, constraintRet);
+									}
 								}
 							}
 							aryTouches.push(objRet);
@@ -366,13 +370,15 @@
 					pointMouseDown = pt;
 					let aryBodies = Matter.Query.point(Matter.Composite.allBodies(physics.World.instance), pt);
 					if (aryBodies.length > 0) {
-						if (aryBodies[0] !== bodyPaddle.instance) {
-							constraintMouse = Matter.Constraint.create({
-								bodyA: aryBodies[0],
-								pointB: pt,
-								stiffness: 0.25
-							});
-							Matter.World.add(physics.World.instance, constraintMouse);
+						if(!aryBodies[0].isStatic) {
+							if (aryBodies[0] !== bodyPaddle.instance) {
+								constraintMouse = Matter.Constraint.create({
+									bodyA: aryBodies[0],
+									pointB: pt,
+									stiffness: 0.25
+								});
+								Matter.World.add(physics.World.instance, constraintMouse);
+							}
 						}
 					}
 				}
