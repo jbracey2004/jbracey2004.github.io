@@ -125,7 +125,9 @@
                 aryBricks = [];
                 aryBrickGroups = [];
                 for (let gI = 0; gI < ROWS; gI++) {
-                    aryBrickGroups.push(new clsBrickGroup());
+					let group = new clsBrickGroup();
+					group.bonus = (ROWS - gI) * 10;
+                    aryBrickGroups.push(group);
 				}
 				let BricksStart = (BRICK_H + BRICK_MARGIN) * 2;
                 compositeBricks = Matter.Composites.stack(wallinside.x + BRICK_W*0.5, BricksStart, COLUMNS, ROWS, BRICK_MARGIN, BRICK_MARGIN, function(x, y) {
@@ -251,7 +253,7 @@
 
             function onBrickHit(brick) {
                 if (brick.body) {
-                    brick.hits--;
+                    brick.hits--;								 
                     if (brick.hits > 0) {
                         wavPing_Brick.freq(440);
 					    wavPing_Brick.amp(1, 0.05);
@@ -296,7 +298,7 @@
 				wavPing_Lost.amp(0, 0.5);
                 let pos = bodyPaddle.instance.position;
                 Matter.Body.setVelocity(bodyBall.instance, {x:0, y:0});
-                Matter.Body.setPosition(bodyBall.instance, { x: pos.x, y: pos.y - (PaddleThickness*0.5 +BallSize) });
+                Matter.Body.setPosition(bodyBall.instance, { x: pos.x, y: pos.y - (PaddleThickness*0.5 + BallSize) });
                 Matter.Body.setAngularVelocity(bodyBall.instance, 0);
                 constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-(PaddleThickness*0.5 +BallSize)}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:true}});
                 Matter.World.add(physics.World.instance, constraintPaddle);
