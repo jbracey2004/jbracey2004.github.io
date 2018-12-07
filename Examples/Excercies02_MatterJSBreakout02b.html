@@ -257,7 +257,7 @@
                     if (brick.hits > 0) {
                         wavPing_Brick.freq(440);
 					    wavPing_Brick.amp(1, 0.05);
-					    wavPing_Brick.amp(0, 0.1)
+					    wavPing_Brick.amp(0, 0.1);
                     } else {
                         wavPing_Brick.freq(512);
 					    wavPing_Brick.amp(1, 0.05);
@@ -300,7 +300,10 @@
                 Matter.Body.setVelocity(bodyBall.instance, {x:0, y:0});
                 Matter.Body.setPosition(bodyBall.instance, { x: pos.x, y: pos.y - (PaddleThickness*0.5 + BallSize) });
                 Matter.Body.setAngularVelocity(bodyBall.instance, 0);
-                constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-(PaddleThickness*0.5 +BallSize)}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:true}});
+                constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, 
+															pointA:{x:0, y:-(PaddleThickness*0.5 + BallSize)}, 
+															bodyB:bodyBall.instance, pointB:{x:0, y:0}, 
+															render:{visible:true}});
                 Matter.World.add(physics.World.instance, constraintPaddle);
             }
             function onTopHit() {
