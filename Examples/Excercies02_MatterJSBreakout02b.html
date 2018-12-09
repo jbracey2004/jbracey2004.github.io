@@ -122,7 +122,7 @@
 				physics.instance.world.gravity.x = 0;
 				physics.instance.world.gravity.y = 0;
 				
-				bodyPaddle = physics.World.CreateBody_Rectangle((PlayScreen_Width-PaddleWidth)*0.5, PlayScreen_Height-PaddleThickness*3, PaddleWidth, PaddleThickness, {density:10, frictionAir:0.1, restitution:1, inertia:Infinity, collisionFilter:{category:0x1}});
+				bodyPaddle = physics.World.CreateBody_Rectangle((PlayScreen_Width-PaddleWidth)*0.5, PlayScreen_Height-PaddleThickness*4, PaddleWidth, PaddleThickness, {density:10, frictionAir:0.1, restitution:1, inertia:Infinity, collisionFilter:{category:0x1}});
 				let paddlepos = bodyPaddle.instance.position;
                 bodyBall = physics.World.CreateBody_Polygon(paddlepos.x, paddlepos.y-(PaddleThickness*0.5 + BallSize), BallPolygonShape, BallSize,  {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
 				PaddleGuard = new Physics2D.Composite(Matter.Composite.create());
@@ -246,6 +246,15 @@
                 ct += t;
 
                 //physics.StepSimulation(t*1000);
+				//frameRate(8 + (Math.random()*52));
+				if (!constraintPaddle) {
+					let velprops = VectorProps(bodyBall.instance.velocity);
+					if (Math.abs(velprops.norm.y) < 0.75) { velprops.norm.y += Math.sign(velprops.norm.y)*t; }
+					velprops = VectorProps(velprops.norm);
+					let vel = {x: velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed};
+					Matter.Body.setVelocity(bodyBall.instance, vel);
+					BallSpeed += 0.025*t;
+				}
 
                 background("#404040");
 
@@ -255,8 +264,8 @@
 					rotate(PI / 2);
 					scale(canvasMain.height / canvasMain.width, canvasMain.width / canvasMain.height);
 				}
-				if (chkRenderBodies.checked === true) { physics.RenderDebug(contextMain, { x: 0, y: 0, width: PlayScreen_Width, height: PlayScreen_Height }, true); }
-				if (chkRenderDebug.checked === true) { physics.RenderDebug(contextMain, { x: 0, y: 0, width: PlayScreen_Width, height: PlayScreen_Height }, false); }
+				if (chkRenderBodies.checked) { physics.RenderDebug(contextMain, { x: 0, y: 0, width: PlayScreen_Width, height: PlayScreen_Height }, true); }
+				if (chkRenderDebug.checked) { physics.RenderDebug(contextMain, { x: 0, y: 0, width: PlayScreen_Width, height: PlayScreen_Height }, false); }
                 pop();
 
 				textSize(32);
@@ -265,21 +274,20 @@
 				strokeWeight(2);
 				let strScore = score.toString();
 				let lenScore = textWidth(strScore);
-				text(strScore, (canvasMain.width-lenScore) / 2, 36);
+				text(strScore, (canvasMain.width - lenScore) / 2, 36);
+				textSize(16);
+				noStroke();
+				fill("#FFFFFF");
+				text("TimeStep:"+t.toFixed(8)+"\t TSPS: "+(1/t).toFixed(3), 0, 40);
+				text("BallSpeed:"+BallSpeed.toFixed(5), 0, 60);
 
 				pt = tn;
             }
 
             function clamp(x, a, b) {return Math.max(a, Math.min(x, b))};
-            
-            function physics_onTick(e) {
-				if (!constraintPaddle) {
-					let velprops = VectorProps(bodyBall.instance.velocity);
-					if (Math.abs(velprops.norm.y) < 0.75) { velprops.norm.y += Math.sign(velprops.norm.y)*0.01; }
-					velprops = VectorProps(velprops.norm);
-					let vel = {x: velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed};
-					Matter.Body.setVelocity(bodyBall.instance, vel);
-				}
+
+			function physics_onTick(e) {
+				
             }
             function physics_onCollisionStart(e) {
 				for(let cI of e.pairs) {
@@ -362,7 +370,8 @@
 															pointA:{x:0, y:-(PaddleThickness*0.5 + BallSize)}, 
 															bodyB:bodyBall.instance, pointB:{x:0, y:0}, 
 															render:{visible:true}});
-                Matter.World.add(physics.World.instance, constraintPaddle);
+				Matter.World.add(physics.World.instance, constraintPaddle);
+				BallSpeed = 0;
 			}
 			function onExitHit() {
                 
@@ -404,7 +413,7 @@
             function PlayFieldToClient(pos, viewport) {
                 let posRet = {x:pos.x/viewport.width, y:pos.y/viewport.height} ;
                 if (canvasMain.offsetWidth > canvasMain.offsetHeight) {
-                    posRet = {x: posRet.y, y: 1.0 - posRet.x };
+                    posRet = {x: 1.0 - posRet.y, y: posRet.x };
                 }
                 posRet.x *= canvasMain.offsetWidth;
                 posRet.y *= canvasMain.offsetHeight;
@@ -529,7 +538,7 @@
 	                if (vel.y < -10) {
 	                	Matter.World.remove(physics.World.instance, constraintPaddle);
 	                	constraintPaddle = null;
-	                	BallSpeed = clamp(velprops.mag, 10, 25);
+	                	BallSpeed = clamp(velprops.mag, 10, 15);
 	                	Matter.Body.setVelocity(bodyBall.instance, {x:velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed});
 	                	vel.x = 0;
 	                }
