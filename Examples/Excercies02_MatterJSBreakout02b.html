@@ -12,11 +12,12 @@
 		<script>
 			var canvasMain;
 			var contextMain;
-            var groupBricks = [];
             var physics;
 			var pt = 0;
 			var ct = 0;
-            var score = 0;
+			var score = 0;
+			var stage = 0;
+			var level = 0;
 
 			var PlayScreen_Width = 708;
 			var PlayScreen_Height = 1024;
@@ -34,12 +35,13 @@
             var BRICK_W = ((PlayScreen_Width - 2*wallinside.x) / (COLUMNS+1)) - BRICK_MARGIN;
 			var BRICK_H = 24;
 			var constraintPaddle, constraintMouse;
-			var bodyPaddle, bodyBall, PaddleGuard, 
-                wallTop, wallBottom, wallLeft, wallRight, 
+			var bodyPaddle, bodyBall, PaddleGuard, stageTop, 
+                wallTop, stageBottom, wallLeft, wallRight, 
                 compositeBricks, aryBricks, aryBrickGroups;
 			var wavPing_Paddle, wavPing_Bounds, wavPing_Brick,
 				wavPing_GroupClear, wavPing_GroupClear_Osc, wavPing_Lost;
 			var gradientBall, gradientPaddle, gradientBrick;
+			var chkRenderBodies, chkRenderDebug;
 			var pointMouseDown = null;
 			var aryTouches = [];
 
@@ -77,7 +79,19 @@
                         Matter.Composite.add(compositeBricks, bI.body);
                     }
                 };
-            };
+			};
+
+			var optionsRender_Normal = { wireframes: false, showDebug: false, showAngleIndicator: false, showCollisions: false, showConvexhulls: false, showPositions: false, showVelocity: false };
+			var optionsRender_Debug = { wireframes: true, showDebug: true, showAngleIndicator: true, showCollisions: true, showConvexhulls: true, showPositions: true, showVelocity: true };
+			function optionsRender_RenderMode(options) {
+				physics.render.options.wireframes = options.wireframes;
+				physics.render.options.showDebug = options.showDebug;
+				physics.render.options.showAngleIndicator = options.showAngleIndicator;
+				physics.render.options.showCollisions = options.showCollisions;
+				physics.render.options.showConvexhulls = options.showConvexhulls;
+				physics.render.options.showPositions = options.showPositions;
+				physics.render.options.showVelocity = options.showVelocity;
+			}
 
 			function setup() {
 				var p5objCanvas = createCanvas(windowWidth, windowHeight);
@@ -102,7 +116,8 @@
 
                 physics = new Physics2D.Engine();
                 physics.AutoRun_Start();
-                physics.AutoRender_Start({ options: { wireframes: false, showDebug: false, showAngleIndicator: false, showCollisions: false, showConvexHulls: false, showPositions: false, showVelocity: false }});
+				physics.AutoRender_Start({ options: { background: "#00000000", wireframeBackground: "#00000000" } });
+				optionsRender_RenderMode(optionsRender_Debug);
                 physics.setPlayArea({ width: PlayScreen_Width, height: PlayScreen_Height });
 				physics.instance.world.gravity.x = 0;
 				physics.instance.world.gravity.y = 0;
@@ -119,10 +134,11 @@
 				
 				wallTop = physics.World.CreateBody_Rectangle(wallinside.x-wallsize.x, wallinside.y-wallsize.y, PlayScreen_Width + 2*wallsize.x, wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
 				wallTop.hits = 10;
-				wallLeft = physics.World.CreateBody_Rectangle(wallinside.x-wallsize.x, wallinside.y-wallsize.y, wallsize.x, PlayScreen_Height + 2*wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
-				wallRight = physics.World.CreateBody_Rectangle(PlayScreen_Width - wallinside.x, wallinside.y-wallsize.y, wallsize.x, PlayScreen_Height + 2*wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
-				wallBottom = physics.World.CreateBody_Rectangle(-PlayScreen_Width*0.5, PlayScreen_Height+wallsize.y, PlayScreen_Width*2, 2*wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
-				
+				wallLeft = physics.World.CreateBody_Rectangle(wallinside.x-wallsize.x, wallinside.y-wallsize.y*2, wallsize.x, PlayScreen_Height + 4*wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
+				wallRight = physics.World.CreateBody_Rectangle(PlayScreen_Width - wallinside.x, wallinside.y-wallsize.y*2, wallsize.x, PlayScreen_Height + 4*wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
+				stageBottom = physics.World.CreateBody_Rectangle(-PlayScreen_Width*0.5, PlayScreen_Height+wallsize.y, PlayScreen_Width*2, 2*wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
+				stageTop = physics.World.CreateBody_Rectangle(wallinside.x-wallsize.x, -wallsize.y*2, PlayScreen_Width + 2*wallsize.x, wallsize.y*2,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
+
                 aryBricks = [];
                 aryBrickGroups = [];
                 for (let gI = 0; gI < ROWS; gI++) {
@@ -146,7 +162,8 @@
 				Matter.World.add(physics.World.instance, compositeBricks);
 
 				Matter.Events.on(physics.instance, "beforeUpdate", physics_onTick);
-				Matter.Events.on(physics.instance, "collisionEnd", physics_onCollision);
+				Matter.Events.on(physics.instance, "collisionStart", physics_onCollisionStart);
+				Matter.Events.on(physics.instance, "collisionEnd", physics_onCollisionEnd);
 				canvasMain.addEventListener("touchstart", canvas_onTouchStart);
                 canvasMain.addEventListener("mousedown", canvas_onTouchStart);
 				canvasMain.addEventListener("touchmove", canvas_onTouchMoved);
@@ -192,6 +209,34 @@
 				comFullscreen.style("user-select: none");
 				comFullscreen.position(0, 0);
 				comFullscreen.mouseClicked(onFullScreenToggleClick);
+
+				let spanTmp;
+				let divRenderBodies = document.createElement("div");
+				chkRenderBodies = document.createElement("input");
+				chkRenderBodies.type = "checkbox";
+				divRenderBodies.appendChild(chkRenderBodies);
+				divRenderBodies.style = "position: absolute; user-select: none; " +
+										"background-color: buttonface;" +
+										"left: 40px; top: 0px;";
+				chkRenderBodies.checked = true;
+				spanTmp = document.createElement("span");
+				spanTmp.innerText = "Bodies";
+				divRenderBodies.appendChild(spanTmp);
+				document.body.appendChild(divRenderBodies);
+
+				let divRenderDebug = document.createElement("div");
+				chkRenderDebug = document.createElement("input");
+				chkRenderDebug.id = "chkRenderDebug"
+				chkRenderDebug.type = "checkbox";
+				chkRenderDebug.checked = false;
+				divRenderDebug.appendChild(chkRenderDebug);
+				divRenderDebug.style = "position: absolute; user-select: none; " +
+										"background-color: buttonface;" +
+										"left: 120px; top: 0px;";
+				spanTmp = document.createElement("span");
+				spanTmp.innerText = "Debug";
+				divRenderDebug.appendChild(spanTmp);
+				document.body.appendChild(divRenderDebug);
 			}
 
 			function draw() {
@@ -210,7 +255,8 @@
 					rotate(PI / 2);
 					scale(canvasMain.height / canvasMain.width, canvasMain.width / canvasMain.height);
 				}
-                physics.RenderDebug(contextMain, {x:0, y:0, width: PlayScreen_Width, height: PlayScreen_Height});
+				if (chkRenderBodies.checked === true) { physics.RenderDebug(contextMain, { x: 0, y: 0, width: PlayScreen_Width, height: PlayScreen_Height }, true); }
+				if (chkRenderDebug.checked === true) { physics.RenderDebug(contextMain, { x: 0, y: 0, width: PlayScreen_Width, height: PlayScreen_Height }, false); }
                 pop();
 
 				textSize(32);
@@ -229,31 +275,42 @@
             function physics_onTick(e) {
 				if (!constraintPaddle) {
 					let velprops = VectorProps(bodyBall.instance.velocity);
-						if (Math.abs(velprops.norm.y) < 0.75) { velprops.norm.y += Math.sign(velprops.norm.y)*0.01; }
-						velprops = VectorProps(velprops.norm);
-						let vel = {x: velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed};
-						Matter.Body.setVelocity(bodyBall.instance, vel);
-					}
+					if (Math.abs(velprops.norm.y) < 0.75) { velprops.norm.y += Math.sign(velprops.norm.y)*0.01; }
+					velprops = VectorProps(velprops.norm);
+					let vel = {x: velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed};
+					Matter.Body.setVelocity(bodyBall.instance, vel);
+				}
             }
-            function physics_onCollision(e) {
+            function physics_onCollisionStart(e) {
 				for(let cI of e.pairs) {
 					let cI_bodies = [cI.bodyA,cI.bodyB];
 					if(cI_bodies.includes(bodyBall.instance)) {
 						cI_bodies.splice(cI_bodies.indexOf(bodyBall.instance), 1);
-						if(cI_bodies.includes(wallBottom.instance)) {onBottomHit();}
+						if (cI_bodies.includes(stageBottom.instance)) { onBottomHit(); }
+						if (cI_bodies.includes(stageTop.instance)) {onExitHit();}
+						for(cI_Body of cI_bodies) {
+							
+						}
+					}
+				}
+			}
+			function physics_onCollisionEnd(e) {
+				for(let cI of e.pairs) {
+					let cI_bodies = [cI.bodyA,cI.bodyB];
+					if(cI_bodies.includes(bodyBall.instance)) {
+						cI_bodies.splice(cI_bodies.indexOf(bodyBall.instance), 1);
 						if(cI_bodies.includes(wallTop.instance)) {onTopHit();}
 						if(cI_bodies.includes(wallLeft.instance)) {onBoundsHit();}
 						if(cI_bodies.includes(wallRight.instance)) {onBoundsHit();}
 						if(cI_bodies.includes(bodyPaddle.instance)) {onPaddleHit();}
 						for(cI_Body of cI_bodies) {
-							if(cI_Body.subject) {onBrickHit(cI_Body.subject);}
+							if (cI_Body.subject) { onBrickHit(cI_Body.subject); }
 						}
 					}
 				}
 			}
-
             function onBrickHit(brick) {
-                if (brick.body) {
+				if (brick.body) {
                     brick.hits--;								 
                     if (brick.hits > 0) {
                         wavPing_Brick.freq(440);
@@ -306,14 +363,17 @@
 															bodyB:bodyBall.instance, pointB:{x:0, y:0}, 
 															render:{visible:true}});
                 Matter.World.add(physics.World.instance, constraintPaddle);
+			}
+			function onExitHit() {
+                
             }
             function onTopHit() {
-            		if(wallTop.hits) {
-            			wallTop.hits--;
-            			if(wallTop.hits <= 0) {
-            				Matter.World.remove(physics.World.instance, wallTop.instance);
-            			}
-            		}
+            	if(wallTop.hits) {
+            		//wallTop.hits--;
+            		//if(wallTop.hits <= 0) {
+            		//	Matter.World.remove(physics.World.instance, wallTop.instance);
+            		//}
+            	}
 				wavPing_GroupClear.freq(768);
 				wavPing_GroupClear.amp(0);
 				wavPing_GroupClear.amp(wavPing_GroupClear_Osc);

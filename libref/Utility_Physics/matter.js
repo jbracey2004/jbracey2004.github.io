@@ -60,8 +60,8 @@ Physics2D.Engine = function (objInstance) {
         }
         return;
     };
-    this.RenderDebug = function (context, viewport) {
-        if (!this.render) {
+    this.RenderDebug = function (context, viewport, bolBypassEngine) {
+		if (!this.render || bolBypassEngine) {
             if (!viewport) {
                 viewport = { x: 0, y: 0, width: context.canvas.width, height: context.canvas.height };
             }
@@ -69,19 +69,25 @@ Physics2D.Engine = function (objInstance) {
             context.save();
             context.scale(context.canvas.width / viewport.width, context.canvas.height/viewport.height);
             context.translate(-viewport.x, -viewport.y);
-            for (let i = 0; i < bodies.length; i += 1) {
-                var vertices = bodies[i].vertices;
-                context.beginPath();
-                context.moveTo(vertices[0].x, vertices[0].y);
-                for (let j = 1; j < vertices.length; j += 1) {
-                    context.lineTo(vertices[j].x, vertices[j].y);
-                }
-                context.lineTo(vertices[0].x, vertices[0].y);
-                context.lineWidth = bodies[i].render.linewidth;
-                context.fillStyle = bodies[i].render.fillStyle;
-                context.strokeStyle = bodies[i].render.strokeStyle;
-                context.stroke();
-                context.fill();
+			for (let bodyI of bodies) {
+				if (bodyI.render.visible) {
+					var vertices = bodyI.vertices;
+					context.beginPath();
+					context.moveTo(vertices[0].x, vertices[0].y);
+					for (let j = 1; j < vertices.length; j += 1) {
+						context.lineTo(vertices[j].x, vertices[j].y);
+					}
+					context.lineTo(vertices[0].x, vertices[0].y);
+					if (bodyI.render.linewidth && bodyI.render.strokeStyle) {
+						context.lineWidth = bodyI.render.linewidth;
+						context.strokeStyle = bodyI.render.strokeStyle;
+						context.stroke();
+					}
+					if (bodyI.render.fillStyle) {
+						context.fillStyle = bodyI.render.fillStyle;
+						context.fill();
+					}
+				}
             }
             context.restore();
         } else {
