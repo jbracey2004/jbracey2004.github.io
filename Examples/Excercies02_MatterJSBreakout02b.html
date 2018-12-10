@@ -41,7 +41,7 @@
 			var wavPing_Paddle, wavPing_Bounds, wavPing_Brick,
 				wavPing_GroupClear, wavPing_GroupClear_Osc, wavPing_Lost;
 			var gradientBall, gradientPaddle, gradientBrick;
-			var chkRenderBodies, chkRenderDebug;
+			var chkRenderBodies, chkRenderDebug, chkRenderStats;
 			var pointMouseDown = null;
 			var aryTouches = [];
 
@@ -237,6 +237,20 @@
 				spanTmp.innerText = "Debug";
 				divRenderDebug.appendChild(spanTmp);
 				document.body.appendChild(divRenderDebug);
+				
+				let divRenderStats = document.createElement("div");
+				chkRenderStats = document.createElement("input");
+				chkRenderStats.id = "chkRenderStats"
+				chkRenderStats.type = "checkbox";
+				chkRenderStats.checked = false;
+				divRenderStats.appendChild(chkRenderStats);
+				divRenderStats.style = "position: absolute; user-select: none; " +
+										"background-color: buttonface;" +
+										"left: 200px; top: 0px;";
+				spanTmp = document.createElement("span");
+				spanTmp.innerText = "Stats";
+				divRenderStats.appendChild(spanTmp);
+				document.body.appendChild(divRenderStats);
 			}
 
 			function draw() {
@@ -247,8 +261,9 @@
 
                 //physics.StepSimulation(t*1000);
 				//frameRate(8 + (Math.random()*52));
+				//frameRate(8 + ((0.5+0.5*Math.sin(tn*Math.PI*0.25))*22));
+				let velprops = VectorProps(bodyBall.instance.velocity);
 				if (!constraintPaddle) {
-					let velprops = VectorProps(bodyBall.instance.velocity);
 					if (Math.abs(velprops.norm.y) < 0.75) { velprops.norm.y += Math.sign(velprops.norm.y)*t; }
 					velprops = VectorProps(velprops.norm);
 					let vel = {x: velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed};
@@ -274,12 +289,20 @@
 				strokeWeight(2);
 				let strScore = score.toString();
 				let lenScore = textWidth(strScore);
-				text(strScore, (canvasMain.width - lenScore) / 2, 36);
-				textSize(16);
-				noStroke();
-				fill("#FFFFFF");
-				text("TimeStep:"+t.toFixed(8)+"\t TSPS: "+(1/t).toFixed(3), 0, 40);
-				text("BallSpeed:"+BallSpeed.toFixed(5), 0, 60);
+				text(strScore, (canvasMain.width - lenScore) / 2, 46);
+				
+				if(chkRenderStats.checked) {
+					textSize(16);
+					noStroke();
+					fill("#FFFFFF");
+					text("TimeStep:"+t.toFixed(8)+"\t TSPS: "+(1/t).toFixed(3), 0, 60);
+					if(!bodyBall.instance.lastPosition) {bodyBall.instance.lastPosition = {x:bodyBall.instance.position.x, y:bodyBall.instance.position.y};}
+					let dtPos = VectorDiffProps(bodyBall.instance.position, bodyBall.instance.lastPosition);
+					text("Ball dP/df:"+(dtPos.mag).toFixed(5)+"\t dP/dt:"+(dtPos.mag/t).toFixed(5), 0, 80);
+					text("BallSpeed:"+BallSpeed.toFixed(5), 0, 100);
+					text("BallCurve:"+velprops.norm.y.toFixed(5)+((Math.abs(velprops.norm.y) < 0.75) ? " --> " + (0.75*Math.sign(velprops.norm.y)).toFixed(2): ""), 0, 120);
+					bodyBall.instance.lastPosition = {x:bodyBall.instance.position.x, y:bodyBall.instance.position.y};
+				}
 
 				pt = tn;
             }
