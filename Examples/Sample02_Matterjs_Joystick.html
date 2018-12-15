@@ -15,13 +15,13 @@
 		<script>
 			var canvasMain;
 			var contextMain;
-            var physics;
-            var bodyGround;
-            var instanceMouse;
+			var physics;
+			var bodyGround;
+			var instanceMouse;
 			var bodyHighlight;
 			var stickAnalog;
-            var pt = 0;
-            var ct = 0;
+			var pt = 0;
+			var ct = 0;
 
 			var PlayScreen_Width = 800;
 			var PlayScreen_Height = 800;
@@ -36,25 +36,26 @@
 				canvasMain.style.height = windowHeight + "px";
 				canvasMain.style["touch-action"] = "none";
 
-                Matter.use('matter-wrap');
-                physics = new Physics2D.Engine();
-                physics.AutoRun_Start();
-                physics.AutoRender_Start({ options: { wireframes: false, showDebug: true, showAngleIndicator: true, showCollisions: true, showConvexHulls: true, showPositions: true, showVelocity: true } });
-                physics.setPlayArea({ width: PlayScreen_Width, height: PlayScreen_Height });
-                physics.World.SetWrapBounds({ min: { x: 0, y: 0 }, max: { x: PlayScreen_Width, y: PlayScreen_Height } });
+				Matter.use('matter-wrap');
+				physics = new Physics2D.Engine();
+				physics.AutoRun_Start();
+				physics.AutoRender_Start({ options: { wireframes: false, showDebug: true, showAngleIndicator: true, showCollisions: true, showConvexHulls: true, showPositions: true, showVelocity: true } });
+				physics.setPlayArea({ width: PlayScreen_Width, height: PlayScreen_Height });
+				physics.World.SetWrapBounds({ min: { x: 0, y: 0 }, max: { x: PlayScreen_Width, y: PlayScreen_Height } });
+				physics.instance.world.gravity.y = 1;
 
-                if(typeof window.orientation === 'undefined') {
-                    bodyGround = physics.World.CreateBody_Rectangle(PlayScreen_Width*-0.25, PlayScreen_Height * 0.9, PlayScreen_Width*1.5, PlayScreen_Height * 0.1, { isStatic: true });
-                } else {
-                    bodyGround = physics.World.CreateBody_Rectangle(PlayScreen_Width*0.25, PlayScreen_Height * 0.5, PlayScreen_Width*0.5, PlayScreen_Height * 0.25, { isStatic: true });
-                }
+				if (typeof window.orientation === 'undefined') {
+					bodyGround = physics.World.CreateBody_Rectangle(PlayScreen_Width * -0.25, PlayScreen_Height * 0.9, PlayScreen_Width * 1.5, PlayScreen_Height * 0.1, { isStatic: true });
+				} else {
+					bodyGround = physics.World.CreateBody_Rectangle(PlayScreen_Width * 0.25, PlayScreen_Height * 0.5, PlayScreen_Width * 0.5, PlayScreen_Height * 0.25, { isStatic: true });
+				}
 
-                instanceMouse = Matter.Mouse.create(canvasMain)
-                Matter.Mouse.setScale(instanceMouse, {x:PlayScreen_Width / windowWidth , y: PlayScreen_Height / windowHeight });
-                constraintMouse = Matter.MouseConstraint.create(physics.instance, {
-                    mouse: instanceMouse,
-                    constraint: { stiffness: 0.025 }
-                });
+				instanceMouse = Matter.Mouse.create(canvasMain)
+				Matter.Mouse.setScale(instanceMouse, { x: PlayScreen_Width / windowWidth, y: PlayScreen_Height / windowHeight });
+				constraintMouse = Matter.MouseConstraint.create(physics.instance, {
+					mouse: instanceMouse,
+					constraint: { stiffness: 0.025 }
+				});
 				Matter.World.add(physics.World.instance, constraintMouse);
 
 				stickAnalog = new controlStick(canvasMain);
@@ -64,166 +65,164 @@
 				comFullscreen.style("position: absolute");
 				comFullscreen.style("user-select: none");
 				comFullscreen.position(0, 0);
-                comFullscreen.mouseClicked(onFullScreenToggleClick);
+				comFullscreen.mouseClicked(onFullScreenToggleClick);
 
-                window.addEventListener('deviceorientation', updateGravity);
-                canvasMain.addEventListener('touchstart', canvas_onTouchStart);
-                canvasMain.addEventListener('mousedown', canvas_onTouchStart);
-                Matter.Events.on(constraintMouse, "startdrag", body_onDragStart);
-                Matter.Events.on(constraintMouse, "mousemove", body_onDrag);
-                Matter.Events.on(constraintMouse, "enddrag", body_onDragEnd);
+				window.addEventListener('deviceorientation', updateGravity);
+				canvasMain.addEventListener('touchstart', canvas_onTouchStart);
+				canvasMain.addEventListener('mousedown', canvas_onTouchStart);
+				Matter.Events.on(constraintMouse, "startdrag", body_onDragStart);
+				Matter.Events.on(constraintMouse, "mousemove", body_onDrag);
+				Matter.Events.on(constraintMouse, "enddrag", body_onDragEnd);
 			}
 
 			function draw() {
-				var tn = new Date(Date.now()).getTime()*0.001;
+				var tn = new Date(Date.now()).getTime() * 0.001;
 				if (pt == 0) { pt = tn; }
 				var t = tn - pt;
-                ct += t;
+				ct += t;
 
-                //physics.StepSimulation(t*1000);
+				//physics.StepSimulation(t*1000);
 
-                background("#404040");
+				background("#404040");
 
-                physics.RenderDebug(contextMain, {x:0, y:0, width: PlayScreen_Width, height: PlayScreen_Height});
-                if (bodyHighlight) {
-                    if (!bodyHighlight.update()) { bodyHighlight = null; }
+				physics.RenderDebug(contextMain, { x: 0, y: 0, width: PlayScreen_Width, height: PlayScreen_Height });
+				if (bodyHighlight) {
+					if (!bodyHighlight.update()) { bodyHighlight = null; }
 				}
 
 				stickAnalog.Render();
 
 				pt = tn;
-            }
+			}
 
-            function ClientToPlayField(pos, viewport) {
-                let posRet = {x:pos.x/canvasMain.offsetWidth, y:pos.y/canvasMain.offsetHeight} ;
-                posRet.x *= viewport.width;
-                posRet.y *= viewport.height;
-                return posRet;
-            }
-            function PlayFieldToClient(pos, viewport) {
-                let posRet = {x:pos.x/viewport.width, y:pos.y/viewport.height} ;
-                posRet.x *= canvasMain.offsetWidth;
-                posRet.y *= canvasMain.offsetHeight;
-                return posRet;
-            }
+			function ClientToPlayField(pos, viewport) {
+				let posRet = { x: pos.x / canvasMain.offsetWidth, y: pos.y / canvasMain.offsetHeight };
+				posRet.x *= viewport.width;
+				posRet.y *= viewport.height;
+				return posRet;
+			}
+			function PlayFieldToClient(pos, viewport) {
+				let posRet = { x: pos.x / viewport.width, y: pos.y / viewport.height };
+				posRet.x *= canvasMain.offsetWidth;
+				posRet.y *= canvasMain.offsetHeight;
+				return posRet;
+			}
 
-			function clamp(x, a, b) {return Math.max(a, Math.min(x, b))};
-          	function updateGravity(event) {
-                let orientation = typeof window.orientation !== 'undefined' ? window.orientation : 0
-                let gravity = physics.instance.world.gravity;
-                    
-                gravity.scale = 0.002;
-                    
-                if (orientation === 0) {
-                    gravity.x = clamp(event.gamma, -90, 90) / 90;
-                    gravity.y = clamp(event.beta, -90, 90) / 90;
-                } else if (orientation === 180) {
-                    gravity.x = clamp(event.gamma, -90, 90) / 90;
-                    gravity.y = clamp(-event.beta, -90, 90) / 90;
-                } else if (orientation === 90) {
-                    gravity.x = clamp(event.beta, -90, 90) / 90;
-                    gravity.y = clamp(-event.gamma, -90, 90) / 90;
-                } else if (orientation === -90) {
-                    gravity.x = clamp(-event.beta, -90, 90) / 90;
-                    gravity.y = clamp(event.gamma, -90, 90) / 90;
-                }
-            }
-            function canvas_onTouchStart(event) {
-                let pos = [];
-                if (event.touches) {
-                    for (let touchI of event.touches) {
-                        let ret = ClientToPlayField({ x: touchI.clientX, y: touchI.clientY }, { width: PlayScreen_Width, height: PlayScreen_Height });
-                        ret.idTouch = touchI.identifier;
-                        pos.push(ret);
-                    }
-                } else {
-                    pos.push(ClientToPlayField({ x: event.clientX, y: event.clientY }, { width: PlayScreen_Width, height: PlayScreen_Height }));
-                }
-                if (bodyHighlight) {
-                    bodyHighlight.Delete();
-                }
-                bodyHighlight = null;
-                for (let posI of pos) {
-                    let ret = Matter.Query.ray(Matter.Composite.allBodies(physics.World.instance), {x:posI.x-4, y:posI.y-4}, {x:posI.x+4, y:posI.y+4});
-                    if (ret.length === 0) {
-                        AddBody( posI );
-                    } else {
-                        let refBody = Physics2D.Body_fromInstance(ret[0].body);
-                        if (refBody.length != 0) {
-                            bodyHighlight = new BodyGadget(refBody[0]);
-                            bodyHighlight.infoTouch = posI;
-                            bodyHighlight.infoTouch.offsetX = ret[0].body.position.x - posI.x;
-                            bodyHighlight.infoTouch.offsetY = ret[0].body.position.y - posI.y;
-                        }
-                    }
-                }
-            }
-            var bodyDragging = null;
-            function body_onDragStart(event) {
-                bodyDragging = {
-                    body: event.body, offset: {
-                        x: event.body.position.x - event.mouse.position.x,
-                        y: event.body.position.y - event.mouse.position.y
-                    },
-                    IsStatic: event.body.isStatic
-                };
-                if (bodyHighlight) {
-                    if (bodyHighlight.hudMain) {
-                        bodyHighlight.hudMain.style.pointerEvents = "none";
-                    }
-                }
-            }
-            function body_onDragEnd(event) {
-                bodyDragging = null;
-                if (bodyHighlight) {
-                    if (bodyHighlight.hudMain) {
-                        bodyHighlight.hudMain.style.pointerEvents = "auto";
-                    }
-                }
-            }
-            function body_onDrag(event) {
-                if (bodyDragging) {
-                    if (bodyDragging.body) {
-                        if (bodyDragging.body.isStatic) {
-                            let pos = {
-                                x: event.mouse.position.x + bodyDragging.offset.x,
-                                y: event.mouse.position.y + bodyDragging.offset.y
-                            };
-                            let ppos = bodyDragging.body.position;
-                            let vel = {x:pos.x-ppos.x, y:pos.y-ppos.y};
-                            Matter.Body.setPosition(bodyDragging.body, pos);
-                            //Matter.Body.setVelocity(bodyDragging.body, vel);
-                        }
-                    }
-                }
-            }
+			function clamp(x, a, b) { return Math.max(a, Math.min(x, b)) };
+			function updateGravity(event) {
+				if ((event.gamma) || (event.beta)) {
+					let orientation = window.orientation;
+					let gravity = physics.instance.world.gravity;
+					if (orientation === 0) {
+						gravity.x = clamp(event.gamma, -90, 90) / 90;
+						gravity.y = clamp(event.beta, -90, 90) / 90;
+					} else if (orientation === 180) {
+						gravity.x = clamp(event.gamma, -90, 90) / 90;
+						gravity.y = clamp(-event.beta, -90, 90) / 90;
+					} else if (orientation === 90) {
+						gravity.x = clamp(event.beta, -90, 90) / 90;
+						gravity.y = clamp(-event.gamma, -90, 90) / 90;
+					} else if (orientation === -90) {
+						gravity.x = clamp(-event.beta, -90, 90) / 90;
+						gravity.y = clamp(event.gamma, -90, 90) / 90;
+					}
+				}
+			}
+			function canvas_onTouchStart(event) {
+				let pos = [];
+				if (event.touches) {
+					for (let touchI of event.touches) {
+						let ret = ClientToPlayField({ x: touchI.clientX, y: touchI.clientY }, { width: PlayScreen_Width, height: PlayScreen_Height });
+						ret.idTouch = touchI.identifier;
+						pos.push(ret);
+					}
+				} else {
+					pos.push(ClientToPlayField({ x: event.clientX, y: event.clientY }, { width: PlayScreen_Width, height: PlayScreen_Height }));
+				}
+				if (bodyHighlight) {
+					bodyHighlight.Delete();
+				}
+				bodyHighlight = null;
+				for (let posI of pos) {
+					let ret = Matter.Query.ray(Matter.Composite.allBodies(physics.World.instance), { x: posI.x - 4, y: posI.y - 4 }, { x: posI.x + 4, y: posI.y + 4 });
+					if (ret.length === 0) {
+						AddBody(posI);
+					} else {
+						let refBody = Physics2D.Body_fromInstance(ret[0].body);
+						if (refBody.length != 0) {
+							bodyHighlight = new BodyGadget(refBody[0]);
+							bodyHighlight.infoTouch = posI;
+							bodyHighlight.infoTouch.offsetX = ret[0].body.position.x - posI.x;
+							bodyHighlight.infoTouch.offsetY = ret[0].body.position.y - posI.y;
+						}
+					}
+				}
+			}
+			var bodyDragging = null;
+			function body_onDragStart(event) {
+				bodyDragging = {
+					body: event.body, offset: {
+						x: event.body.position.x - event.mouse.position.x,
+						y: event.body.position.y - event.mouse.position.y
+					},
+					IsStatic: event.body.isStatic
+				};
+				if (bodyHighlight) {
+					if (bodyHighlight.hudMain) {
+						bodyHighlight.hudMain.style.pointerEvents = "none";
+					}
+				}
+			}
+			function body_onDragEnd(event) {
+				bodyDragging = null;
+				if (bodyHighlight) {
+					if (bodyHighlight.hudMain) {
+						bodyHighlight.hudMain.style.pointerEvents = "auto";
+					}
+				}
+			}
+			function body_onDrag(event) {
+				if (bodyDragging) {
+					if (bodyDragging.body) {
+						if (bodyDragging.body.isStatic) {
+							let pos = {
+								x: event.mouse.position.x + bodyDragging.offset.x,
+								y: event.mouse.position.y + bodyDragging.offset.y
+							};
+							let ppos = bodyDragging.body.position;
+							let vel = { x: pos.x - ppos.x, y: pos.y - ppos.y };
+							Matter.Body.setPosition(bodyDragging.body, pos);
+							//Matter.Body.setVelocity(bodyDragging.body, vel);
+						}
+					}
+				}
+			}
 
-            function AddBody(pos) {
-                let ret = physics.World.CreateBody_Polygon(0, 0, Math.round(random(2,8)),
-                    random(0.02, 0.05) * ((PlayScreen_Width ** 2 + PlayScreen_Height ** 2) ** 0.5), {
-                    position: pos, 
-                    density: random(0.0001, 0.001),
-                    friction: 0.75,
-                    frictionStatic: 0.75,
-                    restitution: 0.75
-                });
-                return ret;
-            }
-            
-            function aspectOrientation(aspect) { let fAsp = Math.abs(aspect); return (fAsp >= 0 && fAsp <= 1 ) ? "portrait":"landscape"; }
+			function AddBody(pos) {
+				let ret = physics.World.CreateBody_Polygon(0, 0, Math.round(random(2, 8)),
+					random(0.02, 0.05) * ((PlayScreen_Width ** 2 + PlayScreen_Height ** 2) ** 0.5), {
+						position: pos,
+						density: random(0.0001, 0.001),
+						friction: 0.75,
+						frictionStatic: 0.75,
+						restitution: 0.75
+					});
+				return ret;
+			}
+
+			function aspectOrientation(aspect) { let fAsp = Math.abs(aspect); return (fAsp >= 0 && fAsp <= 1) ? "portrait" : "landscape"; }
 			function windowResized() {
-				var szWin = {width: 0, height: 0};
-				if(bolFullscreen) 
-				{szWin.width = displayWidth; szWin.height = displayHeight;
-                let Asp = {device:aspectOrientation(displayWidth/displayHeight), window:aspectOrientation(windowWidth/windowHeight)};
-                console.log(Asp);
-				if(Asp.device !== Asp.window) {let tmp = szWin.width; szWin.width = szWin.height; szWin.height = tmp; }
-				} else 
-				{szWin.width = windowWidth; szWin.height = windowHeight}
+				var szWin = { width: 0, height: 0 };
+				if (bolFullscreen) {
+				szWin.width = displayWidth; szWin.height = displayHeight;
+					let Asp = { device: aspectOrientation(displayWidth / displayHeight), window: aspectOrientation(windowWidth / windowHeight) };
+					console.log(Asp);
+					if (Asp.device !== Asp.window) { let tmp = szWin.width; szWin.width = szWin.height; szWin.height = tmp; }
+				} else { szWin.width = windowWidth; szWin.height = windowHeight }
 				canvasMain.style.width = szWin.width + "px";
-                canvasMain.style.height = szWin.height + "px";
-                resizeCanvas(szWin.width, szWin.height);
-                Matter.Mouse.setScale(instanceMouse, {x:PlayScreen_Width / szWin.width , y: PlayScreen_Height / szWin.height });
+				canvasMain.style.height = szWin.height + "px";
+				resizeCanvas(szWin.width, szWin.height);
+				Matter.Mouse.setScale(instanceMouse, { x: PlayScreen_Width / szWin.width, y: PlayScreen_Height / szWin.height });
 				console.log(szWin);
 			}
 
@@ -256,7 +255,7 @@
 					}
 					bolFullscreen = false;
 				}
-				if(elem) {
+				if (elem) {
 					elem.innerText = (bolFullscreen) ? ("X") : ("[]");
 				}
 				windowResized();
