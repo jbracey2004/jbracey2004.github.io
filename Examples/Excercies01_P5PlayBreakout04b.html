@@ -1,325 +1,323 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width">
-		<title>Portfolio - Breakout Sprites - Groups </title>
-		<script src="../libref/p5/p5.min.js"></script>
-		<script src="../libref/p5/p5.play.js"></script>
-		<script src="../libref/p5/p5.sound.min.js"></script>
-		<script src="../libref/p5/p5.dom.min.js"></script>
-		<script>
-			var canvasMain;
-			var contextMain;
-			var wavPing_Paddle;
-			var wavPing_Bounds;
-			var wavPing_Brick;
-			var wavPing_GroupClear;
-			var wavPing_Lost;
-			var groupBricks = [];
-			var pt = 0;
-			var ct = 0;
-			var score = 0;
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="initial-scale=2,maximum-scale=4,minimum-scale=1,width=device-width">
+	<title>Portfolio - Breakout Sprites - Groups </title>
+	<script src="../libref/p5/p5.min.js"></script>
+	<script src="../libref/p5/p5.play.js"></script>
+	<script src="../libref/p5/p5.sound.min.js"></script>
+	<script src="../libref/p5/p5.dom.min.js"></script>
+	<script>
+		var canvasMain;
+		var contextMain;
+		var wavPing_Paddle;
+		var wavPing_Bounds;
+		var wavPing_Brick;
+		var wavPing_GroupClear;
+		var wavPing_Lost;
+		var groupBricks = [];
+		var pt = 0;
+		var ct = 0;
+		var score = 0;
 
-			//breakout close (core mechanics)
-			//mouse to control the paddle, click to start
+		//breakout close (core mechanics)
+		//mouse to control the paddle, click to start
 
-			var PlayScreen_Width = 708;
-			var PlayScreen_Height = 1024;
-			var MAX_SPEED = Math.sqrt(PlayScreen_Width * PlayScreen_Height)/10;
-			var WALL_THICKNESS = 50;
-			var BRICK_W = 40;
-			var BRICK_H = 20;
-			var BRICK_MARGIN = 4;
-			var ROWS = 9;
-			var COLUMNS = 16;
-			var paddle, ball, wallTop, wallBottom, wallLeft, wallRight, bricks;
-			var gradientBall, gradientPaddle, gradientBrick;
+		var PlayScreen_Width = 708;
+		var PlayScreen_Height = 1024;
+		var MAX_SPEED = Math.sqrt(PlayScreen_Width * PlayScreen_Height) / 10;
+		var WALL_THICKNESS = 50;
+		var BRICK_W = 40;
+		var BRICK_H = 20;
+		var BRICK_MARGIN = 4;
+		var ROWS = 9;
+		var COLUMNS = 16;
+		var paddle, ball, wallTop, wallBottom, wallLeft, wallRight, bricks;
+		var gradientBall, gradientPaddle, gradientBrick;
 
-			var fxnDrawBall = function() {
-				noStroke();
-				contextMain.fillStyle = gradientBall;
-				ellipse(0,0, 16, 16);
-			};
-			var fxnDrawPaddle = function () {
-				noStroke();
-				contextMain.fillStyle = gradientPaddle;
-				rect(0,0,paddle.width, paddle.height);
-			}
-			var fxnDrawBrick = function(group) {
-				return function() {
-					contextMain.fillStyle = gradientBrick;
-					stroke(group);
-					strokeWeight(2);
-					rect(0, 0, BRICK_W, BRICK_H);
-				}
-			};
-
-			function setup() {
-				var p5objCanvas = createCanvas(PlayScreen_Width, PlayScreen_Height);
-				canvasMain = p5objCanvas.elt;
-				contextMain = canvasMain.getContext("2d");
-				canvasMain.id = "canvasMain";
-				pixelDensity(1);
-				canvasMain.style.width = windowWidth + "px";
-				canvasMain.style.height = windowHeight + "px";
-				canvasMain.style["touch-action"] = "none";
-
-				gradientBall = contextMain.createRadialGradient(0,0,0,0,0,16);
-				gradientBall.addColorStop(0, "#8080FF");
-				gradientBall.addColorStop(1, "#000040");
-				gradientPaddle = contextMain.createLinearGradient(0,-5,0,5);
-				gradientPaddle.addColorStop(0, "#000000")
-				gradientPaddle.addColorStop(0.5, "#FFFFFF");
-				gradientPaddle.addColorStop(1, "#000000");
-				gradientBrick = contextMain.createLinearGradient(0, -BRICK_H*0.5, 0, BRICK_H*0.5);
-				gradientBrick.addColorStop(0, "#00CC00");
-				gradientBrick.addColorStop(1, "#00FF00");
-
-				paddle = createSprite(width/2, height-50, 100, 10);
-				paddle.immovable = true;
-
-				initWalls();
-				//setupWalls();
-
-				bricks = new Group();
-
-				var offsetX = width/2-(COLUMNS-1)*(BRICK_MARGIN+BRICK_W)/2;
-				var offsetY = 80;
-
-				for(var r = 0; r<ROWS; r++) {
-					var rID = (r / ROWS) * 255;
-					var lstBricks = {};
-					lstBricks.objs = [];
-					lstBricks.id = rID;
-					for(var c = 0; c<COLUMNS; c++) {
-						var brick = createSprite(offsetX+c*(BRICK_W+BRICK_MARGIN), offsetY+r*(BRICK_H+BRICK_MARGIN), BRICK_W, BRICK_H);
-						var hits =  floor((ROWS - r) / 4) + 1;
-						var value = floor((ROWS - r) / 2) + 1;
-						brick.hitPoints = hits;
-						brick.valuePoints = value;
-						brick.draw = fxnDrawBrick(rID);
-						bricks.add(brick);
-						brick.immovable = true;
-						lstBricks.objs.push({obj:brick, hitPoints:hits, valuePoints:value, pos:{x:brick.position.x, y:brick.position.y}});
-					}
-					lstBricks.valuePoints = lstBricks.objs.reduce(function(sum, itm) {return itm.hitPoints + sum;}, 0);
-					groupBricks.push(lstBricks);
-				}
-				//the easiest way to avoid pesky multiple collision is to
-				//have the ball bigger than the bricks
-				ball = createSprite(width/2, height-200, 16, 16);
-				ball.draw = fxnDrawBall;
-				ball.setCollider("circle", 0, 0, 8);
-				ball.maxSpeed = MAX_SPEED;
-				paddle.draw = fxnDrawPaddle;
-				
-				wavPing_Paddle = new p5.Oscillator();
-				wavPing_Paddle.setType("square");
-				wavPing_Paddle.start();
-				wavPing_Paddle.freq(256);
-				wavPing_Paddle.amp(0);
-				wavPing_Brick = new p5.Oscillator();
-				wavPing_Brick.setType("triangle");
-				wavPing_Brick.start();
-				wavPing_Brick.freq(512);
-				wavPing_Brick.amp(0);
-				wavPing_Bounds = new p5.Oscillator();
-				wavPing_Bounds.setType("sine");
-				wavPing_Bounds.start();
-				wavPing_Bounds.freq(1024);
-				wavPing_Bounds.amp(0);
-				wavPing_Lost = new p5.Oscillator();
-				wavPing_Lost.setType("triangle");
-				wavPing_Lost.start();
-				wavPing_Lost.freq(128);
-				wavPing_Lost.amp(0);
-				wavPing_GroupClear = new p5.Oscillator();
-				wavPing_GroupClear.setType("triangle");
-				wavPing_GroupClear.start();
-				wavPing_GroupClear.freq(768);
-				wavPing_GroupClear.amp(0);
-
-				var comFullscreen = createButton("[]");
-				comFullscreen.style("position: absolute");
-				comFullscreen.style("user-select: none");
-				comFullscreen.position(0, 0);
-				comFullscreen.mouseClicked(onFullScreenToggleClick);
-				//frameRate(30);
-			}
-
-			function initWalls() {
-				wallTop = createSprite(width / 2, -WALL_THICKNESS / 2, width + WALL_THICKNESS * 2, WALL_THICKNESS);
-				wallTop.immovable = true;
-				wallBottom = createSprite(width / 2, height + WALL_THICKNESS / 2, width + WALL_THICKNESS * 2, WALL_THICKNESS);
-				wallBottom.immovable = true;
-				wallLeft = createSprite(-WALL_THICKNESS / 2, height / 2, WALL_THICKNESS, height);
-				wallLeft.immovable = true;
-				wallRight = createSprite(width + WALL_THICKNESS / 2, height / 2, WALL_THICKNESS, height);
-				wallRight.immovable = true;
-			}
-			function setupWalls() {
-				wallTop.position = new p5.Vector(width / 2, -WALL_THICKNESS / 2);
-				wallBottom.position = new p5.Vector(width / 2, height + WALL_THICKNESS / 2);
-				wallLeft.position = new p5.Vector(-WALL_THICKNESS / 2, height / 2);
-				wallRight.position = new p5.Vector(width + WALL_THICKNESS / 2, height / 2);
-			}
-
-			function draw() {
-				var tn = new Date(Date.now()).getTime()*0.001;
-				if (pt == 0) { pt = tn; }
-				var t = tn - pt;
-				ct += t;
-;
-				if (canvasMain.offsetWidth > canvasMain.offsetHeight) {
-					paddle.position.x = constrain((mouseY / canvasMain.height) * canvasMain.width, paddle.width / 2, canvasMain.width - paddle.width / 2);
-				} else {
-					paddle.position.x = constrain(mouseX, paddle.width / 2, canvasMain.width - paddle.width / 2);
-				}
-
-				var bolHitWall = false;
-				if (!bolHitWall) ball.bounce(wallTop, boundsHit);
-				if (!bolHitWall) ball.bounce(wallLeft, boundsHit);
-				if (!bolHitWall) ball.bounce(wallRight, boundsHit);
-
-				if(ball.bounce(paddle))
-				{
-					var vecTmp = ball.velocity;
-					var speedTmp = vecTmp.mag();
-					var swing = (ball.position.x-paddle.position.x)/4;
-					vecTmp.x += swing;
-					vecTmp.normalize();
-					vecTmp.mult(speedTmp);
-					ball.velocity.x = vecTmp.x;
-					ball.velocity.y = vecTmp.y;
-					wavPing_Paddle.amp(0.1, 0.1);
-					wavPing_Paddle.amp(0, 0.25);
-				}
-				ball.addSpeed(ball.getSpeed()*0.00001, ball.getDirection());
-				if(ball.collide(wallBottom)) 
-				{
-					ball.velocity.x = 0;
-					ball.velocity.y = 0;
-					ball.position.x = canvasMain.width / 2;
-					ball.position.y = canvasMain.height - 200;
-					wavPing_Lost.amp(1, 0.1);
-					wavPing_Lost.amp(0, 0.5);
-				}
-
-				ball.bounce(bricks, brickHit);
-
-				background("#404040");
-
-				push();
-				if (canvasMain.offsetWidth > canvasMain.offsetHeight) {
-					translate(canvasMain.width, 0);
-					rotate(PI / 2);
-					scale(canvasMain.height / canvasMain.width, canvasMain.width / canvasMain.height);
-				}
-				drawSprites();
-				pop();
-				textSize(32);
-				stroke("#FFFFFF");
+		var fxnDrawBall = function () {
+			noStroke();
+			contextMain.fillStyle = gradientBall;
+			ellipse(0, 0, 16, 16);
+		};
+		var fxnDrawPaddle = function () {
+			noStroke();
+			contextMain.fillStyle = gradientPaddle;
+			rect(0, 0, paddle.width, paddle.height);
+		}
+		var fxnDrawBrick = function (group) {
+			return function () {
+				contextMain.fillStyle = gradientBrick;
+				stroke(group);
 				strokeWeight(2);
-				text(score.toString(), canvasMain.width / 2, 36);
-				textSize(12);
-				noStroke();
-				//text(ball.getSpeed().toString(), 0, canvasMain.height - 16);
+				rect(0, 0, BRICK_W, BRICK_H);
+			}
+		};
 
-				pt = tn;
+		function setup() {
+			var p5objCanvas = createCanvas(PlayScreen_Width, PlayScreen_Height);
+			canvasMain = p5objCanvas.elt;
+			contextMain = canvasMain.getContext("2d");
+			canvasMain.id = "canvasMain";
+			pixelDensity(1);
+			canvasMain.style.width = windowWidth + "px";
+			canvasMain.style.height = windowHeight + "px";
+			canvasMain.style["touch-action"] = "none";
+
+			gradientBall = contextMain.createRadialGradient(0, 0, 0, 0, 0, 16);
+			gradientBall.addColorStop(0, "#8080FF");
+			gradientBall.addColorStop(1, "#000040");
+			gradientPaddle = contextMain.createLinearGradient(0, -5, 0, 5);
+			gradientPaddle.addColorStop(0, "#000000")
+			gradientPaddle.addColorStop(0.5, "#FFFFFF");
+			gradientPaddle.addColorStop(1, "#000000");
+			gradientBrick = contextMain.createLinearGradient(0, -BRICK_H * 0.5, 0, BRICK_H * 0.5);
+			gradientBrick.addColorStop(0, "#00CC00");
+			gradientBrick.addColorStop(1, "#00FF00");
+
+			paddle = createSprite(width / 2, height - 50, 100, 10);
+			paddle.immovable = true;
+
+			initWalls();
+			//setupWalls();
+
+			bricks = new Group();
+
+			var offsetX = width / 2 - (COLUMNS - 1) * (BRICK_MARGIN + BRICK_W) / 2;
+			var offsetY = 80;
+
+			for (var r = 0; r < ROWS; r++) {
+				var rID = (r / ROWS) * 255;
+				var lstBricks = {};
+				lstBricks.objs = [];
+				lstBricks.id = rID;
+				for (var c = 0; c < COLUMNS; c++) {
+					var brick = createSprite(offsetX + c * (BRICK_W + BRICK_MARGIN), offsetY + r * (BRICK_H + BRICK_MARGIN), BRICK_W, BRICK_H);
+					var hits = floor((ROWS - r) / 4) + 1;
+					var value = floor((ROWS - r) / 2) + 1;
+					brick.hitPoints = hits;
+					brick.valuePoints = value;
+					brick.draw = fxnDrawBrick(rID);
+					bricks.add(brick);
+					brick.immovable = true;
+					lstBricks.objs.push({ obj: brick, hitPoints: hits, valuePoints: value, pos: { x: brick.position.x, y: brick.position.y } });
+				}
+				lstBricks.valuePoints = lstBricks.objs.reduce(function (sum, itm) { return itm.hitPoints + sum; }, 0);
+				groupBricks.push(lstBricks);
+			}
+			//the easiest way to avoid pesky multiple collision is to
+			//have the ball bigger than the bricks
+			ball = createSprite(width / 2, height - 200, 16, 16);
+			ball.draw = fxnDrawBall;
+			ball.setCollider("circle", 0, 0, 8);
+			ball.maxSpeed = MAX_SPEED;
+			paddle.draw = fxnDrawPaddle;
+
+			wavPing_Paddle = new p5.Oscillator();
+			wavPing_Paddle.setType("square");
+			wavPing_Paddle.start();
+			wavPing_Paddle.freq(256);
+			wavPing_Paddle.amp(0);
+			wavPing_Brick = new p5.Oscillator();
+			wavPing_Brick.setType("triangle");
+			wavPing_Brick.start();
+			wavPing_Brick.freq(512);
+			wavPing_Brick.amp(0);
+			wavPing_Bounds = new p5.Oscillator();
+			wavPing_Bounds.setType("sine");
+			wavPing_Bounds.start();
+			wavPing_Bounds.freq(1024);
+			wavPing_Bounds.amp(0);
+			wavPing_Lost = new p5.Oscillator();
+			wavPing_Lost.setType("triangle");
+			wavPing_Lost.start();
+			wavPing_Lost.freq(128);
+			wavPing_Lost.amp(0);
+			wavPing_GroupClear = new p5.Oscillator();
+			wavPing_GroupClear.setType("triangle");
+			wavPing_GroupClear.start();
+			wavPing_GroupClear.freq(768);
+			wavPing_GroupClear.amp(0);
+
+			var comFullscreen = createButton("[]");
+			comFullscreen.style("position: absolute");
+			comFullscreen.style("user-select: none");
+			comFullscreen.position(0, 0);
+			comFullscreen.mouseClicked(onFullScreenToggleClick);
+			//frameRate(30);
+		}
+
+		function initWalls() {
+			wallTop = createSprite(width / 2, -WALL_THICKNESS / 2, width + WALL_THICKNESS * 2, WALL_THICKNESS);
+			wallTop.immovable = true;
+			wallBottom = createSprite(width / 2, height + WALL_THICKNESS / 2, width + WALL_THICKNESS * 2, WALL_THICKNESS);
+			wallBottom.immovable = true;
+			wallLeft = createSprite(-WALL_THICKNESS / 2, height / 2, WALL_THICKNESS, height);
+			wallLeft.immovable = true;
+			wallRight = createSprite(width + WALL_THICKNESS / 2, height / 2, WALL_THICKNESS, height);
+			wallRight.immovable = true;
+		}
+		function setupWalls() {
+			wallTop.position = new p5.Vector(width / 2, -WALL_THICKNESS / 2);
+			wallBottom.position = new p5.Vector(width / 2, height + WALL_THICKNESS / 2);
+			wallLeft.position = new p5.Vector(-WALL_THICKNESS / 2, height / 2);
+			wallRight.position = new p5.Vector(width + WALL_THICKNESS / 2, height / 2);
+		}
+
+		function draw() {
+			var tn = new Date(Date.now()).getTime() * 0.001;
+			if (pt == 0) { pt = tn; }
+			var t = tn - pt;
+			ct += t;
+			;
+			if (canvasMain.offsetWidth > canvasMain.offsetHeight) {
+				paddle.position.x = constrain((mouseY / canvasMain.height) * canvasMain.width, paddle.width / 2, canvasMain.width - paddle.width / 2);
+			} else {
+				paddle.position.x = constrain(mouseX, paddle.width / 2, canvasMain.width - paddle.width / 2);
 			}
 
-			function mousePressed() {
-				if (ball.velocity.x == 0 && ball.velocity.y == 0)
-					ball.setSpeed(MAX_SPEED * 0.15, random(90 - 10, 90 + 10));
+			var bolHitWall = false;
+			if (!bolHitWall) ball.bounce(wallTop, boundsHit);
+			if (!bolHitWall) ball.bounce(wallLeft, boundsHit);
+			if (!bolHitWall) ball.bounce(wallRight, boundsHit);
+
+			if (ball.bounce(paddle)) {
+				var vecTmp = ball.velocity;
+				var speedTmp = vecTmp.mag();
+				var swing = (ball.position.x - paddle.position.x) / 4;
+				vecTmp.x += swing;
+				vecTmp.normalize();
+				vecTmp.mult(speedTmp);
+				ball.velocity.x = vecTmp.x;
+				ball.velocity.y = vecTmp.y;
+				wavPing_Paddle.amp(0.1, 0.1);
+				wavPing_Paddle.amp(0, 0.25);
+			}
+			ball.addSpeed(ball.getSpeed() * 0.00001, ball.getDirection());
+			if (ball.collide(wallBottom)) {
+				ball.velocity.x = 0;
+				ball.velocity.y = 0;
+				ball.position.x = canvasMain.width / 2;
+				ball.position.y = canvasMain.height - 200;
+				wavPing_Lost.amp(1, 0.1);
+				wavPing_Lost.amp(0, 0.5);
 			}
 
-			function boundsHit(ball, bounds) {
-				wavPing_Bounds.amp(0.25, 0.05);
-				wavPing_Bounds.amp(0, 0.1);
-			}
+			ball.bounce(bricks, brickHit);
 
-			function brickHit(ball, brick) {
-				brick.hitPoints--;
-				if(brick.hitPoints>0) {
-					wavPing_Brick.freq(440);
-					wavPing_Brick.amp(1, 0.05);
-					wavPing_Brick.amp(0, 0.1)
-				} else {
-					wavPing_Brick.freq(512);
-					wavPing_Brick.amp(1, 0.05);
-					wavPing_Brick.amp(0, 0.2);
-					score += brick.valuePoints;
-					brick.remove();
-					for(var gB of groupBricks) {
-						var foundB = gB.objs.find(function (x) {return (x.obj === brick);});
-						if(foundB) { foundB.obj = null;}
-						var lstBricksLeft = gB.objs.filter(function(x) {return x.obj !== null;});
-						if(lstBricksLeft.length <= 0) {
-							wavPing_GroupClear.amp(1, 0.1);
-							wavPing_GroupClear.amp(0, 0.5)
-							score += gB.valuePoints;
-							for(var brickTmp of gB.objs) {
-								brickTmp.obj = createSprite(brickTmp.pos.x, brickTmp.pos.y, BRICK_W, BRICK_H);
-								brickTmp.obj.hitPoints = brickTmp.hitPoints;
-								brickTmp.obj.valuePoints = brickTmp.valuePoints; 
-								brickTmp.obj.draw = fxnDrawBrick(gB.id);
-								brickTmp.obj.setDefaultCollider();
-								bricks.add(brickTmp.obj);
-								brickTmp.obj.immovable = true;
-							}
+			background("#404040");
+
+			push();
+			if (canvasMain.offsetWidth > canvasMain.offsetHeight) {
+				translate(canvasMain.width, 0);
+				rotate(PI / 2);
+				scale(canvasMain.height / canvasMain.width, canvasMain.width / canvasMain.height);
+			}
+			drawSprites();
+			pop();
+			textSize(32);
+			stroke("#FFFFFF");
+			strokeWeight(2);
+			text(score.toString(), canvasMain.width / 2, 36);
+			textSize(12);
+			noStroke();
+			//text(ball.getSpeed().toString(), 0, canvasMain.height - 16);
+
+			pt = tn;
+		}
+
+		function mousePressed() {
+			if (ball.velocity.x == 0 && ball.velocity.y == 0)
+				ball.setSpeed(MAX_SPEED * 0.15, random(90 - 10, 90 + 10));
+		}
+
+		function boundsHit(ball, bounds) {
+			wavPing_Bounds.amp(0.25, 0.05);
+			wavPing_Bounds.amp(0, 0.1);
+		}
+
+		function brickHit(ball, brick) {
+			brick.hitPoints--;
+			if (brick.hitPoints > 0) {
+				wavPing_Brick.freq(440);
+				wavPing_Brick.amp(1, 0.05);
+				wavPing_Brick.amp(0, 0.1)
+			} else {
+				wavPing_Brick.freq(512);
+				wavPing_Brick.amp(1, 0.05);
+				wavPing_Brick.amp(0, 0.2);
+				score += brick.valuePoints;
+				brick.remove();
+				for (var gB of groupBricks) {
+					var foundB = gB.objs.find(function (x) { return (x.obj === brick); });
+					if (foundB) { foundB.obj = null; }
+					var lstBricksLeft = gB.objs.filter(function (x) { return x.obj !== null; });
+					if (lstBricksLeft.length <= 0) {
+						wavPing_GroupClear.amp(1, 0.1);
+						wavPing_GroupClear.amp(0, 0.5)
+						score += gB.valuePoints;
+						for (var brickTmp of gB.objs) {
+							brickTmp.obj = createSprite(brickTmp.pos.x, brickTmp.pos.y, BRICK_W, BRICK_H);
+							brickTmp.obj.hitPoints = brickTmp.hitPoints;
+							brickTmp.obj.valuePoints = brickTmp.valuePoints;
+							brickTmp.obj.draw = fxnDrawBrick(gB.id);
+							brickTmp.obj.setDefaultCollider();
+							bricks.add(brickTmp.obj);
+							brickTmp.obj.immovable = true;
 						}
 					}
 				}
 			}
+		}
 
-			function windowResized() {
-				var szWin = {width: 0, height: 0};
-				if(bolFullscreen) 
-				{szWin.width = displayWidth; szWin.height = displayHeight;
-				if(szWin.width > szWin.height){var tmp = szWin.width; szWin.width = szWin.height; szWin.height = tmp;}} else 
-				{szWin.width = windowWidth; szWin.height = windowHeight}
-				canvasMain.style.width = szWin.width + "px";
-				canvasMain.style.height = szWin.height + "px";
-				console.log(szWin);
-			}
+		function windowResized() {
+			var szWin = { width: 0, height: 0 };
+			if (bolFullscreen) {
+			szWin.width = displayWidth; szWin.height = displayHeight;
+				if (szWin.width > szWin.height) { var tmp = szWin.width; szWin.width = szWin.height; szWin.height = tmp; }
+			} else { szWin.width = windowWidth; szWin.height = windowHeight }
+			canvasMain.style.width = szWin.width + "px";
+			canvasMain.style.height = szWin.height + "px";
+			console.log(szWin);
+		}
 
-			function onFullScreenToggleClick(e) {
-				toggleFullScreen(this);
-			}
-			var bolFullscreen = false;
-			function toggleFullScreen(elem) {
-				if (!document.fullscreenElement &&    // alternative standard method
-					!document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {  // current working methods
-					if (document.documentElement.requestFullscreen) {
-						document.documentElement.requestFullscreen();
-					} else if (document.documentElement.msRequestFullscreen) {
-						document.documentElement.msRequestFullscreen();
-					} else if (document.documentElement.mozRequestFullScreen) {
-						document.documentElement.mozRequestFullScreen();
-					} else if (document.documentElement.webkitRequestFullscreen) {
-						document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-					}
-					bolFullscreen = true;
-				} else {
-					if (document.exitFullscreen) {
-						document.exitFullscreen();
-					} else if (document.msExitFullscreen) {
-						document.msExitFullscreen();
-					} else if (document.mozCancelFullScreen) {
-						document.mozCancelFullScreen();
-					} else if (document.webkitExitFullscreen) {
-						document.webkitExitFullscreen();
-					}
-					bolFullscreen = false;
+		function onFullScreenToggleClick(e) {
+			toggleFullScreen(this);
+		}
+		var bolFullscreen = false;
+		function toggleFullScreen(elem) {
+			if (!document.fullscreenElement &&    // alternative standard method
+				!document.mozFullScreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {  // current working methods
+				if (document.documentElement.requestFullscreen) {
+					document.documentElement.requestFullscreen();
+				} else if (document.documentElement.msRequestFullscreen) {
+					document.documentElement.msRequestFullscreen();
+				} else if (document.documentElement.mozRequestFullScreen) {
+					document.documentElement.mozRequestFullScreen();
+				} else if (document.documentElement.webkitRequestFullscreen) {
+					document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
 				}
-				if(elem) {
-					elem.innerText = (bolFullscreen) ? ("X") : ("[]");
+				bolFullscreen = true;
+			} else {
+				if (document.exitFullscreen) {
+					document.exitFullscreen();
+				} else if (document.msExitFullscreen) {
+					document.msExitFullscreen();
+				} else if (document.mozCancelFullScreen) {
+					document.mozCancelFullScreen();
+				} else if (document.webkitExitFullscreen) {
+					document.webkitExitFullscreen();
 				}
-				windowResized();
+				bolFullscreen = false;
 			}
-		</script>
-	</head>
-	<body style="margin: 0; overflow: hidden">
-	</body>
+			if (elem) {
+				elem.innerText = (bolFullscreen) ? ("X") : ("[]");
+			}
+			windowResized();
+		}
+	</script>
+</head>
+<body style="margin: 0; overflow: hidden">
+</body>
 </html>

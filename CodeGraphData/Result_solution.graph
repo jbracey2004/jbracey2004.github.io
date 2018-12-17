@@ -86,9 +86,11 @@ WARN_LOGFILE =
 INPUT = "C:/Users/jvipe/GitHub/jbracey2004.github.io/libref/box2Dwebjs" \
      "C:/Users/jvipe/GitHub/jbracey2004.github.io/libref" \
      "C:/Users/jvipe/GitHub/jbracey2004.github.io/libref/datguijs" \
+     "C:/Users/jvipe/GitHub/jbracey2004.github.io/libref/glUtility" \
      "C:/Users/jvipe/GitHub/jbracey2004.github.io/libref/matterjs" \
      "C:/Users/jvipe/GitHub/jbracey2004.github.io/libref/p5" \
-     "C:/Users/jvipe/GitHub/jbracey2004.github.io/libref/threejs"
+     "C:/Users/jvipe/GitHub/jbracey2004.github.io/libref/threejs" \
+     "C:/Users/jvipe/GitHub/jbracey2004.github.io/libref/Utility_Physics"
 INPUT_ENCODING = UTF-8
 FILE_PATTERNS = *.c \
      *.cc \

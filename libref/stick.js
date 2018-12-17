@@ -144,7 +144,7 @@ controlStick.prototype.ClientArea = function (setArea) {
     if (typeof (setArea) === 'undefined') {
         var min = this.Pos();
         var size = this.Size();
-        var max = { X: min.X + size.Width, Y: min.Y + size.Height };
+		var max = { X: min.X + size.Width, Y:min.Y + size.Height };
         return { Min: min, Max: max, Size: size };
     }
     else {
