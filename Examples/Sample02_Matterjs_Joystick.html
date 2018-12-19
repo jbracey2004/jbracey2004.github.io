@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<meta name="viewport" content="user-scalable=no,initial-scale=1,maximum-scale=1,minimum-scale=1,width=device-width">
+		<meta name="viewport" content="initial-scale=2,maximum-scale=1,minimum-scale=4,width=device-width">
 		<title>Portfolio - Matter.js Sample Joystick </title>
 		<script src="../libref/p5/p5.min.js"></script>
 		<script src="../libref/p5/p5.dom.min.js"></script>
@@ -79,10 +79,10 @@
 				if (bodyHighlight) {
 					if (bodyHighlight.update()) {
 						let body = bodyHighlight.body.instance;
-						Matter.Body.setAngularVelocity(body, stickAnalog.Value.X * Math.PI * 2 * t);
-						let angDir = body.angle;
+						body.angle = Math.atan2(-stickAnalog.Value.Y, -stickAnalog.Value.X);
+						let angDir = Math.atan2(stickAnalog.Value.Y, stickAnalog.Value.X);
 						let vecDir = { x: Math.cos(angDir), y: Math.sin(angDir) };
-						let valThrust = stickAnalog.Value.Y * 20;
+						let valThrust = ((stickAnalog.Value.X**2 + stickAnalog.Value.Y**2)**0.5) * 20;
 						let vecThrust = { x: vecDir.x * valThrust, y: vecDir.y * valThrust };
 						let vecVel = body.velocity;
 						vecVel.x += Math.sign(vecThrust.x-vecVel.x) * 4 * t;
