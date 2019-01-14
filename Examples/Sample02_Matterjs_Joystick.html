@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<meta name="viewport" content="initial-scale=1,maximum-scale=1,minimum-scale=4,width=device-width">
+		<meta name="viewport" content="initial-scale=1,maximum-scale=4,minimum-scale=1,width=device-width">
 		<title>Portfolio - Matter.js Sample Joystick </title>
 		<script src="../libref/p5/p5.min.js"></script>
 		<script src="../libref/p5/p5.dom.min.js"></script>
@@ -49,6 +49,8 @@
 
 				stickAnalog = new controlStick(canvasMain);
 				stickAnalog.uvArea({ Min: { X: 0.80, Y: 0.75 }, Max: { X: 0.95, Y: 0.95 } });
+				stickAnalog.BaseColor = "#80808080";
+				stickAnalog.StickColor = "#000000FF";
 
 				var comFullscreen = createButton("[]");
 				comFullscreen.style("position: absolute");
