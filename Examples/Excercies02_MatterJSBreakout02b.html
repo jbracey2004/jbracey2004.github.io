@@ -19,21 +19,22 @@
 			var stage = 0;
 			var level = 0;
 
-			var PlayScreen_Width = 708;
-			var PlayScreen_Height = 1024;
+			var PlayScreen_Width = 200;
+			var PlayScreen_Height = 400;
 			var PaddleWidth = PlayScreen_Width*0.25;
 			var PaddleThickness = PlayScreen_Height*0.02;
 			var BallPolygonShape = 4;
 			var BallSize = PaddleThickness * 1;
-			var BallSpeed = 10;
-            var MAX_SPEED = Math.sqrt(PlayScreen_Width * PlayScreen_Height) / 10;
+            var MAX_SPEED = Math.sqrt(PlayScreen_Width * PlayScreen_Height) / 50;
+            var Ball_InitSpeed = MAX_SPEED * 0.1;
+            var BallSpeed = 0;
             var wallsize = {x:PlayScreen_Width * 0.125, y:PlayScreen_Height * 0.125};
 			var wallinside = {x:wallsize.x * 0.125, y:wallsize.y * 0.125};
 			var BRICK_MARGIN = 2.5;
 			var ROWS = 10; 
             var COLUMNS = 12;
             var BRICK_W = ((PlayScreen_Width - 2*wallinside.x) / (COLUMNS+1)) - BRICK_MARGIN;
-			var BRICK_H = 24;
+			var BRICK_H = PlayScreen_Height * 0.02;
 			var constraintPaddle, constraintMouse;
 			var bodyPaddle, bodyBall, PaddleGuard, stageTop, 
                 wallTop, stageBottom, wallLeft, wallRight, 
@@ -558,10 +559,10 @@
                 let velprops = VectorProps(vel);
                 vel.x = clamp(vel.x, -PaddleWidth, PaddleWidth);
 	            if (constraintPaddle) {
-	                if (vel.y < -10) {
+	                if (vel.y < -Ball_InitSpeed) {
 	                	Matter.World.remove(physics.World.instance, constraintPaddle);
 	                	constraintPaddle = null;
-	                	BallSpeed = clamp(velprops.mag, 10, 15);
+	                	BallSpeed = clamp(velprops.mag, Ball_InitSpeed, MAX_SPEED);
 	                	Matter.Body.setVelocity(bodyBall.instance, {x:velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed});
 	                	vel.x = 0;
 	                }
