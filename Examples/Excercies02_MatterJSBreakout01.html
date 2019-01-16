@@ -23,15 +23,15 @@
 			var ct = 0;
             var score = 0;
 
-			var PlayScreen_Width = 708;
-			var PlayScreen_Height = 1024;
+			var PlayScreen_Width = 200;
+			var PlayScreen_Height = 400;
 			var PaddleWidth = PlayScreen_Width*0.15;
 			var PaddleThickness = PlayScreen_Height*0.0125;
 			var BallSpeed = 10;
-			var MAX_SPEED = Math.sqrt(PlayScreen_Width * PlayScreen_Height)/10;
+			var MAX_SPEED = Math.sqrt(PlayScreen_Width**2 + PlayScreen_Height**2)/10;
 			var BRICK_W = 40;
 			var BRICK_H = 20;
-			var BRICK_MARGIN = 3;
+			var BRICK_MARGIN = Math.sqrt(PlayScreen_Width**2 + PlayScreen_Height**2) * 0.002;
 			var ROWS = 12;
 			var COLUMNS = 16;
 			var constraintPaddle, bodyPaddle, bodyBall, PaddleGuard, 

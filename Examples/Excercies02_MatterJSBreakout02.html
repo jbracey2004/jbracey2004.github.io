@@ -2,7 +2,7 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<meta name="viewport" content="initial-scale=1,maximum-scale=1,minimum-scale=4,width=device-width">
+		<meta name="viewport" content="initial-scale=1,maximum-scale=4,minimum-scale=1,width=device-width">
 		<title>Portfolio - Breakout Sandbox - Matter.js </title>
 		<script src="../libref/p5/p5.min.js"></script>
 		<script src="../libref/p5/p5.sound.min.js"></script>
@@ -18,15 +18,15 @@
 			var ct = 0;
             var score = 0;
 
-			var PlayScreen_Width = 708;
-			var PlayScreen_Height = 1024;
+			var PlayScreen_Width = 200;
+			var PlayScreen_Height = 400;
 			var PaddleWidth = PlayScreen_Width*0.2;
 			var PaddleThickness = PlayScreen_Height*0.0125;
 			var BallSpeed = 10;
-            var MAX_SPEED = Math.sqrt(PlayScreen_Width * PlayScreen_Height) / 10;
+            var MAX_SPEED = Math.sqrt(PlayScreen_Width**2 + PlayScreen_Height**2) / 10;
             var wallsize = {x:PlayScreen_Width * 0.125, y:PlayScreen_Height * 0.125};
 			var wallinside = {x:wallsize.x * 0.125, y:wallsize.y * 0.125};
-			var BRICK_MARGIN = 2.5;
+			var BRICK_MARGIN = Math.sqrt(PlayScreen_Width**2 + PlayScreen_Height**2) * 0.002;
 			var ROWS = 12;
             var COLUMNS = 16;
             var BRICK_W = ((PlayScreen_Width - 2*wallinside.x) / (COLUMNS+1)) - BRICK_MARGIN;
