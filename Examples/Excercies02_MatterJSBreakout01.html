@@ -23,17 +23,17 @@
 			var ct = 0;
             var score = 0;
 
-			var PlayScreen_Width = 200;
-			var PlayScreen_Height = 400;
+			var PlayScreen_Width = 400;
+			var PlayScreen_Height = 800;
 			var PaddleWidth = PlayScreen_Width*0.15;
 			var PaddleThickness = PlayScreen_Height*0.0125;
-			var BallSpeed = 10;
-			var MAX_SPEED = Math.sqrt(PlayScreen_Width**2 + PlayScreen_Height**2)/10;
-			var BRICK_W = 40;
-			var BRICK_H = 20;
+			var MAX_SPEED = Math.sqrt(PlayScreen_Width ** 2 + PlayScreen_Height ** 2) / 100;
+			var BallSpeed = MAX_SPEED * 0.25;
 			var BRICK_MARGIN = Math.sqrt(PlayScreen_Width**2 + PlayScreen_Height**2) * 0.002;
 			var ROWS = 12;
 			var COLUMNS = 16;
+			var BRICK_W = ((PlayScreen_Width) / COLUMNS) - BRICK_MARGIN;
+			var BRICK_H = ((PlayScreen_Height * 0.3) / ROWS) - BRICK_MARGIN;
 			var constraintPaddle, bodyPaddle, bodyBall, PaddleGuard, 
                 wallTop, wallBottom, wallLeft, wallRight, 
                 compositeBricks, aryBricks, aryBrickGroups;

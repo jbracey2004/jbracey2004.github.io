@@ -20,21 +20,26 @@
 			a {
 				color: #40CCFF;
 			}
-			button {
+			.button {
 				border-radius: 15%;
 				border: 2px solid #10101020;
 				background-color: #2080CC40;
 				color: #80DDFFCC;
 			}
-			button:hover {
+			.button:hover {
 				border-radius: 5%;
 				border: 2px solid #101010FF;
 				background-color: #10208080;
 				color: #80DDFFFF;
 			}
-			button:active {
+			.button:active {
 				background-color: #80DDFFFF;
 				color: #10208080;
+			}
+			.buttonPreview {
+				width: 300px;
+				height: 200px;
+				display: block;
 			}
 		</style>
         <script src="libref/p5/p5.min.js"></script>
@@ -78,20 +83,27 @@
                         args["date"] = new Date(args["date"]);
                         args["path"] = aryDiv.divElem.id + "/" + args["name"];
                         args["size"] = parseFloat(str.match(/\b(\d+(\,)?)+\b/g).toString().replace(",", ""));
-                        args["toString"] = args["name"] +  String.fromCharCode(9) + args["date"] + String.fromCharCode(9) + args["size"] + " bytes"
+                        args["toString"] = args["name"] + "\t" + args["date"] + "\t" + args["size"] + " bytes"
                         console.log(args);
 					    intCount++;
                         var elementListItem = createElement("div", "");
 					    elementListItem.style("padding","8px");
-                        var elementButtonItem = createA(args["path"].toString(), "");
-                        var elementButton = createButton(args["name"].toString());
+						var elementButtonItem = createDiv(args["name"].toString()+"<br/>");
+						elementButtonItem.attribute("class", "button");
+						elementButtonItem.attribute("width", "320px");
+						elementButtonItem.attribute("height", "240px");
+						var elementButton = createA(args["path"].toString(), "Play");
+						//var elementPreview = createElement("iframe");
+						//elementPreview.attribute("class", "buttonPreview");
+						//elementPreview.attribute("src", args["path"]);
+						//elementPreview.parent(elementButtonItem);
                         elementButton.parent(elementButtonItem);
 					    elementButtonItem.parent(elementListItem);
                         elementListItem.parent(elementList);
                     }
 				    console.log(intCount.toString() + " References Loaded")
                 }
-            }
+			}
         </script>
     </head>
     <body>
