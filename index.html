@@ -32,14 +32,9 @@
 				background-color: #10208080;
 				color: #80DDFFFF;
 			}
-			.button:active {
-				background-color: #80DDFFFF;
-				color: #10208080;
-			}
 			.buttonPreview {
 				width: 300px;
 				height: 200px;
-				display: block;
 			}
 		</style>
         <script src="libref/p5/p5.min.js"></script>
@@ -90,19 +85,32 @@
 					    elementListItem.style("padding","8px");
 						var elementButtonItem = createDiv(args["name"].toString()+"<br/>");
 						elementButtonItem.attribute("class", "button");
-						elementButtonItem.attribute("width", "320px");
-						elementButtonItem.attribute("height", "240px");
 						var elementButton = createA(args["path"].toString(), "Play");
-						//var elementPreview = createElement("iframe");
-						//elementPreview.attribute("class", "buttonPreview");
-						//elementPreview.attribute("src", args["path"]);
-						//elementPreview.parent(elementButtonItem);
-                        elementButton.parent(elementButtonItem);
+						var elementPreview = createElement("iframe");
+						elementPreview.attribute("class", "buttonPreview");
+						elementPreview.style("display", "none");
+						elementPreview.parent(elementButtonItem);
+						var elementButtonPrev = createInput();
+						elementButtonPrev.attribute("type", "checkbox");
+						elementButtonPrev.attribute("id", "chkPreview");
+						elementButtonPrev.elt.onchange = chkPreview_OnChange(elementPreview, args["path"].toString());
+						var elementButtonPrevLabel = createElement("label");
+						elementButtonPrevLabel.html("\rPreview");
+						elementButtonPrevLabel.attribute("for", "chkPreview");
+						elementButton.parent(elementButtonItem);
+						elementButtonPrevLabel.parent(elementButtonItem);
+						elementButtonPrev.parent(elementButtonItem);
 					    elementButtonItem.parent(elementListItem);
                         elementListItem.parent(elementList);
                     }
 				    console.log(intCount.toString() + " References Loaded")
                 }
+			}
+			function chkPreview_OnChange(iframe, src) {
+				return function (e) {
+					iframe.style("display", (e.target.checked) ? ("block") : ("none"));
+					iframe.attribute("src", (e.target.checked) ? (src) : (""));
+				}
 			}
         </script>
     </head>
