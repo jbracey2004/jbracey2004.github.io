@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=4.0"/>
+		<style>
+			table.quotients tr td {
+				border:solid;
+			}
+			table.quotients tr.divisible td {
+				background-color:#00008040;
+			}
+		</style>
+		<script>
+			function onload() {
+			}
+			function number_onchange(value) {
+					let num = Number.parseInt(value);
+					if(!Number.isNaN(num)) {
+						let elem = document.getElementById("divQuotients");
+						let strHTML = "<table class=\"quotients\">";
+						for(let i = 1; i <= num; i++) {
+							strHTML += `<tr ${(num % i == 0) ? "class=\"divisible\"" : ""}>`;
+							strHTML += `<td> ${num} / ${i} </td>`;
+							strHTML += `<td> ${Math.floor(num/i)} </td>`;
+							strHTML += `<td> R ${num % i} </td>`;
+							strHTML += `<td> ${num/i} </td>`;
+							strHTML += "</tr>";
+						}
+						strHTML += "<table>"
+						elem.innerHTML = strHTML;
+					}
+			}
+		</script>
+	</head>
+	<body>
+		<div id="divTitle">
+			<h1>Quotients</h1>
+		</div>
+		<div id="divUsr">
+			<label for="txtNumber">Number</label>
+			<input type="text" id="txtNumber" onChange="number_onchange(this.value)" />
+		</div>
+		<div id="divQuotients"></div>
+	</body>
+</html>
