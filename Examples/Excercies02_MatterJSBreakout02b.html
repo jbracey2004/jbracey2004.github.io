@@ -19,20 +19,21 @@
 			var stage = 0;
 			var level = 0;
 
-			var PlayScreen_Width = 100;
-			var PlayScreen_Height = 200;
+			var PlayScreen_Width = 200;
+			var PlayScreen_Height = 400;
 			var PaddleWidth = PlayScreen_Width*0.25;
 			var PaddleThickness = PlayScreen_Height*0.02;
 			var BallPolygonShape = 4;
 			var BallSize = PaddleThickness * 1;
-            var MAX_SPEED = Math.sqrt(PlayScreen_Width**2 + PlayScreen_Height**2) / 10;
+            var MAX_SPEED = Math.sqrt(PlayScreen_Width **2 +  PlayScreen_Height**2) / 60;
             var Ball_InitSpeed = MAX_SPEED * 0.1;
             var BallSpeed = 0;
             var wallsize = {x:PlayScreen_Width * 0.125, y:PlayScreen_Height * 0.125};
 			var wallinside = {x:wallsize.x * 0.125, y:wallsize.y * 0.125};
+			var BRICK_MARGIN = Math.sqrt(PlayScreen_Width **2 +  PlayScreen_Height**2) * 0.002;
+;
 			var ROWS = 10; 
             var COLUMNS = 12;
-			var BRICK_MARGIN = Math.sqrt(PlayScreen_Width**2 + PlayScreen_Height**2) * 0.002;
             var BRICK_W = ((PlayScreen_Width - 2*wallinside.x) / (COLUMNS+1)) - BRICK_MARGIN;
 			var BRICK_H = PlayScreen_Height * 0.02;
 			var constraintPaddle, constraintMouse;
@@ -119,7 +120,7 @@
                 physics.AutoRun_Start();
 				physics.AutoRender_Start({ options: { background: "#00000000", wireframeBackground: "#00000000" } });
 				optionsRender_RenderMode(optionsRender_Debug);
-                physics.setPlayArea({ width: PlayScreen_Width , height: PlayScreen_Height });
+                physics.setPlayArea({ width: PlayScreen_Width, height: PlayScreen_Height });
 				physics.instance.world.gravity.x = 0;
 				physics.instance.world.gravity.y = 0;
 				
