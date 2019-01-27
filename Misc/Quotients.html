@@ -4,32 +4,40 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=4.0"/>
 		<style>
+			body {
+				background-color: #202020;
+				color: #ffffff;
+			}
 			table.quotients tr td {
-				border:solid;
+				border:solid thin;
 			}
 			table.quotients tr.divisible td {
-				background-color:#00008040;
+				background-color:#0000cc80;
 			}
 		</style>
 		<script>
 			function onload() {
 			}
-			function number_onchange(value) {
-					let num = Number.parseInt(value);
-					if(!Number.isNaN(num)) {
-						let elem = document.getElementById("divQuotients");
-						let strHTML = "<table class=\"quotients\">";
-						for(let i = 1; i <= num; i++) {
-							strHTML += `<tr ${(num % i == 0) ? "class=\"divisible\"" : ""}>`;
-							strHTML += `<td> ${num} / ${i} </td>`;
-							strHTML += `<td> ${Math.floor(num/i)} </td>`;
-							strHTML += `<td> R ${num % i} </td>`;
-							strHTML += `<td> ${num/i} </td>`;
-							strHTML += "</tr>";
-						}
-						strHTML += "<table>"
-						elem.innerHTML = strHTML;
+			function number_onchange(e) {
+				if (!e) return;
+				if (!e.target) return;
+				let elem = document.getElementById("divQuotients");
+				if (!elem) return;
+				let strHTML = "<table class=\"quotients\">";
+				let num = Number.parseInt(e.target.value);
+				if (!Number.isNaN(num)) {
+					for (let i = 1; i <= num; i++) {
+						strHTML += `<tr ${(num % i == 0) ? "class=\"divisible\"" : ""}>`;
+						strHTML += `<td> ${num} &#x00f7 ${i} </td>`;
+						strHTML += `<td> ${Math.floor(num / i)} </td>`;
+						strHTML += `<td> R ${num % i} </td>`;
+						strHTML += `<td> ${num / i} </td>`;
+						strHTML += "</tr>";
 					}
+				}
+				strHTML += "<table>"
+				elem.innerHTML = strHTML;
+				return strHTML;
 			}
 		</script>
 	</head>
@@ -39,7 +47,7 @@
 		</div>
 		<div id="divUsr">
 			<label for="txtNumber">Number</label>
-			<input type="text" id="txtNumber" onChange="number_onchange(this.value)" />
+			<input type="text" id="txtNumber" onchange="number_onchange(event)" onkeyup="this.onchange(event)" oninput="this.onchange(event)" />
 		</div>
 		<div id="divQuotients"></div>
 	</body>
