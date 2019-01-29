@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html>
 	<head>
 		<meta charset="utf-8" />
@@ -8,36 +7,96 @@
 				background-color: #202020;
 				color: #ffffff;
 			}
+			table.quotients {
+				border:solid;
+			}
 			table.quotients tr td {
 				border:solid thin;
 			}
 			table.quotients tr.divisible td {
 				background-color:#0000cc80;
 			}
+			table.quotients tr.identity td {
+				background-color:#00600080;
+			}
+			div.progress {
+				display:none;
+				width:auto;
+				height:16px;
+				background-color:#000;
+				border:solid #fff;
+			}
+			div.progress div.progressbar {
+				padding: 2px 2px -2px -2px;
+				width:100%;
+				height:100%;
+				background-color:#0000ff;
+			}
 		</style>
 		<script>
-			function onload() {
-			}
+			function onload() {}
 			function number_onchange(e) {
 				if (!e) return;
 				if (!e.target) return;
 				let elem = document.getElementById("divQuotients");
 				if (!elem) return;
-				let strHTML = "<table class=\"quotients\">";
-				let num = Number.parseInt(e.target.value);
+				let elemTable = document.getElementById("tableQuotients");
+				if(elemTable) elem.removeChild(elemTable);
+				elemTable = document.createElement("table");
+				elemTable.id = "tableQuotients";
+				elemTable.className = "quotients";
+				elem.appendChild(elemTable);
+				let elemProgressBar = document.getElementById("divProgressBar");
+				let ret =  asyc_tableAddQuotients(elemTable, e.target.value, elemProgressBar);
+				return ret;
+			}
+			async function asyc_tableAddQuotients(table, value, progressbar) {
+				return await asycCall_tableAddQuotients(table, value, progressbar);
+			}
+			function asycCall_tableAddQuotients(table, value, progressbar) {
+				return new Promise(resolve => {
+					let ret = tableAddQuotients_Fill(table, value, progressbar);
+					resolve(ret);
+				})
+			}
+			function tableAddQuotients_Fill(table, value, progressbar) {
+				let num = Number.parseInt(value);
 				if (!Number.isNaN(num)) {
+					let elemProgress = null;
+					if(progressbar) {
+						elemProgress = progressbar.parentElement;
+						if(elemProgress) {
+							if(elemProgress.className == "progress") elemProgress.style.display = "block";
+						}
+						progressbar.style.width = "0%";
+					}
 					for (let i = 1; i <= num; i++) {
-						strHTML += `<tr ${(num % i == 0) ? "class=\"divisible\"" : ""}>`;
-						strHTML += `<td> ${num} &#x00f7 ${i} </td>`;
-						strHTML += `<td> ${Math.floor(num / i)} </td>`;
-						strHTML += `<td> R ${num % i} </td>`;
-						strHTML += `<td> ${num / i} </td>`;
-						strHTML += "</tr>";
+						setTimeout(() => {
+							let elemRow = document.createElement("tr");
+							if(i == 1 || i == num) {
+								elemRow.className =  "identity";
+							} else {
+								if(num % i == 0) elemRow.className =  "divisible";
+							}
+							let strHTML = "";
+							strHTML += `<td> ${num} &#x00f7 ${i} </td>`;
+							strHTML += `<td> ${Math.floor(num / i)} </td>`;
+							strHTML += `<td> R ${num % i} </td>`;
+							strHTML += `<td> ${num / i} </td>`;
+							elemRow.innerHTML = strHTML;
+							table.appendChild(elemRow);
+							if(progressbar) {
+								progressbar.style.width = ((i/num)*100).toString()+"%";
+							}
+							if(i == num) {
+								if(elemProgress) {
+									elemProgress.style.display = "none";
+								}
+							}
+						}, Math.floor(i / 1000) + 1);
 					}
 				}
-				strHTML += "<table>"
-				elem.innerHTML = strHTML;
-				return strHTML;
+				return table.innerHTML;
 			}
 		</script>
 	</head>
@@ -47,8 +106,9 @@
 		</div>
 		<div id="divUsr">
 			<label for="txtNumber">Number</label>
-			<input type="text" id="txtNumber" onchange="number_onchange(event)" onkeyup="this.onchange(event)" oninput="this.onchange(event)" />
+			<input type="text" id="txtNumber" onchange="number_onchange(event)" oninput="this.onchange(event)" />
 		</div>
+		<div id="divProgress" class="progress"><div id="divProgressBar" class="progressbar"></div></div>
 		<div id="divQuotients"></div>
 	</body>
 </html>
