@@ -4,12 +4,9 @@
 		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=4.0"/>
 		<style>
 			body {
-				display:flex;
-				flex-flow:column;
-				width: 100%;
-				height: 100%;
+				width: 100% - 16px;
+				height: 100% - 16px;
 				overflow: hidden;
-				margin: 0px 16px 16px 0px;
 				background-color: #202020;
 				color: #ffffff;
 			}
@@ -36,21 +33,45 @@
 				padding: 2px 2px -2px -2px;
 				width:100%;
 				height:100%;
-				background-color:#0000ff;
+				background-color:#2040ff;
 			}
 			div.head {
-				display:inline-block;
-				width: 100%;
+				display: block;
+				height: 30%;
+				background-color:#006000;
 			}
 			div.content {
 				display:block;
-				width: 100%;
-				flex-grow:1;
+				height: 70%;
+				background-color:#600000;
+			}
+			div#graph {
+				width: 100% - 16px;
+				height: 100% - 16px;
+				border: solid;
+			}
+			.scrolls {
 				overflow: auto;
 			}
 		</style>
 		<script>
 			function onload() {}
+			function onresize(e) {
+				let sz = {width:e.target.innerWidth, 
+						height:e.target.innerHeight};
+				let divHead = document.getElementById("divHead");
+				let divContent = document.getElementById("divContent");
+				if(sz.width >= sz.height) {
+					//divHead.style.float = "left";
+					//divHead.style.width = "50%";
+					//divHead.style.height = "100%";
+					console.log("Left Float");
+				} else {
+					//divHead.style.float = "top";
+					//divHead.style.height = "30%";
+					console.log("Top Float");
+				}
+			}
 			function number_onchange(e) {
 				if (!e) return;
 				if (!e.target) return;
@@ -109,25 +130,30 @@
 									elemProgress.style.display = "none";
 								}
 							}
-						}, Math.floor(i / 1000) + 1);
+						}, i);
 					}
 				}
 				return table.innerHTML;
 			}
 		</script>
 	</head>
-	<body>
-		<div class="head">
-			<div id="divTitle">
-				<h1>Quotients</h1>
+	<body  onresize="onresize(event)">
+		<div id="divHead" class="head">
+			<div style="float:top">
+				<div id="divTitle">
+					<h1>Quotients</h1>
+				</div>
+				<div id="divUsr">
+					<label for="txtNumber">Number</label>
+					<input type="text" id="txtNumber" onchange="number_onchange(event)" />
+				</div>
 			</div>
-			<div id="divUsr">
-				<label for="txtNumber">Number</label>
-				<input type="text" id="txtNumber" onchange="number_onchange(event)" />
+			<div id="graph" style="float:none"></div>
+			<div style="float:bottom">
 				<div id="divProgress" class="progress"><div id="divProgressBar" class="progressbar"></div></div>
-			</div>
+			<div>
 		</div>
-		<div class="content">
+		<div id="divContent" class="content scrolls">
 			<div id="divQuotients"></div>
 		</div>
 	</body>
