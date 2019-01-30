@@ -36,7 +36,8 @@
 				background-color:#2040ff;
 			}
 			div.head {
-				display: block;
+				display: flex;
+				flex-direction:column;
 				height: 30%;
 				background-color:#006000;
 			}
@@ -46,8 +47,8 @@
 				background-color:#600000;
 			}
 			div#graph {
-				width: 100% - 16px;
-				height: 100% - 16px;
+				width: 100%;
+				height: 100%;
 				border: solid;
 			}
 			.scrolls {
@@ -139,7 +140,7 @@
 	</head>
 	<body  onresize="onresize(event)">
 		<div id="divHead" class="head">
-			<div style="float:top">
+			<div style="flex:1">
 				<div id="divTitle">
 					<h1>Quotients</h1>
 				</div>
@@ -148,10 +149,10 @@
 					<input type="text" id="txtNumber" onchange="number_onchange(event)" />
 				</div>
 			</div>
-			<div id="graph" style="float:none"></div>
-			<div style="float:bottom">
+			<div id="graph"></div>
+			<div style="flex:1">
 				<div id="divProgress" class="progress"><div id="divProgressBar" class="progressbar"></div></div>
-			<div>
+			</div>
 		</div>
 		<div id="divContent" class="content scrolls">
 			<div id="divQuotients"></div>
