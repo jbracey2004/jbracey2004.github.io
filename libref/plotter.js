@@ -1,6 +1,7 @@
 function plotArea2D(parent)
 {
-	this.ParentElement = parent;
+    this.ParentElement = parent;
+    this.DrawContext = parent.getContext("2d");
 	this.uvX = 0;
 	this.uvY = 0;
 	this.uvWidth = 1;
@@ -307,19 +308,37 @@ plotArea2D.prototype.RectFnxContainsMousePointer = function (fnx, thickness, OnM
 };
 
 plotArea2D.prototype.DrawBorder = function (color, thickness) {
-    stroke(color);
-    strokeWeight(thickness);
-    noFill();
+    this.DrawContext.strokeStyle = color;
+    this.DrawContext.lineWidth = thickness;
     let posThis = this.Pos();
     let sizeThis = this.Size();
-    rect(posThis.X, posThis.Y, sizeThis.Width, sizeThis.Height);
+    this.DrawContext.rect(posThis.X, posThis.Y, sizeThis.Width, sizeThis.Height);
+    this.DrawContext.stroke();
 };
 plotArea2D.prototype.Fill = function (color) {
-    noStroke();
-    fill(color);
+    this.DrawContext.fillStyle = color;
     let posThis = this.Pos();
     let sizeThis = this.Size();
-    rect(posThis.X, posThis.Y, sizeThis.Width, sizeThis.Height);
+    this.DrawContext.fillRect(posThis.X, posThis.Y, sizeThis.Width, sizeThis.Height);
+};
+plotArea2D.prototype.DrawLine = function (x1, y1, x2, y2, bolClip) {
+    if(bolClip) this.BeginClipping();
+    this.DrawContext.beginPath();
+    this.DrawContext.moveTo(x1, y1);
+    this.DrawContext.lineTo(x2, y2);
+    this.DrawContext.stroke();
+    if(bolClip) this.EndClipping();
+};
+plotArea2D.prototype.DrawEllipse = function (x1, y1, x2, y2, bolClip) {
+    //let x = (x2 + x1) * 0.5, y = (y2 + y1) * 0.5;
+    //let rx = Math.abs(x2 - x1), ry = Math.abs(y2 + y1);
+    let x = x1, y = y1;
+    let rx = Math.abs(x2), ry = Math.abs(y2);
+    if(bolClip) this.BeginClipping();
+    this.DrawContext.beginPath();
+    this.DrawContext.ellipse(x, y, rx, ry, 0, 0, 2 * Math.PI);
+    this.DrawContext.stroke();
+    if(bolClip) this.EndClipping();
 };
 plotArea2D.prototype.DrawGrid_Rect = function (color, thickness, gridLength) {
     let areaPlot = this.PlotArea();
@@ -327,20 +346,20 @@ plotArea2D.prototype.DrawGrid_Rect = function (color, thickness, gridLength) {
     let gridTick = { X: sign(areaPlot.Size.Width) * abs(gridLength.X), Y: sign(areaPlot.Size.Height) * abs(gridLength.Y) };
     let posThis = this.Pos();
     let sizeThis = this.Size();
-    stroke(color);
-    strokeWeight(thickness);
+    this.DrawContext.strokeStyle = color;
+    this.DrawContext.lineWidth = thickness;
     for (let gridI = areaPlot.Min.X, gridCI = 0; gridCI <= gridCount.X; gridI += gridTick.X, gridCI++) {
         let gridIP = gridI - (gridI % gridTick.X);
         let gridXi = this.MapPlotToClient({ X: gridIP }).X;
         if (gridXi >= posThis.X && gridXi <= posThis.X + sizeThis.Width + 1) {
-            line(gridXi, posThis.Y, gridXi, posThis.Y + sizeThis.Height);
+            this.DrawLine(gridXi, posThis.Y, gridXi, posThis.Y + sizeThis.Height);
         }
     }
     for (let gridI = areaPlot.Min.Y, gridCI = 0; gridCI <= gridCount.Y; gridI += gridTick.Y, gridCI++) {
         let gridIP = gridI - (gridI % gridTick.Y);
         let gridYi = this.MapPlotToClient({ Y: gridIP }).Y;
         if (gridYi >= posThis.Y && gridYi <= posThis.Y + sizeThis.Height + 1) {
-            line(posThis.X, gridYi, posThis.X + sizeThis.Width, gridYi);
+            this.DrawLine(posThis.X, gridYi, posThis.X + sizeThis.Width, gridYi);
         }
     }
 };
@@ -368,22 +387,21 @@ plotArea2D.prototype.DrawGrid_Polar = function (color, thickness, gridLength, se
     }
     let posOrigin = this.MapPlotToClient({ X: 0, Y: 0 });
     this.BeginClipping();
-    noFill();
-    stroke(color);
-    strokeWeight(thickness);
+    this.strokeStyle = color;
+    this.lineWidth = thickness;
     for (let gridI = areaMinDist; gridI <= areaMaxDist; gridI += gridLength) {
         let gridIP = gridI - (gridI % gridLength);
         let gridII = this.MapPlotToClient({ X: gridIP, Y: gridIP });
-        ellipse(posOrigin.X, posOrigin.Y, (gridII.X - posOrigin.X) * 2, (gridII.Y - posOrigin.Y) * 2);
+        this.DrawEllipse(posOrigin.X, posOrigin.Y, (gridII.X - posOrigin.X) * 2, (gridII.Y - posOrigin.Y) * 2);
     }
     if (sectorColor && sectorThickness && sectorLength) {
         let sectorLengthRad = sectorLength * TAU;
-        stroke(sectorColor);
-        strokeWeight(sectorThickness);
+        this.strokeStyle = sectorColor;
+        this.lineWidth = sectorThickness;
         for (let gridI = areaMinAngle; gridI <= areaMaxAngle; gridI += sectorLengthRad) {
             let gridIP = gridI - (gridI % sectorLengthRad);
             let gridII = this.MapPlotToClient({ X: cos(gridIP) * areaMaxDist, Y: sin(gridIP) * areaMaxDist });
-            line(posOrigin.X, posOrigin.Y, gridII.X, gridII.Y);
+            this.DrawLine(posOrigin.X, posOrigin.Y, gridII.X, gridII.Y);
         }
     }
     this.EndClipping();
@@ -397,32 +415,32 @@ plotArea2D.prototype.DrawAxis = function (colorAxis, colorMarks, thickness, axis
     let posThis = this.Pos();
     let sizeThis = this.Size();
     if (posOrigin.Y >= posThis.Y && posOrigin.Y <= posThis.Y + sizeThis.Height) {
-        stroke(colorAxis);
-        strokeWeight(thickness);
-        line(posThis.X, posOrigin.Y, posThis.X + sizeThis.Width, posOrigin.Y);
-        stroke(colorMarks);
+        this.DrawContext.strokeStyle = colorAxis;
+        this.DrawContext.lineWidth = thickness;
+        this.DrawLine(posThis.X, posOrigin.Y, posThis.X + sizeThis.Width, posOrigin.Y);
+        this.DrawContext.strokeStyle = colorMarks;
         for (let gridI = areaPlot.Min.X, gridCI = 0; gridCI <= gridCount.X; gridI += gridTick.X, gridCI++) {
             let gridIP = gridI - (gridI % gridTick.X);
             let gridXi = this.MapPlotToClient({ X: gridIP }).X;
             let lengthMark = axisMarkLength;
-            strokeWeight(thickness * 0.5);
+            this.DrawContext.lineWidth = thickness * 0.5;
             if (gridXi >= posThis.X && gridXi <= posThis.X + sizeThis.Width + 1) {
-                line(gridXi, max(posOrigin.Y - lengthMark, posThis.Y), gridXi, min(posOrigin.Y + lengthMark, posThis.Y + sizeThis.Height));
+                this.DrawLine(gridXi, max(posOrigin.Y - lengthMark, posThis.Y), gridXi, min(posOrigin.Y + lengthMark, posThis.Y + sizeThis.Height));
             }
         }
     }
     if (posOrigin.X >= posThis.X && posOrigin.X <= posThis.X + sizeThis.Width) {
-        stroke(colorAxis);
-        strokeWeight(thickness);
-        line(posOrigin.X, posThis.Y, posOrigin.X, posThis.Y + sizeThis.Height + 1);
-        stroke(colorMarks);
+        this.DrawContext.strokeStyle = colorAxis;
+        this.DrawContext.lineWidth = thickness;
+        this.DrawLine(posOrigin.X, posThis.Y, posOrigin.X, posThis.Y + sizeThis.Height + 1);
+        this.DrawContext.strokeStyle = colorMarks;
         for (let gridI = areaPlot.Min.Y, gridCI = 0; gridCI <= gridCount.Y; gridI += gridTick.Y, gridCI++) {
             let gridIP = gridI - (gridI % gridTick.Y);
             let gridYi = this.MapPlotToClient({ Y: gridIP }).Y;
             let lengthMark = axisMarkLength;
-            strokeWeight(thickness * 0.5);
+            this.DrawContext.lineWidth = thickness * 0.5;
             if (gridYi >= posThis.Y && gridYi <= posThis.Y + sizeThis.Height + 1) {
-                line(max(posOrigin.X - lengthMark, posThis.X), gridYi, min(posOrigin.X + lengthMark, posThis.X + sizeThis.Width), gridYi);
+                this.DrawLine(max(posOrigin.X - lengthMark, posThis.X), gridYi, min(posOrigin.X + lengthMark, posThis.X + sizeThis.Width), gridYi);
             }
         }
     }
@@ -430,21 +448,24 @@ plotArea2D.prototype.DrawAxis = function (colorAxis, colorMarks, thickness, axis
 plotArea2D.prototype.DrawCurve_RectFnx = function (fnx, color, thickness, samplesOfX) {
     if (!(typeof (fnx) === 'function')) return 0;
     let areaPlot = this.PlotArea();
-    let posThis = this.Pos();
-    let sizeThis = this.Size();
     let resSample = areaPlot.Size.Width / samplesOfX;
     this.BeginClipping();
-    noFill();
-    stroke(color);
-    strokeWeight(thickness);
-    beginShape();
+    this.DrawContext.strokeStyle = color;
+    this.DrawContext.lineWidth = thickness;
+    this.DrawContext.beginPath();
+    let bolBegin = true;
     for (let Xi = areaPlot.Min.X, Ni = 0; Ni <= samplesOfX; Xi += resSample, Ni++) {
         let Yi = fnx(Xi);
-        if (typeof (Yi) === 'undefined') { endShape(); beginShape(); continue; }
+        if (typeof (Yi) === 'undefined') { this.DrawContext.stroke(); this.DrawContext.beginPath(); bolBegin=true;  continue; }
         let PosI = this.MapPlotToClient({ X: Xi, Y: Yi });
-        vertex(PosI.X, PosI.Y);
+        if(bolBegin) {
+            this.DrawContext.moveTo(PosI.X, PosI.Y);
+            bolBegin = false;
+        } else {
+            this.DrawContext.lineTo(PosI.X, PosI.Y);
+        }
     }
-    endShape();
+    this.DrawContext.stroke();
     this.EndClipping();
 };
 plotArea2D.prototype.DrawCurve_ParmetricFnx = function (fxnt, color, thickness, tStart, tEnd, tSamples) {
@@ -454,16 +475,20 @@ plotArea2D.prototype.DrawCurve_ParmetricFnx = function (fxnt, color, thickness, 
     let sizeThis = this.Size();
     let resSample = (tEnd - tStart) / tSamples;
     this.BeginClipping();
-    noFill();
-    stroke(color);
-    strokeWeight(thickness);
-    beginShape();
+    this.DrawContext.strokeStyle = color;
+    this.DrawContext.lineWidth = thickness;
+    this.DrawContext.beginPath();
+    let bolBegin = true;
     for (let Ti = tStart, Ni = 0; Ni <= tSamples; Ti += resSample, Ni++) {
         let valXY = fxnt(Ti);
         let PosI = this.MapPlotToClient({ X: valXY.X, Y: valXY.Y });
-        vertex(PosI.X, PosI.Y);
+        if(bolBegin) {
+            this.DrawContext.moveTo(PosI.X, PosI.Y);
+        } else {
+            this.DrawContext.lineTo(PosI.X, PosI.Y);
+        }
     }
-    endShape();
+    this.DrawContext.stroke();
     this.EndClipping();
 };
 plotArea2D.prototype.DrawClipped = function (sub) {

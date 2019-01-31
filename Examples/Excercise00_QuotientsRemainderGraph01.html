@@ -40,16 +40,23 @@
 			div.head {
 				display: flex;
 				flex-direction:column;
-				height: auto;
+				height: 30%;
 			}
 			div.content {
 				flex: 1;
 				height: 70%;
 			}
 			div#graph {
+				flex: 1;
 				width: 100% - 8px;
-				height: 100%;
+				height: 100% - 8px;
 				border: solid;
+			}
+			div#graph canvas {
+				position:relative;
+				display: block;
+				width: 100%;
+				height: 60%;
 			}
 			.scrolls {
 				overflow: auto;
@@ -70,7 +77,7 @@
 				} else {
 					document.body.style.flexDirection = "column";
 					divHead.style.width = "100%";
-					divHead.style.height = "auto";
+					divHead.style.height = "30%";
 					divContent.style.height = "70%";
 				}
 			}
@@ -96,7 +103,7 @@
 				return new Promise(resolve => {
 					let ret = tableAddQuotients_Fill(table, value, progressbar);
 					resolve(ret);
-				})
+				});
 			}
 			function tableAddQuotients_Fill(table, value, progressbar) {
 				let num = Number.parseInt(value);
@@ -109,13 +116,30 @@
 						}
 						progressbar.style.width = "0%";
 					}
+					let img = document.getElementById("imgGraph");
+					let ctx = (img) ? (img.getContext("2d")) : (null);
+					if(ctx) {
+						ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+						ctx.lineWidth = 2;
+						ctx.strokeStyle = "#ccff80";
+					}
 					for (let i = 1; i <= num; i++) {
 						setTimeout(() => {
 							let elemRow = document.createElement("tr");
 							if(i == 1 || i == num) {
 								elemRow.className =  "identity";
+							} else if(i == num) {
+								elemRow.className =  "identity";
 							} else {
 								if(num % i == 0) elemRow.className =  "divisible";
+							}
+							if(ctx) {
+								let a = {x:(i/num)*img.width, y:((num % i)/num)*img.height};
+								let b = {x:((i+1)/num)*img.width, y:((num % (i+1))/num)*img.height};
+								ctx.beginPath();
+								ctx.moveTo(a.x, img.height - a.y);
+								ctx.lineTo(b.x, img.height - b.y);
+								ctx.stroke();
 							}
 							let strHTML = "";
 							strHTML += `<td> ${num} &#x00f7 ${i} </td>`;
@@ -143,14 +167,14 @@
 		<div id="divHead" class="head">
 			<div style="flex:1">
 				<div id="divTitle">
-					<h1>Quotients</h1>
+					<h1>Remainder Graph</h1>
 				</div>
 				<div id="divUsr">
 					<label for="txtNumber">Number</label>
 					<input type="text" id="txtNumber" onchange="number_onchange(event)" />
 				</div>
 			</div>
-			<!--<div id="graph"></div>-->
+			<div id="graph"><canvas id="imgGraph" width=1024 height=768></canvas></div>
 			<div style="flex:1">
 				<div id="divProgress" class="progress"><div id="divProgressBar" class="progressbar"></div></div>
 			</div>
