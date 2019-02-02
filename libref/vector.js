@@ -107,7 +107,7 @@ vecN.norm = function (v, setNorm) {
     }
 };
 vecN.dot = function (a, b) {
-    var dims = max(a.components.length, b.components.length);
+    var dims = Math.max(a.components.length, b.components.length);
     var ret = 0;
     for (var i = 0; i < dims; i++) {
         var fa = 0;
@@ -119,7 +119,7 @@ vecN.dot = function (a, b) {
     return ret;
 };
 vecN.sum = function (a, b) {
-    var dims = max(a.components.length, b.components.length);
+    var dims = Math.max(a.components.length, b.components.length);
     var ary = [dims];
     for (var i = 0; i < dims; i++) {
         var fa = 0;
@@ -131,7 +131,7 @@ vecN.sum = function (a, b) {
     return new vecN(...ary);
 };
 vecN.diff = function (a, b) {
-    var dims = max(a.components.length, b.components.length);
+    var dims = Math.max(a.components.length, b.components.length);
     var ary = [dims];
     for (var i = 0; i < dims; i++) {
         var fa = 0;
@@ -151,7 +151,7 @@ vecN.dist = function (a, b) {
     return ret ** 0.5;
 };
 vecN.product = function (a, b) {
-    var dims = max(a.components.length, b.components.length);
+    var dims = Math.max(a.components.length, b.components.length);
     var ary = [dims];
     for (var i = 0; i < dims; i++) {
         var fa = 0;
@@ -219,7 +219,7 @@ boxN.center = function (b, setCenter) {
     }
 };
 boxN.prototype.coInsides = function (b) {
-    var dims = max(this.Min.components.length, this.Max.components.length, b.Min.components.length, b.Max.components.length);
+    var dims = Math.max(this.Min.components.length, this.Max.components.length, b.Min.components.length, b.Max.components.length);
     var bolRet = true;
     for (var di = 0; di < dims; di++) {
         var v1min = vecN.cN(this.Min, di); var v1max = vecN.cN(this.Max, di);
@@ -232,7 +232,7 @@ boxN.prototype.coInsides = function (b) {
     return bolRet;
 };
 boxN.prototype.containsVec = function (p) {
-    var dims = max(this.Min.components.length, this.Max.components.length, b.Min.components.length, b.Max.components.length);
+    var dims = Math.max(this.Min.components.length, this.Max.components.length, b.Min.components.length, b.Max.components.length);
     var bolRet = true;
     for (var di = 0; di < dims; di++) {
         var pn = vecN.cN(p, di);
@@ -245,7 +245,7 @@ boxN.prototype.containsVec = function (p) {
     return bolRet;
 };
 boxN.intersects = function (a, b) {
-    var dims = max(a.Min.components.length, a.Max.components.length, b.Min.components.length, b.Max.components.length);
+    var dims = Math.max(a.Min.components.length, a.Max.components.length, b.Min.components.length, b.Max.components.length);
     var bolRet = true;
     for (var di = 0; di < dims; di++) {
         var v1min = vecN.cN(a.Min, di); var v1max = vecN.cN(a.Max, di);
@@ -258,7 +258,7 @@ boxN.intersects = function (a, b) {
     return bolRet;
 };
 boxN.intersection = function (a, b) {
-    var dims = max(a.Min.components.length, a.Max.components.length, b.Min.components.length, b.Max.components.length);
+    var dims = Math.max(a.Min.components.length, a.Max.components.length, b.Min.components.length, b.Max.components.length);
     var vecRet = new boxN();
     for (var di = 0; di < dims; di++) {
         var v1min = vecN.cN(a.Min, di); var v1max = vecN.cN(a.Max, di);

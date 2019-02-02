@@ -1,7 +1,6 @@
 function plotArea2D(parent)
 {
     this.ParentElement = parent;
-    this.DrawContext = parent.getContext("2d");
 	this.uvX = 0;
 	this.uvY = 0;
 	this.uvWidth = 1;
@@ -17,7 +16,21 @@ function logab(a, x) { return (log(x))/(log(a));}
 function sign(x) { if(x > 0) {return 1;} else if (x < 0) { return -1;} else {return 0;} }
 function RectToPolar(pos) { let retAng = atan2(pos.Y, pos.X); 
 							if (retAng < 0) { retAng += TAU * (int(abs(retAng) / TAU) + 1); }
-							return {Dist: sqrt(pos.X*pos.X + pos.Y*pos.Y), Ang: retAng}; }
+                            return {Dist: sqrt(pos.X*pos.X + pos.Y*pos.Y), Ang: retAng}; }
+                            
+Object.defineProperty(plotArea2D.prototype, "ParentElement", {
+    get: function getParent() { 
+        return (this.elemParent) ? (this.elemParent) : (document.body);
+    }, 
+    set: function setParent(value) {
+        this.elemParent = value;
+        if(this.elemParent) {
+            if(this.elemParent.getContext) {
+                this.DrawContext = this.elemParent.getContext("2d");
+            }
+        }
+    }
+});
 
 plotArea2D.prototype.X = function (setX) {
     if (typeof (setX) === 'undefined') {
@@ -294,9 +307,6 @@ plotArea2D.prototype.ContainsMousePointer = function () {
 plotArea2D.prototype.RectFnxContainsMousePointer = function (fnx, thickness, OnMousePointerOnCurve) {
     if (!(typeof (fnx) === 'function')) return false;
     let bolRet = false;
-    let areaPlot = this.PlotArea();
-    let posThis = this.Pos();
-    let sizeThis = this.Size();
     let resUnit = this.ClientUnitToPlotUnit();
     let plotPointer = this.PlotMousePointer();
     let pointerFy = fnx(plotPointer.X);
@@ -330,8 +340,6 @@ plotArea2D.prototype.DrawLine = function (x1, y1, x2, y2, bolClip) {
     if(bolClip) this.EndClipping();
 };
 plotArea2D.prototype.DrawEllipse = function (x1, y1, x2, y2, bolClip) {
-    //let x = (x2 + x1) * 0.5, y = (y2 + y1) * 0.5;
-    //let rx = Math.abs(x2 - x1), ry = Math.abs(y2 + y1);
     let x = x1, y = y1;
     let rx = Math.abs(x2), ry = Math.abs(y2);
     if(bolClip) this.BeginClipping();

@@ -6,6 +6,7 @@
 			body {
 				display: flex;
 				flex-direction:column;
+				align-items:stretch;
 				width: 100% - 16px;
 				height: 100% - 16px;
 				overflow: hidden;
@@ -40,23 +41,16 @@
 			div.head {
 				display: flex;
 				flex-direction:column;
-				height: 30%;
+				align-items:stretch;
+				flex: 1;
 			}
 			div.content {
 				flex: 1;
-				height: 70%;
+				height: 100%;
 			}
 			div#graph {
-				flex: 1;
-				width: 100% - 8px;
-				height: 100% - 8px;
+				flex: 3;
 				border: solid;
-			}
-			div#graph canvas {
-				position:relative;
-				display: block;
-				width: 100%;
-				height: 60%;
 			}
 			.scrolls {
 				overflow: auto;
@@ -67,11 +61,22 @@
 		<script src="../libref/vector.js"></script> 
 		<script>
 			var plotterGraph;
+			var pTouches;
 			function onload(e) {
-				let img = document.getElementById("imgGraph");
-				if(img) {
-					plotterGraph = new plotArea2D(img);
+				let imgGraph = null;
+				let divGraph = document.getElementById("graph");
+				if(divGraph) {
+					imgGraph = document.createElement("canvas");
+					imgGraph.id = "imgGraph";
+					imgGraph.style.touchAction = "none";
+					imgGraph.onmousemove=graph_onmousemove; 
+					imgGraph.onmousewheel=graph_onmousewheel;
+					imgGraph.addEventListener("touchstart", graph_ontouchstart);
+					imgGraph.addEventListener("touchmove",graph_ontouchmove);
+					document.body.appendChild(imgGraph);
+					graph_resize();
 				}
+				plotterGraph = new plotArea2D(imgGraph);
 			}
 			function onresize(e) {
 				let sz = {width:e.target.innerWidth, 
@@ -80,15 +85,14 @@
 				let divContent = document.getElementById("divContent");
 				if(sz.width >= sz.height) {
 					document.body.style.flexDirection = "row";
-					divHead.style.width = "50%";
-					divHead.style.height = "50%";
-					divContent.style.height = "100%";
+					divHead.style.flex = 2;
+					divContent.style.flex = 1;
 				} else {
 					document.body.style.flexDirection = "column";
-					divHead.style.width = "100%";
-					divHead.style.height = "30%";
-					divContent.style.height = "70%";
+					divHead.style.flex = 1;
+					divContent.style.flex = 1;
 				}
+				graph_resize();
 			}
 			function number_onchange(e) {
 				if (!e) return;
@@ -162,10 +166,60 @@
 			}
 			function graph_onmousemove(e) {
 				if(e.buttons != 0) {
-					MovePlotCenter(plotterGraph, {X:e.movementX, Y:e.movementY*6});
+					MovePlotCenter(plotterGraph, {X:e.movementX, Y:e.movementY});
 					graph_Redraw(plotterGraph);
 				}
 			}
+			function graph_onmousewheel(e) {
+				var sz = plotterGraph.PlotSize();
+				var rescale = 1.025**Math.sign(e.wheelDelta);
+				var cp = plotterGraph.MapClientToPlot({X:e.clientX, Y:e.clientY});
+				plotterGraph.PlotSizeOnPos({Width:sz.Width * rescale, Height:sz.Height * rescale}, cp);
+				graph_Redraw(plotterGraph);
+				return false;
+			}
+			function graph_ontouchstart(e) {
+				pTouches = e.touches;
+				return true;
+			}
+			function graph_ontouchmove(e) {
+				var aryTouches = e.touches;
+				var arypTouches = pTouches;
+				if(aryTouches.length > 1) {
+					var sz = plotterGraph.PlotSize();
+					var t1 = new vecN(aryTouches[0].clientX, aryTouches[0].clientY);
+					var t2 = new vecN(aryTouches[1].clientX, aryTouches[1].clientY);
+					var diff1 = vecN.dist(t1, t2);
+					t1 = new vecN(arypTouches[0].clientX, arypTouches[0].clientY);
+					t2 = new vecN(arypTouches[1].clientX, arypTouches[1].clientY);
+					var diff2 = vecN.dist(t1, t2);
+					var rescale = diff2/diff1;
+					var midpt = plotterGraph.MapClientToPlot(vecN.scale(vecN.sum(t1, t2), 0.5));
+					plotterGraph.PlotSizeOnPos({Width:sz.Width * rescale, Height:sz.Height * rescale}, midpt);
+				} else if (aryTouches.length == 1) {
+					let mmov = {X:aryTouches[0].clientX - arypTouches[0].clientX, 
+								Y:aryTouches[0].clientY - arypTouches[0].clientY};
+					MovePlotCenter(plotterGraph, mmov);
+				}
+				graph_Redraw(plotterGraph);
+				pTouches = aryTouches;
+				return false;
+			}
+			function graph_resize() {
+				let elem = document.getElementById("graph");
+				if(!elem) return;
+				let img = document.getElementById("imgGraph");
+				if(!img) return;
+				img.style.position = "absolute";
+				img.style.left = elem.offsetLeft;
+				img.style.top = elem.offsetTop;
+				img.width = elem.clientWidth;
+				img.height = elem.clientHeight;
+				imgGraph.style.width = imgGraph.width;
+				imgGraph.style.height = imgGraph.height;
+				graph_Redraw(plotterGraph);	
+			}
+
 			function graph_Redraw(plotter) {
 				if(!plotter) return;
 				if(!plotter.DrawContext) return;
@@ -174,7 +228,7 @@
 				if(!elemNum) return;
 				let num = Number.parseInt(elemNum.value);
 				if(Number.isNaN(num)) return;
-				plotter.DrawCurve_RectFnx(x => (num % x), "#ccff80", 2, 2048);
+				plotter.DrawCurve_RectFnx(x => (num % (Math.floor(x*1)/1)), "#ccff80", 2, 1024);
 			}
 			function MovePlotCenter(graph, mov) {
 				var clU = graph.ClientUnitToPlotUnit();
@@ -197,8 +251,8 @@
 					<input type="text" id="txtNumber" onchange="number_onchange(event)" />
 				</div>
 			</div>
-			<div id="graph"><canvas id="imgGraph" width=1024 height=768 onmousemove="graph_onmousemove(event)"></canvas></div>
-			<div style="flex:1">
+			<div id="graph"></canvas></div>
+			<div>
 				<div id="divProgress" class="progress"><div id="divProgressBar" class="progressbar"></div></div>
 			</div>
 		</div>
