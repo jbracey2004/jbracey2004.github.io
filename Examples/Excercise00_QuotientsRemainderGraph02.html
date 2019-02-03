@@ -79,6 +79,7 @@
 				plotterGraph = new plotArea2D(imgGraph);
 			}
 			function onresize(e) {
+				layout_onresize()
 				let sz = {width:e.target.innerWidth, 
 						height:e.target.innerHeight};
 				let divHead = document.getElementById("divHead");
@@ -93,6 +94,9 @@
 					divContent.style.flex = 1;
 				}
 				graph_resize();
+			}
+			function layout_onresize(sz) {
+
 			}
 			function number_onchange(e) {
 				if (!e) return;
@@ -109,7 +113,7 @@
 				if (!Number.isNaN(num)) {
 					plotterGraph.PlotArea({Min:{X:0, Y:num}, Max:{X:num, Y:0}});
 				}
-				graph_Redraw(plotterGraph);
+				requestAnimationFrame(onanimation);
 				let elemProgressBar = document.getElementById("divProgressBar");
 				let ret =  asyc_tableAddQuotients(elemTable, e.target.value, elemProgressBar);
 				return ret;
@@ -167,7 +171,7 @@
 			function graph_onmousemove(e) {
 				if(e.buttons != 0) {
 					MovePlotCenter(plotterGraph, {X:e.movementX, Y:e.movementY});
-					graph_Redraw(plotterGraph);
+					requestAnimationFrame(onanimation);
 				}
 			}
 			function graph_onmousewheel(e) {
@@ -175,7 +179,7 @@
 				var rescale = 1.025**Math.sign(e.wheelDelta);
 				var cp = plotterGraph.MapClientToPlot({X:e.clientX, Y:e.clientY});
 				plotterGraph.PlotSizeOnPos({Width:sz.Width * rescale, Height:sz.Height * rescale}, cp);
-				graph_Redraw(plotterGraph);
+				requestAnimationFrame(onanimation);
 				return false;
 			}
 			function graph_ontouchstart(e) {
@@ -201,7 +205,7 @@
 								Y:aryTouches[0].clientY - arypTouches[0].clientY};
 					MovePlotCenter(plotterGraph, mmov);
 				}
-				graph_Redraw(plotterGraph);
+				requestAnimationFrame(onanimation);
 				pTouches = aryTouches;
 				return false;
 			}
@@ -217,7 +221,7 @@
 				img.height = elem.clientHeight;
 				imgGraph.style.width = imgGraph.width;
 				imgGraph.style.height = imgGraph.height;
-				graph_Redraw(plotterGraph);	
+				requestAnimationFrame(onanimation);
 			}
 
 			function graph_Redraw(plotter) {
@@ -228,7 +232,7 @@
 				if(!elemNum) return;
 				let num = Number.parseInt(elemNum.value);
 				if(Number.isNaN(num)) return;
-				plotter.DrawCurve_RectFnx(x => (num % (Math.floor(x*1)/1)), "#ccff80", 2, 1024);
+				plotter.DrawCurve_RectFnx(x => (num % (Math.ceil(x*1)/1)), "#ccff80", 2, 1024);
 			}
 			function MovePlotCenter(graph, mov) {
 				var clU = graph.ClientUnitToPlotUnit();
@@ -237,6 +241,10 @@
 				posCenterNew.X -= posCenterMove.X;
 				posCenterNew.Y -= posCenterMove.Y;
 				graph.PlotPosCenter(posCenterNew);
+			}
+
+			function onanimation() {
+				graph_Redraw(plotterGraph);	
 			}
 		</script>
 	</head>

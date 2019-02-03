@@ -478,13 +478,10 @@ plotArea2D.prototype.DrawCurve_RectFnx = function (fnx, color, thickness, sample
 };
 plotArea2D.prototype.DrawCurve_ParmetricFnx = function (fxnt, color, thickness, tStart, tEnd, tSamples) {
     if (!(typeof (fxnt) === 'function')) return 0;
-    let areaPlot = this.PlotArea();
-    let posThis = this.Pos();
-    let sizeThis = this.Size();
     let resSample = (tEnd - tStart) / tSamples;
-    this.BeginClipping();
     this.DrawContext.strokeStyle = color;
     this.DrawContext.lineWidth = thickness;
+    this.BeginClipping();
     this.DrawContext.beginPath();
     let bolBegin = true;
     for (let Ti = tStart, Ni = 0; Ni <= tSamples; Ti += resSample, Ni++) {
@@ -505,24 +502,20 @@ plotArea2D.prototype.DrawClipped = function (sub) {
     this.EndClipping();
 };
 plotArea2D.prototype.BeginClipping = function () {
-    let parent = this.ParentElement;
-    if (typeof (parent) === 'undefined') { return false; }
-    let contextDraw2D = parent.getContext("2d");
-    if (typeof (contextDraw2D) === 'undefined') { return false; }
+    if (this.isClipping) return false;
+    if (!this.DrawContext) return false;
     let areaClient = this.ClientArea();
-    contextDraw2D.save();
-    contextDraw2D.rect(areaClient.Min.X, areaClient.Min.Y, areaClient.Size.Width, areaClient.Size.Height);
-    contextDraw2D.clip();
+    this.DrawContext.save();
+    this.DrawContext.beginPath();
+    this.DrawContext.rect(areaClient.Min.X, areaClient.Min.Y, areaClient.Size.Width, areaClient.Size.Height);
+    this.DrawContext.clip();
     this.isClipping = true;
     return true;
 };
 plotArea2D.prototype.EndClipping = function () {
-    if (!this.isClipping) { return false; }
-    let parent = this.ParentElement;
-    if (typeof (parent) === 'undefined') { return false; }
-    let contextDraw2D = parent.getContext("2d");
-    if (typeof (contextDraw2D) === 'undefined') { return false; }
-    contextDraw2D.restore();
+    if (!this.isClipping) return false;
+    if (!this.DrawContext) return false;
+    this.DrawContext.restore();
     this.isClipping = false;
     return true;
 };
