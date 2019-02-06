@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=4.0"/>
+		<style>
+			body {
+				position: absolute;
+				margin: 0px;
+				width: calc(100% - 20px);
+				height: calc(100% - 20px);
+			}
+			
+			.item1 { grid-area: header; }
+			.item2 { grid-area: menu; }
+			.item3 { grid-area: main; }
+			.item4 { grid-area: right; }
+			.item5 { grid-area: footer; }
+
+			.grid-container {
+				display: inline-grid;
+				grid-template-areas:
+					'header header header'
+					'menu main right'
+					'menu footer footer';
+				grid-template-rows: repeat(3, 1fr);
+				grid-gap: 10px;
+				background-color: #0A16F3;
+				padding: 10px;
+				width: calc(100%);
+				height: calc(100%);
+			}
+			.grid-container > div {
+				background-color: rgba(128, 128, 128, 0.5);
+				text-align: center;
+				padding: 20px 0;
+				font-size: 30px;
+			}
+		</style>
+		<script>
+		
+		</script>
+	</head>
+	<body>
+		<div class="grid-container">
+			<div class="item1">Header</div>
+			<div class="item2">Menu</div>
+			<div class="item3">Main</div>  
+			<div class="item4">Right</div>
+			<div class="item5">Footer</div> 
+		</div>
+	</body>
+</html>
