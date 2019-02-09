@@ -7,45 +7,37 @@
 				overflow: hidden;
 				padding: 4px;
 			}
-			table.quotients {
-				border:solid;
-			}
-			table.quotients tr td {
-				border:solid thin;
-			}
-			table.quotients tr.divisible td {
-				background-color:#0000cc80;
-			}
-			table.quotients tr.identity td {
-				background-color:#00600080;
-			}
+			table.quotients { border:solid; }
+			table.quotients tr td { border:solid thin; }
+			table.quotients tr.divisible td { background-color:#0000cc80; }
+			table.quotients tr.identity td { background-color:#00600080; }
 			#divMain {
 				overflow: hidden;
 				width: 100%;
 				height: 100%;
 				background-color: #202020;
 			}
-			#divMain * {
-				color: #ffffff;
-			}
-			#divMain input {
-				background-color: #ffffff20;
-			}
+			#divMain * { color: #ffffff; }
+			#divMain input { background-color: #ffffff20; }
 			#divMain.layoutPortrait {
 				display: grid;
+				grid-template-columns: 100%;
+				grid-template-rows: 40% 60%;
+				grid-template-areas: 
+					'areaInput'
+					'areaOutput';
 			}
 			#divMain.layoutLandscape {
 				display: grid;
+				grid-template-columns: 60% 40%;
+				grid-template-rows: 100%;
+				grid-template-areas: 
+					'areaInput areaOutput';
 			}
-			
-			#graph {
-				width: 100%;
-				height: 100%;
-			}
-
 			.progress {
+				grid-area: areaProgress;
 				display:none;
-				width:auto;
+				width:100%;
 				height:16px;
 				border:solid #fff;
 				background-color:#000;
@@ -55,6 +47,21 @@
 				height:100%;
 				background-color:#2040ff;
 			}
+			.clsInput { 
+				grid-area: areaInput; 
+				display: grid;
+				grid-template-columns: 100%;
+				grid-template-rows: auto auto 1fr auto;
+				grid-template-areas: 
+					'areaTitle'
+					'areaUsr'
+					'areaGraph'
+					'areaProgress';
+			}
+			.clsTitle { grid-area: areaTitle; }
+			.clsUsr { grid-area: areaUsr; }
+			.clsGraph { grid-area: areaGraph; }
+			.clsOutput { grid-area: areaOutput; }
 		</style>
 		<script src="../libref/plotter.js"></script>
 		<script src="../libref/spline.js"></script>
@@ -69,15 +76,16 @@
 					imgGraph = document.createElement("canvas");
 					imgGraph.id = "imgGraph";
 					imgGraph.style.touchAction = "none";
-					imgGraph.onmousemove=graph_onmousemove; 
-					imgGraph.onmousewheel=graph_onmousewheel;
+					imgGraph.onmousemove = graph_onmousemove; 
+					imgGraph.onwheel = graph_onmousewheel;
 					imgGraph.addEventListener("touchstart", graph_ontouchstart);
-					imgGraph.addEventListener("touchmove",graph_ontouchmove);
-					divGraph.appendChild(imgGraph);
-					graph_resize();
+					imgGraph.addEventListener("touchmove", graph_ontouchmove);
+					//divGraph.appendChild(imgGraph);
+					document.body.appendChild(imgGraph);
 				}
 				plotterGraph = new plotArea2D(imgGraph);
 				layout_onresize();
+				graph_resize();
 			}
 			function onresize(e) {
 				layout_onresize();
@@ -170,7 +178,7 @@
 			}
 			function graph_onmousewheel(e) {
 				var sz = plotterGraph.PlotSize();
-				var rescale = 1.025**Math.sign(e.wheelDelta);
+				var rescale = 1.025**Math.sign(e.deltaY);
 				var cp = plotterGraph.MapClientToPlot({X:e.clientX, Y:e.clientY});
 				plotterGraph.PlotSizeOnPos({Width:sz.Width * rescale, Height:sz.Height * rescale}, cp);
 				requestAnimationFrame(onanimation);
@@ -191,7 +199,7 @@
 					t1 = new vecN(arypTouches[0].clientX, arypTouches[0].clientY);
 					t2 = new vecN(arypTouches[1].clientX, arypTouches[1].clientY);
 					var diff2 = vecN.dist(t1, t2);
-					var rescale = diff2/diff1;
+					//var rescale = diff2/diff1;
 					var midpt = plotterGraph.MapClientToPlot(vecN.scale(vecN.sum(t1, t2), 0.5));
 					plotterGraph.PlotSizeOnPos({Width:sz.Width * rescale, Height:sz.Height * rescale}, midpt);
 				} else if (aryTouches.length == 1) {
@@ -208,8 +216,11 @@
 				if(!elem) return;
 				let img = document.getElementById("imgGraph");
 				if(!img) return;
+				img.style.position = "absolute";
 				img.width = elem.clientWidth;
 				img.height = elem.clientHeight;
+				img.style.left = elem.offsetLeft;
+				img.style.top = elem.offsetTop;
 				img.style.width = img.width;
 				img.style.height = img.height;
 				requestAnimationFrame(onanimation);
@@ -218,11 +229,20 @@
 			function graph_Redraw(plotter) {
 				if(!plotter) return;
 				if(!plotter.DrawContext) return;
-				plotter.DrawContext.clearRect(0, 0, plotter.DrawContext.canvas.width, plotter.DrawContext.canvas.height);
+				//plotter.DrawContext.clearRect(0, 0, plotter.DrawContext.canvas.width, plotter.DrawContext.canvas.height);
+				plotter.Fill("#102010");
 				let elemNum = document.getElementById("txtNumber");
 				if(!elemNum) return;
 				let num = Number.parseInt(elemNum.value);
 				if(Number.isNaN(num)) return;
+				let sz = plotter.PlotSize();
+				let mid = plotter.PlotPosCenter();
+				if(sz.Width > num) { plotter.PlotMinX = mid.X - (num*0.5); plotter.PlotMaxX = mid.X + (num*0.5); }
+				if(sz.Height < -num) { plotter.PlotMinY = mid.Y + (num*0.5); plotter.PlotMaxY = mid.Y - (num*0.5); }
+				if(plotter.PlotMinX < 0 ) {let corr = -plotter.PlotMinX; plotter.PlotMinX += corr; plotter.PlotMaxX += corr;}
+				if(plotter.PlotMaxX > num ) {let corr = num - plotter.PlotMaxX; plotter.PlotMinX += corr; plotter.PlotMaxX += corr;}
+				if(plotter.PlotMaxY < 0 ) {let corr = -plotter.PlotMaxY; plotter.PlotMinY += corr; plotter.PlotMaxY += corr;}
+				if(plotter.PlotMinY > num ) {let corr = -plotter.PlotMaxY; plotter.PlotMinY += corr; plotter.PlotMaxY += corr;}
 				plotter.DrawCurve_RectFnx(x => (num % (Math.ceil(x*1)/1)), "#ccff80", 2, 1024);
 			}
 			function MovePlotCenter(graph, mov) {
@@ -241,18 +261,18 @@
 	</head>
 	<body onload="onload(event)" onresize="onresize(event)">
 		<div id="divMain">
-			<div id="divInput">
-				<div id="divTitle">
+			<div id="divInput" class="clsInput">
+				<div id="divTitle" class="clsTitle">
 					<h1>Remainder Graph</h1>
 				</div>
-				<div id="divUsr">
+				<div id="divUsr" class="clsUsr">
 					<label for="txtNumber">Number</label>
 					<input type="text" id="txtNumber" value="" oninput="number_onchange(event)" />
 				</div>
-				<div id="graph"></div>
+				<div id="graph" class="clsGraph"></div>
 				<div id="divProgress" class="progress"><div id="divProgressBar" class="progressbar"></div></div>
 			</div>
-			<div id="divOutput">
+			<div id="divOutput" class="clsOutput">
 				<div id="divQuotients"></div>
 			</div>
 		</div>
