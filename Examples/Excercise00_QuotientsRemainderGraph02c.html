@@ -5,12 +5,8 @@
 		<style>
 			body {
 				overflow: hidden;
-				padding: 4px;
+				padding: 1px;
 			}
-			table.quotients { border:solid; }
-			table.quotients tr td { border:solid thin; }
-			table.quotients tr.divisible td { background-color:#0000cc80; }
-			table.quotients tr.identity td { background-color:#00600080; }
 			#divMain {
 				overflow: hidden;
 				width: 100%;
@@ -34,6 +30,39 @@
 				grid-template-areas: 
 					'areaInput areaOutput';
 			}
+			.clsInput { 
+				grid-area: areaInput; 
+				display: grid;
+				grid-template-columns: 100%;
+				grid-template-rows: auto auto 1fr auto;
+				grid-template-areas: 
+					'areaTitle'
+					'areaUsr'
+					'areaGraph'
+					'areaProgress';
+			}
+			.clsOutput {
+				grid-area: areaOutput;
+				display: grid;
+				grid-template-columns: auto;
+				grid-template-rows: 100%;
+				justify-items: start;
+				grid-template-areas:
+					'areaQuotients';
+			}
+			.clsTitle { grid-area: areaTitle; }
+			.clsUsr { grid-area: areaUsr; }
+			.clsGraph { grid-area: areaGraph; }
+			.clsOutput { grid-area: areaOutput; }
+			.clsQuotients { 
+				grid-area: areaQuotients;
+				min-width: 40%;
+				overflow: auto; 
+			}
+			table.quotients { border:solid; }
+			table.quotients tr td { border:solid thin; }
+			table.quotients tr.divisible td { background-color:#0000cc80; }
+			table.quotients tr.identity td { background-color:#00600080; }
 			.progress {
 				grid-area: areaProgress;
 				display:none;
@@ -47,21 +76,6 @@
 				height:100%;
 				background-color:#2040ff;
 			}
-			.clsInput { 
-				grid-area: areaInput; 
-				display: grid;
-				grid-template-columns: 100%;
-				grid-template-rows: auto auto 1fr auto;
-				grid-template-areas: 
-					'areaTitle'
-					'areaUsr'
-					'areaGraph'
-					'areaProgress';
-			}
-			.clsTitle { grid-area: areaTitle; }
-			.clsUsr { grid-area: areaUsr; }
-			.clsGraph { grid-area: areaGraph; }
-			.clsOutput { grid-area: areaOutput; }
 		</style>
 		<script src="../libref/plotter.js"></script>
 		<script src="../libref/spline.js"></script>
@@ -195,13 +209,14 @@
 					var sz = plotterGraph.PlotSize();
 					var t1 = new vecN(aryTouches[0].clientX, aryTouches[0].clientY);
 					var t2 = new vecN(aryTouches[1].clientX, aryTouches[1].clientY);
-					var diff1 = vecN.dist(t1, t2);
+					var diff1 = {X:Math.abs(t2.X - t1.X), Y:Math.abs(t2.Y - t1.Y)};
 					t1 = new vecN(arypTouches[0].clientX, arypTouches[0].clientY);
 					t2 = new vecN(arypTouches[1].clientX, arypTouches[1].clientY);
-					var diff2 = vecN.dist(t1, t2);
-					//var rescale = diff2/diff1;
+					var diff2 = {X:Math.abs(t2.X - t1.X), Y:Math.abs(t2.Y - t1.Y)};
 					var midpt = plotterGraph.MapClientToPlot(vecN.scale(vecN.sum(t1, t2), 0.5));
-					plotterGraph.PlotSizeOnPos({Width:sz.Width * rescale, Height:sz.Height * rescale}, midpt);
+					var rescale = {X:Math.max(1,diff2.X) / Math.max(1,diff1.X), Y:Math.max(1,diff2.Y) / Math.max(1,diff1.Y)};
+					console.log(diff1, diff2, rescale);
+					plotterGraph.PlotSizeOnPos({Width:sz.Width * (rescale.X), Height:sz.Height * (rescale.Y)}, midpt);
 				} else if (aryTouches.length == 1) {
 					let mmov = {X:aryTouches[0].clientX - arypTouches[0].clientX, 
 								Y:aryTouches[0].clientY - arypTouches[0].clientY};
@@ -230,19 +245,12 @@
 				if(!plotter) return;
 				if(!plotter.DrawContext) return;
 				//plotter.DrawContext.clearRect(0, 0, plotter.DrawContext.canvas.width, plotter.DrawContext.canvas.height);
-				plotter.Fill("#102010");
+				plotter.Fill("#202820");
 				let elemNum = document.getElementById("txtNumber");
 				if(!elemNum) return;
 				let num = Number.parseInt(elemNum.value);
 				if(Number.isNaN(num)) return;
-				let sz = plotter.PlotSize();
-				let mid = plotter.PlotPosCenter();
-				if(sz.Width > num) { plotter.PlotMinX = mid.X - (num*0.5); plotter.PlotMaxX = mid.X + (num*0.5); }
-				if(sz.Height < -num) { plotter.PlotMinY = mid.Y + (num*0.5); plotter.PlotMaxY = mid.Y - (num*0.5); }
-				if(plotter.PlotMinX < 0 ) {let corr = -plotter.PlotMinX; plotter.PlotMinX += corr; plotter.PlotMaxX += corr;}
-				if(plotter.PlotMaxX > num ) {let corr = num - plotter.PlotMaxX; plotter.PlotMinX += corr; plotter.PlotMaxX += corr;}
-				if(plotter.PlotMaxY < 0 ) {let corr = -plotter.PlotMaxY; plotter.PlotMinY += corr; plotter.PlotMaxY += corr;}
-				if(plotter.PlotMinY > num ) {let corr = -plotter.PlotMaxY; plotter.PlotMinY += corr; plotter.PlotMaxY += corr;}
+				plotter.PlotArea_Constrict({Min:{X:0, Y:num}, Max:{X:num, Y:0}});
 				plotter.DrawCurve_RectFnx(x => (num % (Math.ceil(x*1)/1)), "#ccff80", 2, 1024);
 			}
 			function MovePlotCenter(graph, mov) {
@@ -273,7 +281,7 @@
 				<div id="divProgress" class="progress"><div id="divProgressBar" class="progressbar"></div></div>
 			</div>
 			<div id="divOutput" class="clsOutput">
-				<div id="divQuotients"></div>
+				<div id="divQuotients" class="clsQuotients"></div>
 			</div>
 		</div>
 	</body>

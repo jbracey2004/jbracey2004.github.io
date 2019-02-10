@@ -250,6 +250,21 @@ plotArea2D.prototype.PlotSize = function (setSize) {
         return this.PlotArea();
     }
 };
+plotArea2D.prototype.PlotArea_Constrict = function (restrictBox) {
+    restrictBox.Size = {X:restrictBox.Max.X - restrictBox.Min.X, Y:restrictBox.Max.Y - restrictBox.Min.Y};
+    let Rsigns = {X:Math.sign(restrictBox.Size.X), Y:Math.sign(restrictBox.Size.Y)};
+    let Rstrc = {Min:{X:Rsigns.X*restrictBox.Min.X, Y:Rsigns.Y*restrictBox.Min.Y}, 
+                 Max:{X:Rsigns.X*restrictBox.Max.X, Y:Rsigns.Y*restrictBox.Max.Y}};
+    let sz = this.PlotSize();
+    let mid = this.PlotPosCenter();
+    if(Math.abs(sz.Width) > Math.abs(restrictBox.Size.X)) { this.PlotMinX = mid.X - (restrictBox.Size.X*0.5); this.PlotMaxX = mid.X + (restrictBox.Size.X*0.5); }
+    if(Math.abs(sz.Height) > Math.abs(restrictBox.Size.Y)) { this.PlotMinY = mid.Y - (restrictBox.Size.Y*0.5); this.PlotMaxY = mid.Y + (restrictBox.Size.Y*0.5); }
+    if(Rsigns.X*this.PlotMinX < Rstrc.Min.X) { let corr = Rsigns.X*(Rstrc.Min.X-Rsigns.X*this.PlotMinX); this.PlotMinX += corr; this.PlotMaxX += corr; }
+    if(Rsigns.X*this.PlotMaxX > Rstrc.Max.X) { let corr = Rsigns.X*(Rstrc.Max.X-Rsigns.X*this.PlotMaxX); this.PlotMinX += corr; this.PlotMaxX += corr; }
+    if(Rsigns.Y*this.PlotMinY < Rstrc.Min.Y) { let corr = Rsigns.Y*(Rstrc.Min.Y-Rsigns.Y*this.PlotMinY); this.PlotMinY += corr; this.PlotMaxY += corr; }
+    if(Rsigns.Y*this.PlotMaxY > Rstrc.Max.Y) { let corr = Rsigns.Y*(Rstrc.Max.Y-Rsigns.Y*this.PlotMaxY); this.PlotMinY += corr; this.PlotMaxY += corr; }
+    return true;
+};
 
 plotArea2D.prototype.MapUVToPosUV = function (UV) {
     return { X: this.uvX + UV.X * this.uvWidth, Y: this.uvY + UV.Y * this.uvHeight };
@@ -414,7 +429,6 @@ plotArea2D.prototype.DrawGrid_Polar = function (color, thickness, gridLength, se
     }
     this.EndClipping();
 };
-let intpItr;
 plotArea2D.prototype.DrawAxis = function (colorAxis, colorMarks, thickness, axisMarkLength, gridLength) {
     let areaPlot = this.PlotArea();
     let gridCount = { X: 1 + abs(areaPlot.Size.Width / gridLength.X), Y: 1 + abs(areaPlot.Size.Height / gridLength.Y) };
