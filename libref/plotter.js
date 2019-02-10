@@ -502,7 +502,8 @@ plotArea2D.prototype.DrawCurve_ParmetricFnx = function (fxnt, color, thickness, 
         let valXY = fxnt(Ti);
         let PosI = this.MapPlotToClient({ X: valXY.X, Y: valXY.Y });
         if(bolBegin) {
-            this.DrawContext.moveTo(PosI.X, PosI.Y);
+			this.DrawContext.moveTo(PosI.X, PosI.Y);
+			bolBegin = false;
         } else {
             this.DrawContext.lineTo(PosI.X, PosI.Y);
         }
