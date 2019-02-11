@@ -3,31 +3,31 @@ var v_Y = 1;
 var v_Z = 2;
 var v_W = 3;
 function vecN() {
-	this.__proto__ = vecN.__proto__;
+	this.prototype = vecN.prototype;
 	this.components = new Array(...arguments);
 }
 function vec2(_x, _y) { vecN.call(this, _x, _y); }
 function vec3(_x, _y, _z) { vecN.call(this, _x, _y, _z); }
 function vec4(_x, _y, _z, _w) { vecN.call(this, _x, _y, _z, _w); }
-Object.defineProperty(vecN.__proto__, "X", {
+Object.defineProperty(vecN.prototype, "X", {
 	get: function getX() { return vecN.cX(this); }, set: function setX(value) { vecN.cX(this, value); }
 });
-Object.defineProperty(vecN.__proto__, "Y", {
+Object.defineProperty(vecN.prototype, "Y", {
 	get: function getY() { return vecN.cY(this); }, set: function setY(value) { vecN.cY(this, value); }
 });
-Object.defineProperty(vecN.__proto__, "Z", {
+Object.defineProperty(vecN.prototype, "Z", {
 	get: function getZ() { return vecN.cZ(this); }, set: function setZ(value) { vecN.cZ(this, value); }
 });
-Object.defineProperty(vecN.__proto__, "W", {
+Object.defineProperty(vecN.prototype, "W", {
 	get: function getW() { return vecN.cW(this); }, set: function setW(value) { vecN.cW(this, value); }
 });
-Object.defineProperty(vecN.__proto__, "Norm", {
+Object.defineProperty(vecN.prototype, "Norm", {
 	get: function getNorm() { return vecN.norm(this); }, set: function setNorm(value) { vecN.norm(this, value); }
 });
-Object.defineProperty(vecN.__proto__, "Mag", {
+Object.defineProperty(vecN.prototype, "Mag", {
 	get: function getMag() { return vecN.mag(this); }, set: function setMag(value) { vecN.mag(this, value); }
 });
-Object.defineProperty(vecN.__proto__, "Dimensions", {
+Object.defineProperty(vecN.prototype, "Dimensions", {
 	get: function getDimensions() { return vecN.dimLen(this); }, set: function setDimensions(value) { vecN.dimLen(this, value); }
 });
 vecN.cN = function (v, idxComponent, setValue) {
@@ -190,14 +190,14 @@ vec3.cross = function (a, b) {
 };
 
 function boxN(_min, _max) {
-	this.__proto__ = boxN.__proto__;
+	this.prototype = boxN.prototype;
 	if(typeof(_min) === 'undefined') {this.Min = new vecN();} else {this.Min = _min;}
 	if(typeof(_max) === 'undefined') {this.Max = new vecN();} else {this.Max = _max;}
 }
-Object.defineProperty(boxN.__proto__, "Size", {
+Object.defineProperty(boxN.prototype, "Size", {
 	get: function getSize() { return boxN.size(this); }, set: function setSize(value) { boxN.size(this, value); }
 });
-Object.defineProperty(boxN.__proto__, "Center", {
+Object.defineProperty(boxN.prototype, "Center", {
 	get: function getCenter() { return boxN.center(this); }, set: function setCenter(value) { boxN.center(this, value); }
 });
 boxN.size = function (b, setSize) {
