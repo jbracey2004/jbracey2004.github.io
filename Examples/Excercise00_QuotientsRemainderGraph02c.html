@@ -19,7 +19,7 @@
 				display: grid;
 				grid-template-columns: 100%;
 				grid-template-rows: 40% 60%;
-				grid-template-areas: 
+				grid-template-areas:
 					'areaInput'
 					'areaOutput';
 			}
@@ -27,15 +27,15 @@
 				display: grid;
 				grid-template-columns: 60% 40%;
 				grid-template-rows: 100%;
-				grid-template-areas: 
+				grid-template-areas:
 					'areaInput areaOutput';
 			}
-			.clsInput { 
-				grid-area: areaInput; 
+			.clsInput {
+				grid-area: areaInput;
 				display: grid;
 				grid-template-columns: 100%;
 				grid-template-rows: auto auto 1fr auto;
-				grid-template-areas: 
+				grid-template-areas:
 					'areaTitle'
 					'areaUsr'
 					'areaGraph'
@@ -54,10 +54,10 @@
 			.clsUsr { grid-area: areaUsr; }
 			.clsGraph { grid-area: areaGraph; }
 			.clsOutput { grid-area: areaOutput; }
-			.clsQuotients { 
+			.clsQuotients {
 				grid-area: areaQuotients;
 				min-width: 40%;
-				overflow: auto; 
+				overflow: auto;
 			}
 			table.quotients { border:solid; }
 			table.quotients tr td { border:solid thin; }
@@ -79,7 +79,7 @@
 		</style>
 		<script src="../libref/plotter.js"></script>
 		<script src="../libref/spline.js"></script>
-		<script src="../libref/vector.js"></script> 
+		<script src="../libref/vector.js"></script>
 		<script>
 			var plotterGraph;
 			var pTouches;
@@ -90,7 +90,7 @@
 					imgGraph = document.createElement("canvas");
 					imgGraph.id = "imgGraph";
 					imgGraph.style.touchAction = "none";
-					imgGraph.onmousemove = graph_onmousemove; 
+					imgGraph.onmousemove = graph_onmousemove;
 					imgGraph.onwheel = graph_onmousewheel;
 					imgGraph.addEventListener("touchstart", graph_ontouchstart);
 					imgGraph.addEventListener("touchmove", graph_ontouchmove);
@@ -218,7 +218,7 @@
 					console.log(diff1, diff2, rescale);
 					plotterGraph.PlotSizeOnPos({Width:sz.Width * (rescale.X), Height:sz.Height * (rescale.Y)}, midpt);
 				} else if (aryTouches.length == 1) {
-					let mmov = {X:aryTouches[0].clientX - arypTouches[0].clientX, 
+					let mmov = {X:aryTouches[0].clientX - arypTouches[0].clientX,
 								Y:aryTouches[0].clientY - arypTouches[0].clientY};
 					MovePlotCenter(plotterGraph, mmov);
 				}
@@ -241,6 +241,10 @@
 				requestAnimationFrame(onanimation);
 			}
 
+			function int(x) { return Math.ceil(x*1)/1; }
+			function quant(x, numdivs) { return Math.ceil(x*numdivs)/numdivs; }
+			function remainder(x, num) { return num % x; }
+			function fraction(x, num) { return remainder(x, num)/x; }
 			function graph_Redraw(plotter) {
 				if(!plotter) return;
 				if(!plotter.DrawContext) return;
@@ -251,7 +255,8 @@
 				let num = Number.parseInt(elemNum.value);
 				if(Number.isNaN(num)) return;
 				plotter.PlotArea_Constrict({Min:{X:0, Y:num}, Max:{X:num, Y:0}});
-				plotter.DrawCurve_RectFnx(x => (num % (Math.ceil(x*1)/1)), "#ccff80", 2, 1024);
+				plotter.DrawCurve_RectFnx(x => ( remainder(int(x), num) ), "#ccff80", 3, 1024);
+				plotter.DrawCurve_RectFnx(x => ( num*fraction(int(x), num) ), "#ffff8080", 1, 1024);
 			}
 			function MovePlotCenter(graph, mov) {
 				var clU = graph.ClientUnitToPlotUnit();
@@ -263,7 +268,7 @@
 			}
 
 			function onanimation() {
-				graph_Redraw(plotterGraph);	
+				graph_Redraw(plotterGraph);
 			}
 		</script>
 	</head>
