@@ -192,9 +192,10 @@
 			}
 			function graph_onmousewheel(e) {
 				var sz = plotterGraph.PlotSize();
-				var rescale = 1.025**Math.sign(e.deltaY);
+				var rescale = {X:1.025**Math.sign(e.deltaX), Y:1.025**Math.sign(e.deltaY)};
+				if(e.deltaX == 0) { rescale.X = rescale.Y; }
 				var cp = plotterGraph.MapClientToPlot({X:e.clientX, Y:e.clientY});
-				plotterGraph.PlotSizeOnPos({Width:sz.Width * rescale, Height:sz.Height * rescale}, cp);
+				plotterGraph.PlotSizeOnPos({Width:sz.Width * rescale.X, Height:sz.Height * rescale.Y}, cp);
 				requestAnimationFrame(onanimation);
 				return false;
 			}
@@ -248,7 +249,6 @@
 			function graph_Redraw(plotter) {
 				if(!plotter) return;
 				if(!plotter.DrawContext) return;
-				//plotter.DrawContext.clearRect(0, 0, plotter.DrawContext.canvas.width, plotter.DrawContext.canvas.height);
 				plotter.Fill("#202820");
 				let elemNum = document.getElementById("txtNumber");
 				if(!elemNum) return;

@@ -55,7 +55,7 @@
 
 				var Mouse = mouseProperties();
 				if (mouseIsPressed) {
-					
+
 				}
 
 				pt = tn;
@@ -76,7 +76,7 @@
 			function mouseWheel(event) {
 				var objMouse = mouseProperties();
 				var sz = graphSpline.PlotSize();
-				var rescale = 1.025**sign(event.delta);
+				var rescale = 1.025**Math.sign(event.deltaY);
 				var cp = graphSpline.MapClientToPlot(objMouse.Now);
 				graphSpline.PlotSizeOnPos({Width:sz.Width * rescale, Height:sz.Height * rescale}, cp);
 				return false;
@@ -118,7 +118,7 @@
 				background("#102010");
 				graphSpline.DrawAxis("#FFFFFF", "#FFFF80", 2, 16, {X:1/4, Y:1/4});
 				graphSpline.DrawGrid_Rect("#40404060", 1, {X:1/4, Y:1/4});
-				graphSpline.DrawGrid_Polar("#40404040", 1, 1/4, "#40404060", 1, 1/32);
+				graphSpline.DrawGrid_Polar("#40404040", 2, 1/4, "#40404060", 2, 1/32);
 				areaPlot = graphSpline.PlotArea();
 				areaClient = graphSpline.ClientArea();
 				textSize(16);

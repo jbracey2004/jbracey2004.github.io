@@ -13,15 +13,16 @@ function plotArea2D(parent)
 }
 
 function logab(a, x) { return (log(x))/(log(a));}
-function sign(x) { if(x > 0) {return 1;} else if (x < 0) { return -1;} else {return 0;} }
-function RectToPolar(pos) { let retAng = atan2(pos.Y, pos.X); 
-							if (retAng < 0) { retAng += TAU * (int(abs(retAng) / TAU) + 1); }
-                            return {Dist: sqrt(pos.X*pos.X + pos.Y*pos.Y), Ang: retAng}; }
-                            
+function RectToPolar(pos) {
+  let retAng = atan2(pos.Y, pos.X);
+	if (retAng < 0) { retAng += TAU * (Math.floor(Math.abs(retAng) / TAU) + 1); }
+  return {Dist: sqrt(pos.X*pos.X + pos.Y*pos.Y), Ang: retAng};
+}
+
 Object.defineProperty(plotArea2D.prototype, "ParentElement", {
-    get: function getParent() { 
+    get: function getParent() {
         return (this.elemParent) ? (this.elemParent) : (document.body);
-    }, 
+    },
     set: function setParent(value) {
         this.elemParent = value;
         if(this.elemParent) {
@@ -253,7 +254,7 @@ plotArea2D.prototype.PlotSize = function (setSize) {
 plotArea2D.prototype.PlotArea_Constrict = function (restrictBox) {
     restrictBox.Size = {X:restrictBox.Max.X - restrictBox.Min.X, Y:restrictBox.Max.Y - restrictBox.Min.Y};
     let Rsigns = {X:Math.sign(restrictBox.Size.X), Y:Math.sign(restrictBox.Size.Y)};
-    let Rstrc = {Min:{X:Rsigns.X*restrictBox.Min.X, Y:Rsigns.Y*restrictBox.Min.Y}, 
+    let Rstrc = {Min:{X:Rsigns.X*restrictBox.Min.X, Y:Rsigns.Y*restrictBox.Min.Y},
                  Max:{X:Rsigns.X*restrictBox.Max.X, Y:Rsigns.Y*restrictBox.Max.Y}};
     let sz = this.PlotSize();
     let mid = this.PlotPosCenter();
@@ -325,7 +326,7 @@ plotArea2D.prototype.RectFnxContainsMousePointer = function (fnx, thickness, OnM
     let resUnit = this.ClientUnitToPlotUnit();
     let plotPointer = this.PlotMousePointer();
     let pointerFy = fnx(plotPointer.X);
-    if (abs(plotPointer.Y - pointerFy) <= abs(thickness * resUnit.Y)) {
+    if (Math.abs(plotPointer.Y - pointerFy) <= Math.abs(thickness * resUnit.Y)) {
         if (typeof (OnMousePointerOnCurve) === 'function') OnMousePointerOnCurve();
         bolRet = true;
     }
@@ -365,8 +366,8 @@ plotArea2D.prototype.DrawEllipse = function (x1, y1, x2, y2, bolClip) {
 };
 plotArea2D.prototype.DrawGrid_Rect = function (color, thickness, gridLength) {
     let areaPlot = this.PlotArea();
-    let gridCount = { X: 1 + abs(areaPlot.Size.Width / gridLength.X), Y: 1 + abs(areaPlot.Size.Height / gridLength.Y) };
-    let gridTick = { X: sign(areaPlot.Size.Width) * abs(gridLength.X), Y: sign(areaPlot.Size.Height) * abs(gridLength.Y) };
+    let gridCount = { X: 1 + Math.abs(areaPlot.Size.Width / gridLength.X), Y: 1 + Math.abs(areaPlot.Size.Height / gridLength.Y) };
+    let gridTick = { X: Math.sign(areaPlot.Size.Width) * Math.abs(gridLength.X), Y: Math.sign(areaPlot.Size.Height) * Math.abs(gridLength.Y) };
     let posThis = this.Pos();
     let sizeThis = this.Size();
     this.DrawContext.strokeStyle = color;
@@ -389,7 +390,8 @@ plotArea2D.prototype.DrawGrid_Rect = function (color, thickness, gridLength) {
 plotArea2D.prototype.DrawGrid_Polar = function (color, thickness, gridLength, sectorColor, sectorThickness, sectorLength) {
     let areaPlot = this.PlotArea();
     let areaSize = areaPlot.Size;
-    let gridCount = { X: int(abs(areaSize.Width / gridLength)) * 2, Y: int(abs(areaSize.Height / gridLength)) * 2 };
+    let gridCount = { X: Math.max(1, Math.floor(Math.abs(areaSize.Width / gridLength))) * 2,
+                      Y: Math.max(1, Math.floor(Math.abs(areaSize.Height / gridLength))) * 2 };
     let gridInvCount = { X: 1 / gridCount.X, Y: 1 / gridCount.Y };
     let areaMaxDist = -Infinity;
     let areaMinDist = Infinity;
@@ -402,28 +404,36 @@ plotArea2D.prototype.DrawGrid_Polar = function (color, thickness, gridLength, se
                 Y: areaPlot.Min.Y + Yi * gridInvCount.Y * areaSize.Height
             };
             let posPolar = RectToPolar(posRect);
-            areaMaxDist = max(posPolar.Dist, areaMaxDist);
-            areaMinDist = min(posPolar.Dist, areaMinDist);
-            areaMaxAngle = max(posPolar.Ang, areaMaxAngle);
-            areaMinAngle = min(posPolar.Ang, areaMinAngle);
+            areaMaxDist = Math.max(posPolar.Dist, areaMaxDist);
+            areaMinDist = Math.min(posPolar.Dist, areaMinDist);
+            areaMaxAngle = Math.max(posPolar.Ang, areaMaxAngle);
+            areaMinAngle = Math.min(posPolar.Ang, areaMinAngle);
         }
     }
+    globalDebug_PolarBounds = {
+      grid:gridCount,
+      invGrid:gridInvCount,
+      minDist:areaMinDist,
+      maxDist:areaMaxDist,
+      minAngle:areaMinAngle*180/PI,
+      maxAngle:areaMaxAngle*180/PI
+    };
     let posOrigin = this.MapPlotToClient({ X: 0, Y: 0 });
     this.BeginClipping();
-    this.strokeStyle = color;
-    this.lineWidth = thickness;
-    for (let gridI = areaMinDist; gridI <= areaMaxDist; gridI += gridLength) {
+    this.DrawContext.strokeStyle = color;
+    this.DrawContext.lineWidth = thickness;
+    for (let gridI = areaMinDist - gridLength; gridI <= areaMaxDist + gridLength; gridI += gridLength) {
         let gridIP = gridI - (gridI % gridLength);
         let gridII = this.MapPlotToClient({ X: gridIP, Y: gridIP });
-        this.DrawEllipse(posOrigin.X, posOrigin.Y, (gridII.X - posOrigin.X) * 2, (gridII.Y - posOrigin.Y) * 2);
+        this.DrawEllipse(posOrigin.X, posOrigin.Y, (gridII.X - posOrigin.X), (gridII.Y - posOrigin.Y));
     }
     if (sectorColor && sectorThickness && sectorLength) {
         let sectorLengthRad = sectorLength * TAU;
-        this.strokeStyle = sectorColor;
-        this.lineWidth = sectorThickness;
-        for (let gridI = areaMinAngle; gridI <= areaMaxAngle; gridI += sectorLengthRad) {
+        this.DrawContext.strokeStyle = sectorColor;
+        this.DrawContext.lineWidth = sectorThickness;
+        for (let gridI = areaMinAngle - sectorLengthRad; gridI <= areaMaxAngle + sectorLengthRad; gridI += sectorLengthRad) {
             let gridIP = gridI - (gridI % sectorLengthRad);
-            let gridII = this.MapPlotToClient({ X: cos(gridIP) * areaMaxDist, Y: sin(gridIP) * areaMaxDist });
+            let gridII = this.MapPlotToClient({ X: Math.cos(gridIP) * areaMaxDist, Y: Math.sin(gridIP) * areaMaxDist});
             this.DrawLine(posOrigin.X, posOrigin.Y, gridII.X, gridII.Y);
         }
     }
@@ -431,8 +441,8 @@ plotArea2D.prototype.DrawGrid_Polar = function (color, thickness, gridLength, se
 };
 plotArea2D.prototype.DrawAxis = function (colorAxis, colorMarks, thickness, axisMarkLength, gridLength) {
     let areaPlot = this.PlotArea();
-    let gridCount = { X: 1 + abs(areaPlot.Size.Width / gridLength.X), Y: 1 + abs(areaPlot.Size.Height / gridLength.Y) };
-    let gridTick = { X: sign(areaPlot.Size.Width) * abs(gridLength.X), Y: sign(areaPlot.Size.Height) * abs(gridLength.Y) };
+    let gridCount = { X: 1 + Math.abs(areaPlot.Size.Width / gridLength.X), Y: 1 + Math.abs(areaPlot.Size.Height / gridLength.Y) };
+    let gridTick = { X: Math.sign(areaPlot.Size.Width) * Math.abs(gridLength.X), Y: Math.sign(areaPlot.Size.Height) * Math.abs(gridLength.Y) };
     let posOrigin = this.MapPlotToClient({ X: 0, Y: 0 });
     let posThis = this.Pos();
     let sizeThis = this.Size();
