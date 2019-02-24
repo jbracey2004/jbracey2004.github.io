@@ -21,6 +21,12 @@
 			var splineMain;
 			var splinenodeGrabbed;
 			var txtFunction;
+			var txtMinValue;
+			var txtMaxValue;
+			
+			var OutputMin = 0;
+			var OutputMax = 1;
+
 			var lblFunctionError;
 			var fxnTest = function(x, y) {return 0;};
 
@@ -43,11 +49,36 @@
 				txtFunction.style("background-color", "#00000000");
 				txtFunction.style("color","#FFA000FF");
 				txtFunction.style("font-size", "24px");
-				txtFunction.value("(x**2 + y**2) - 0.5**2");
+				txtFunction.value("(x**2 + y**2)");
 				txtFunction.input(txtFunction_OnChanged);
 				txtFunction_OnChanged();
+				var divValueOutput = createDiv("");
+				divValueOutput.position(16, 96);
+				divValueOutput.style("width", "auto");
+				divValueOutput.style("height", "auto");
+				divValueOutput.style("font-size", "16px");
+				txtMinValue = createInput(OutputMin);
+				txtMinValue.style("color","#FFFFFFFF");
+				txtMinValue.style("background-color", "#00000000");
+				txtMinValue.input(txtMinValue_OnChanged);
+				txtMinValue.parent(divValueOutput);
+				txtMaxValue = createInput(OutputMax);
+				txtMaxValue.style("color","#FFFFFFFF");
+				txtMaxValue.style("background-color", "#00000000");
+				txtMaxValue.input(txtMaxValue_OnChanged);
+				txtMaxValue.parent(divValueOutput);
 			}
 
+			function txtMinValue_OnChanged() {
+				if(!Number.isNaN(txtMinValue.value())) {
+					OutputMin = parseFloat(txtMinValue.value());
+				}
+			}
+			function txtMaxValue_OnChanged() {
+				if(!Number.isNaN(txtMaxValue.value())) {
+					OutputMax = parseFloat(txtMaxValue.value());
+				}
+			}
 			function txtFunction_OnChanged() {
 				var pfxn = fxnTest;
 				try {
@@ -87,7 +118,7 @@
 
 				var Mouse = mouseProperties();
 				if (mouseIsPressed) {
-					
+
 				}
 
 				pt = tn;
@@ -151,7 +182,7 @@
 				graphSpline.DrawAxis("#FFFFFF", "#FFFF80", 3, 16, {X:1, Y:1});
 				graphSpline.DrawGrid_Rect("#40404060", 1, {X:1/4, Y:1/4});
 				graphSpline.DrawGrid_Rect("#80806060", 2, {X:1, Y:1});
-				graphSpline.DrawPlot_FxnXY(fxnTest, "#FFA00080", {X:128, Y:128});
+				graphSpline.DrawPlot_FxnXY(fxnTest, "#FFA00080", {X:256, Y:256}, OutputMin, OutputMax);
 				areaPlot = graphSpline.PlotArea();
 				areaClient = graphSpline.ClientArea();
 				textSize(16);
