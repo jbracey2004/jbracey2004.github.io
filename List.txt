@@ -12,8 +12,8 @@
 01/31/2019  01:15 AM             5,548 Excercise00_QuotientsRemainderGraph01.html
 02/04/2019  10:14 PM             9,531 Excercise00_QuotientsRemainderGraph02.html
 02/05/2019  06:16 PM             8,921 Excercise00_QuotientsRemainderGraph02b.html
-02/05/2019  06:19 PM             8,367 Excercise00_QuotientsRemainderGraph02c.html
-08/20/2018  02:47 AM             5,679 Excercise00_WindingFunction.html
+02/20/2019  04:58 PM            10,107 Excercise00_QuotientsRemainderGraph02c.html
+02/10/2019  08:23 AM             5,679 Excercise00_WindingFunction.html
 07/04/2018  07:24 AM             1,152 Sample00_3JSP5Blank.html
 07/04/2018  07:24 AM               917 Sample00_Blank.html
 07/04/2018  07:24 AM            10,000 Sample00_Box2D.html
@@ -22,8 +22,9 @@
 07/04/2018  07:24 AM             3,803 Sample00_WebGLBlank2.html
 07/04/2018  07:24 AM               923 Sample00_WebGLP5Blank.html
 07/04/2018  07:24 AM             2,725 Sample01_3JSP5_FirstPrimitive1.html
-07/04/2018  07:24 AM             5,815 Sample01_GraphFunction1.html
-07/04/2018  07:24 AM             4,664 Sample01_GraphSpline1.html
+02/22/2019  05:12 PM             5,821 Sample01_GraphFunction1.html
+02/24/2019  09:19 AM             5,847 Sample01_GraphFunction2.html
+02/20/2019  04:58 PM             4,667 Sample01_GraphSpline1.html
 01/14/2019  08:46 PM            12,262 Sample01_Matterjs.html
 07/04/2018  07:24 AM             4,309 Sample01_TVStatic.html
 07/04/2018  07:24 AM             4,337 Sample01_TVStatic2.html

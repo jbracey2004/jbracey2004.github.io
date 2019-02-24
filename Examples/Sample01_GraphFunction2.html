@@ -3,7 +3,7 @@
 
 	<head>
 		<meta charset="utf-8">
-		<title>Portfolio - Graphing Function</title>
+		<title>Portfolio - Graphing 2D Function(x, y)</title>
 		<script src="../libref/p5/p5.min.js"></script>
 		<script src="../libref/p5/p5.dom.min.js"></script>
 		<script src="../libref/plotter.js"></script>
@@ -22,7 +22,7 @@
 			var splinenodeGrabbed;
 			var txtFunction;
 			var lblFunctionError;
-			var fxnTest = function(x) {return 0;};
+			var fxnTest = function(x, y) {return 0;};
 
 			function setup() {
 				var szWin = sizeWindow();
@@ -43,7 +43,7 @@
 				txtFunction.style("background-color", "#00000000");
 				txtFunction.style("color","#FFA000FF");
 				txtFunction.style("font-size", "24px");
-				txtFunction.value("0.5 * sin(x * TAU)");
+				txtFunction.value("(x**2 + y**2) - 0.5**2");
 				txtFunction.input(txtFunction_OnChanged);
 				txtFunction_OnChanged();
 			}
@@ -51,8 +51,8 @@
 			function txtFunction_OnChanged() {
 				var pfxn = fxnTest;
 				try {
-					fxnTest = new Function("x", "return " + txtFunction.value() + ";");
-					var txt = fxnTest(0);
+					fxnTest = new Function("x", "y", "return " + txtFunction.value() + ";");
+					var txt = fxnTest(0, 0);
 					console.log(txtFunction.value());
 					lblFunctionError.html("");
 					return true;
@@ -151,7 +151,7 @@
 				graphSpline.DrawAxis("#FFFFFF", "#FFFF80", 3, 16, {X:1, Y:1});
 				graphSpline.DrawGrid_Rect("#40404060", 1, {X:1/4, Y:1/4});
 				graphSpline.DrawGrid_Rect("#80806060", 2, {X:1, Y:1});
-				graphSpline.DrawCurve_RectFnx(fxnTest, "#FFA00080", 2.5, 2048);
+				graphSpline.DrawPlot_FxnXY(fxnTest, "#FFA00080", {X:128, Y:128});
 				areaPlot = graphSpline.PlotArea();
 				areaClient = graphSpline.ClientArea();
 				textSize(16);

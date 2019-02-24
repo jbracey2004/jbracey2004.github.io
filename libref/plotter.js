@@ -12,11 +12,42 @@ function plotArea2D(parent)
 	this.isClipping = false;
 }
 
+function colorComponentsRGBA(color) {
+    let strColor = color;
+    let exp = "";
+    let match = {};
+    exp = /(?<Indicator>(RGB){1}(A)?)\s*\(\s*(?<FullColor>(?<Red>\d+(\.\d+)?)\s*\,\s*(?<Green>\d+(\.\d+)?)\s*\,\s*(?<Blue>\d+(\.\d+)?)\s*(\,\s*(?<Alpha>\d+(\.\d+)?))?)\s*\)/i;
+    match = color.match(exp);
+    if(match) {
+        return {r:parseFloat(match.groups["Red"]), 
+                g:parseFloat(match.groups["Green"]), 
+                b:parseFloat(match.groups["Blue"]), 
+                a:match.groups["Alpha"] ? parseFloat(match.groups["Alpha"])*255 : 0};
+    }
+    exp = /(?<Indicator>\#{0,1})(?<FullColor>(?<Red>[0-9A-F]{2})(?<Green>[0-9A-F]{2})(?<Blue>[0-9A-F]{2}))(?<Alpha>[0-9A-F]{2}){0,1}/i;
+    match = color.match(exp);
+    if(match) {
+        return {r:parseInt(match.groups["Red"], 16), 
+                g:parseInt(match.groups["Green"], 16), 
+                b:parseInt(match.groups["Blue"], 16), 
+                a:match.groups["Alpha"] ? parseInt(match.groups["Alpha"], 16) : 0};
+    }
+    exp = /(?<Indicator>\#{0,1})(?<FullColor>(?<Red>[0-9A-F])(?<Green>[0-9A-F])(?<Blue>[0-9A-F]))/i;
+    match = color.match(exp);
+    if(match) {
+        return {r:parseInt(match.groups["Red"], 16)*16, 
+                g:parseInt(match.groups["Green"], 16)*16, 
+                b:parseInt(match.groups["Blue"], 16)*16, 
+                a:0};
+    }
+    return {r:0, g:0, b:0, a:0};
+}
+
 function logab(a, x) { return (log(x))/(log(a));}
 function RectToPolar(pos) {
-  let retAng = atan2(pos.Y, pos.X);
+    let retAng = atan2(pos.Y, pos.X);
 	if (retAng < 0) { retAng += TAU * (Math.floor(Math.abs(retAng) / TAU) + 1); }
-  return {Dist: sqrt(pos.X*pos.X + pos.Y*pos.Y), Ang: retAng};
+    return {Dist: sqrt(pos.X*pos.X + pos.Y*pos.Y), Ang: retAng};
 }
 
 Object.defineProperty(plotArea2D.prototype, "ParentElement", {
@@ -410,14 +441,6 @@ plotArea2D.prototype.DrawGrid_Polar = function (color, thickness, gridLength, se
             areaMinAngle = Math.min(posPolar.Ang, areaMinAngle);
         }
     }
-    globalDebug_PolarBounds = {
-      grid:gridCount,
-      invGrid:gridInvCount,
-      minDist:areaMinDist,
-      maxDist:areaMaxDist,
-      minAngle:areaMinAngle*180/PI,
-      maxAngle:areaMaxAngle*180/PI
-    };
     let posOrigin = this.MapPlotToClient({ X: 0, Y: 0 });
     this.BeginClipping();
     this.DrawContext.strokeStyle = color;
@@ -521,6 +544,36 @@ plotArea2D.prototype.DrawCurve_ParmetricFnx = function (fxnt, color, thickness, 
     this.DrawContext.stroke();
     this.EndClipping();
 };
+plotArea2D.prototype.DrawPlot_FxnXY = function(fxnt, color, gridCount) {
+    if (!(typeof (fxnt) === 'function')) return 0;
+    if (!this.DrawContext) return 0;
+    let areaClient = this.ClientArea();
+    let img = document.createElement("canvas");
+    img.width = gridCount.X;
+    img.height = gridCount.Y;
+    let stepUVx = 1/gridCount.X;
+    let stepUVy = 1/gridCount.Y;
+    let ctxTmp = img.getContext("2d");
+    let dataImg = ctxTmp.createImageData(img.width, img.height);
+    let dataColor = colorComponentsRGBA(color);
+    for(let pxY = 0; pxY < gridCount.Y; pxY++) {
+        for(let pxX = 0; pxX < gridCount.X; pxX++) {
+            let idx = (pxX + (img.width*pxY))*4;
+            let posXY = this.MapPosUVToPlot({X:pxX*stepUVx, Y:pxY*stepUVy});
+            let valXY = fxnt(posXY.X, posXY.Y);
+            dataImg.data[idx +0] = dataColor.r * valXY;
+            dataImg.data[idx +1] = dataColor.g * valXY;
+            dataImg.data[idx +2] = dataColor.b * valXY;
+            dataImg.data[idx +3] = dataColor.a;
+        }
+    }
+    ctxTmp.putImageData(dataImg, 0, 0);
+    this.DrawContext.drawImage(img, 0, 0, areaClient.Size.Width, areaClient.Size.Height);
+    delete dataImg;
+    delete ctsTmp;
+    delete img;
+};
+
 plotArea2D.prototype.DrawClipped = function (sub) {
     this.BeginClipping();
     sub();
