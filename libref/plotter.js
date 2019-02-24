@@ -480,7 +480,7 @@ plotArea2D.prototype.DrawAxis = function (colorAxis, colorMarks, thickness, axis
             let lengthMark = axisMarkLength;
             this.DrawContext.lineWidth = thickness * 0.5;
             if (gridXi >= posThis.X && gridXi <= posThis.X + sizeThis.Width + 1) {
-                this.DrawLine(gridXi, max(posOrigin.Y - lengthMark, posThis.Y), gridXi, min(posOrigin.Y + lengthMark, posThis.Y + sizeThis.Height));
+                this.DrawLine(gridXi, Math.max(posOrigin.Y - lengthMark, posThis.Y), gridXi, Math.min(posOrigin.Y + lengthMark, posThis.Y + sizeThis.Height));
             }
         }
     }
@@ -495,7 +495,7 @@ plotArea2D.prototype.DrawAxis = function (colorAxis, colorMarks, thickness, axis
             let lengthMark = axisMarkLength;
             this.DrawContext.lineWidth = thickness * 0.5;
             if (gridYi >= posThis.Y && gridYi <= posThis.Y + sizeThis.Height + 1) {
-                this.DrawLine(max(posOrigin.X - lengthMark, posThis.X), gridYi, min(posOrigin.X + lengthMark, posThis.X + sizeThis.Width), gridYi);
+                this.DrawLine(Math.max(posOrigin.X - lengthMark, posThis.X), gridYi, Math.min(posOrigin.X + lengthMark, posThis.X + sizeThis.Width), gridYi);
             }
         }
     }
