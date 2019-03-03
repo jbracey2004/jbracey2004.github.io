@@ -540,7 +540,7 @@ plotArea2D.prototype.DrawCurve_RectFnx = function (fnx, color, thickness, sample
 };
 plotArea2D.prototype.DrawCurve_ParmetricFnx = function (fxnt, color, thickness, tStart, tEnd, tSamples) {
     if (!(typeof (fxnt) === 'function')) return 0;
-	try {var tst = fnx(0);} catch(err) {return 0;}
+	try {var tst = fxnt(0);} catch(err) {return 0;}
     let resSample = (tEnd - tStart) / tSamples;
     this.DrawContext.strokeStyle = color;
     this.DrawContext.lineWidth = thickness;
