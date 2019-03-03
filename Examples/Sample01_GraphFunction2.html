@@ -23,12 +23,13 @@
 			var txtFunction;
 			var txtMinValue;
 			var txtMaxValue;
-			
-			var OutputMin = 0;
-			var OutputMax = 1;
+
+			var OutputMin = function() {return 0};
+			var OutputMax = function() {return 1};
 
 			var lblFunctionError;
-			var fxnTest = function(x, y) {return 0;};
+			var fxnTest = (x, y) => 0;
+			var Osc = (freq=1, min=0, max=1) => min + (0.5 + 0.5*sin(ct*TAU*freq))*(max-min);
 
 			function setup() {
 				var szWin = sizeWindow();
@@ -39,7 +40,7 @@
 				graphSpline = new plotArea2D(canvasMain);
 				splineMain = new spline();
 				lblFunctionError = createP("");
-				lblFunctionError.position(16, 48);
+				lblFunctionError.position(16, 64);
 				lblFunctionError.style("background-color", "#00000000");
 				lblFunctionError.style("color", "#FF0000FF");
 				lblFunctionError.html("");
@@ -51,46 +52,33 @@
 				txtFunction.style("font-size", "24px");
 				txtFunction.value("(x**2 + y**2)");
 				txtFunction.input(txtFunction_OnChanged);
-				txtFunction_OnChanged();
 				var divValueOutput = createDiv("");
-				divValueOutput.position(16, 96);
+				divValueOutput.position(16, 48);
 				divValueOutput.style("width", "auto");
 				divValueOutput.style("height", "auto");
 				divValueOutput.style("font-size", "16px");
-				txtMinValue = createInput(OutputMin);
+				txtMinValue = createInput(OutputMin().toString());
 				txtMinValue.style("color","#FFFFFFFF");
 				txtMinValue.style("background-color", "#00000000");
-				txtMinValue.input(txtMinValue_OnChanged);
+				txtMinValue.input(txtFunction_OnChanged);
 				txtMinValue.parent(divValueOutput);
-				txtMaxValue = createInput(OutputMax);
+				txtMaxValue = createInput(OutputMax().toString());
 				txtMaxValue.style("color","#FFFFFFFF");
 				txtMaxValue.style("background-color", "#00000000");
-				txtMaxValue.input(txtMaxValue_OnChanged);
+				txtMaxValue.input(txtFunction_OnChanged);
 				txtMaxValue.parent(divValueOutput);
+				txtFunction_OnChanged();
 			}
 
-			function txtMinValue_OnChanged() {
-				if(!Number.isNaN(txtMinValue.value())) {
-					OutputMin = parseFloat(txtMinValue.value());
-				}
-			}
-			function txtMaxValue_OnChanged() {
-				if(!Number.isNaN(txtMaxValue.value())) {
-					OutputMax = parseFloat(txtMaxValue.value());
-				}
-			}
 			function txtFunction_OnChanged() {
-				var pfxn = fxnTest;
 				try {
 					fxnTest = new Function("x", "y", "return " + txtFunction.value() + ";");
-					var txt = fxnTest(0, 0);
-					console.log(txtFunction.value());
+					OutputMin = new Function("return " + txtMinValue.value() + ";");
+					OutputMax = new Function("return " + txtMaxValue.value() + ";");
 					lblFunctionError.html("");
 					return true;
 				} catch (err) {
-					console.log(err.message);
 					lblFunctionError.html(err.message);
-					fxnTest = pfxn;
 					return false;
 				}
 			}
@@ -182,7 +170,9 @@
 				graphSpline.DrawAxis("#FFFFFF", "#FFFF80", 3, 16, {X:1, Y:1});
 				graphSpline.DrawGrid_Rect("#40404060", 1, {X:1/4, Y:1/4});
 				graphSpline.DrawGrid_Rect("#80806060", 2, {X:1, Y:1});
-				graphSpline.DrawPlot_FxnXY(fxnTest, "#FFA00080", {X:256, Y:256}, OutputMin, OutputMax);
+				var valOutputMin, valOutputMax = 0;
+				try {valOutputMin = OutputMin(); valOutputMax = OutputMax()} catch(err) {}
+				graphSpline.DrawPlot_FxnXY(fxnTest, "#FFA00080", {X:width*0.5, Y:height*0.5}, valOutputMin, valOutputMax);
 				areaPlot = graphSpline.PlotArea();
 				areaClient = graphSpline.ClientArea();
 				textSize(16);

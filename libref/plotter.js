@@ -16,7 +16,12 @@ function colorComponentsRGBA(color) {
     let strColor = color;
     let exp = "";
     let match = {};
-    exp = /(?<Indicator>(RGB){1}(A)?)\s*\(\s*(?<FullColor>(?<Red>\d+(\.\d+)?)\s*\,\s*(?<Green>\d+(\.\d+)?)\s*\,\s*(?<Blue>\d+(\.\d+)?)\s*(\,\s*(?<Alpha>\d+(\.\d+)?))?)\s*\)/i;
+    exp = new RegExp("(?<Indicator>(RGB){1}(A)?)\s*\(\s*" +
+					 "(?<FullColor>(?<Red>\d+(\.\d+)?)\s*\,\s*" +
+					 "(?<Green>\d+(\.\d+)?)\s*\,\s*" +
+					 "(?<Blue>\d+(\.\d+)?)\s*(\,\s*" +
+					 "(?<Alpha>\d+(\.\d+)?))?)\s*\)",
+					 "i");
     match = color.match(exp);
     if(match) {
         return {r:parseFloat(match.groups["Red"]),
@@ -24,7 +29,12 @@ function colorComponentsRGBA(color) {
                 b:parseFloat(match.groups["Blue"]),
                 a:match.groups["Alpha"] ? parseFloat(match.groups["Alpha"])*255 : 0};
     }
-    exp = /(?<Indicator>\#{0,1})(?<FullColor>(?<Red>[0-9A-F]{2})(?<Green>[0-9A-F]{2})(?<Blue>[0-9A-F]{2}))(?<Alpha>[0-9A-F]{2}){0,1}/i;
+    exp = new RegExp("(?<Indicator>\#{0,1})" +
+					 "(?<FullColor>(?<Red>[0-9A-F]{2})" +
+					 "(?<Green>[0-9A-F]{2})" +
+					 "(?<Blue>[0-9A-F]{2}))" +
+					 "(?<Alpha>[0-9A-F]{2}){0,1}",
+					 "i");
     match = color.match(exp);
     if(match) {
         return {r:parseInt(match.groups["Red"], 16),
@@ -32,7 +42,11 @@ function colorComponentsRGBA(color) {
                 b:parseInt(match.groups["Blue"], 16),
                 a:match.groups["Alpha"] ? parseInt(match.groups["Alpha"], 16) : 0};
     }
-    exp = /(?<Indicator>\#{0,1})(?<FullColor>(?<Red>[0-9A-F])(?<Green>[0-9A-F])(?<Blue>[0-9A-F]))/i;
+    exp = new RegExp("(?<Indicator>\#{0,1})" +
+					 "(?<FullColor>(?<Red>[0-9A-F])" +
+					 "(?<Green>[0-9A-F])" +
+					 "(?<Blue>[0-9A-F]))",
+					 "i");
     match = color.match(exp);
     if(match) {
         return {r:parseInt(match.groups["Red"], 16)*16,
@@ -502,6 +516,7 @@ plotArea2D.prototype.DrawAxis = function (colorAxis, colorMarks, thickness, axis
 };
 plotArea2D.prototype.DrawCurve_RectFnx = function (fnx, color, thickness, samplesOfX) {
     if (!(typeof (fnx) === 'function')) return 0;
+	try {var tst = fnx(0);} catch(err) {return 0;}
     let areaPlot = this.PlotArea();
     let resSample = areaPlot.Size.Width / samplesOfX;
     this.BeginClipping();
@@ -525,6 +540,7 @@ plotArea2D.prototype.DrawCurve_RectFnx = function (fnx, color, thickness, sample
 };
 plotArea2D.prototype.DrawCurve_ParmetricFnx = function (fxnt, color, thickness, tStart, tEnd, tSamples) {
     if (!(typeof (fxnt) === 'function')) return 0;
+	try {var tst = fnx(0);} catch(err) {return 0;}
     let resSample = (tEnd - tStart) / tSamples;
     this.DrawContext.strokeStyle = color;
     this.DrawContext.lineWidth = thickness;
@@ -546,7 +562,8 @@ plotArea2D.prototype.DrawCurve_ParmetricFnx = function (fxnt, color, thickness, 
 };
 plotArea2D.prototype.DrawPlot_FxnXY = function(fxnt, color, gridCount, outputMin, outputMax) {
     if (!(typeof (fxnt) === 'function')) return 0;
-    if (!this.DrawContext) return 0;
+	try {var tst = fxnt(0, 0);} catch(err) {return 0;}
+	if (!this.DrawContext) return 0;
     let areaClient = this.ClientArea();
     let img = document.createElement("canvas");
     img.width = gridCount.X;
@@ -569,11 +586,6 @@ plotArea2D.prototype.DrawPlot_FxnXY = function(fxnt, color, gridCount, outputMin
                 dataImg.data[idx +1] = dataColor.g * output;
                 dataImg.data[idx +2] = dataColor.b * output;
                 dataImg.data[idx +3] = dataColor.a;
-            } else {
-                dataImg.data[idx +0] = 0;
-                dataImg.data[idx +1] = 0;
-                dataImg.data[idx +2] = 0;
-                dataImg.data[idx +3] = 0;
             }
         }
     }
