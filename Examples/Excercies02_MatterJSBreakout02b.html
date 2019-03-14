@@ -7,12 +7,12 @@
 		<script src="../libref/p5/p5.min.js"></script>
 		<script src="../libref/p5/p5.sound.min.js"></script>
 		<script src="../libref/p5/p5.dom.min.js"></script>
-        <script src="../libref/matterjs/matter.min.js"></script>
-        <script src="../libref/Utility_Physics/matter.js"></script>
+		<script src="../libref/matterjs/matter.min.js"></script>
+		<script src="../libref/Utility_Physics/matter.js"></script>
 		<script>
 			var canvasMain;
 			var contextMain;
-            var physics;
+			var physics;
 			var pt = 0;
 			var ct = 0;
 			var score = 0;
@@ -25,21 +25,21 @@
 			var PaddleThickness = PlayScreen_Height*0.02;
 			var BallPolygonShape = 4;
 			var BallSize = PaddleThickness * 1;
-            var MAX_SPEED = Math.sqrt(PlayScreen_Width **2 +  PlayScreen_Height**2) / 60;
-            var Ball_InitSpeed = MAX_SPEED * 0.1;
-            var BallSpeed = 0;
-            var wallsize = {x:PlayScreen_Width * 0.125, y:PlayScreen_Height * 0.125};
+			var MAX_SPEED = Math.sqrt(PlayScreen_Width **2 +  PlayScreen_Height**2) / 60;
+			var Ball_InitSpeed = MAX_SPEED * 0.1;
+			var BallSpeed = 0;
+			var wallsize = {x:PlayScreen_Width * 0.125, y:PlayScreen_Height * 0.125};
 			var wallinside = {x:wallsize.x * 0.125, y:wallsize.y * 0.125};
 			var BRICK_MARGIN = Math.sqrt(PlayScreen_Width **2 +  PlayScreen_Height**2) * 0.002;
 ;
 			var ROWS = 10; 
-            var COLUMNS = 12;
-            var BRICK_W = ((PlayScreen_Width - 2*wallinside.x) / (COLUMNS+1)) - BRICK_MARGIN;
+			var COLUMNS = 12;
+			var BRICK_W = ((PlayScreen_Width - 2*wallinside.x) / (COLUMNS+1)) - BRICK_MARGIN;
 			var BRICK_H = PlayScreen_Height * 0.02;
-			var constraintPaddle, constraintMouse;
+			var constraintPaddle, constraintMouse; var constraintsBall = [];
 			var bodyPaddle, bodyBall, PaddleGuard, stageTop, 
-                wallTop, stageBottom, wallLeft, wallRight, 
-                compositeBricks, aryBricks, aryBrickGroups;
+				wallTop, stageBottom, wallLeft, wallRight, 
+				compositeBricks, aryBricks, aryBrickGroups;
 			var wavPing_Paddle, wavPing_Bounds, wavPing_Brick,
 				wavPing_GroupClear, wavPing_GroupClear_Osc, wavPing_Lost;
 			var gradientBall, gradientPaddle, gradientBrick;
@@ -66,21 +66,21 @@
 				};
 			};
 
-            var clsBrickGroup = function() {
-                this.bricks = [];
-                this.bonus = 1;
-                this.hits = 0;
-                this.points = function () { return this.bonus * this.hits; };
+			var clsBrickGroup = function() {
+				this.bricks = [];
+				this.bonus = 1;
+				this.hits = 0;
+				this.points = function () { return this.bonus * this.hits; };
 				this.add = function (brick) { this.bricks.push(brick); brick.group = this; this.hits += brick.hits; };
 				this.remove = function (brick) { let idx = this.bricks.indexOf(brick); if (idx >= 0) { this.bricks.splice(idx, 1); if (brick.group) { delete brick.group; }; }; };
-                this.bricksLive = function () { return this.bricks.filter(function (itm) { return itm.body; }); };
-                this.reload = function () {
-                    for (let bI of this.bricks) {
-                        bI.body = Matter.Bodies.rectangle(bI.posStart.x, bI.posStart.y, BRICK_W, BRICK_H);
-                        bI.body.subject = bI;
-                        Matter.Composite.add(compositeBricks, bI.body);
-                    }
-                };
+				this.bricksLive = function () { return this.bricks.filter(function (itm) { return itm.body; }); };
+				this.reload = function () {
+					for (let bI of this.bricks) {
+						bI.body = Matter.Bodies.rectangle(bI.posStart.x, bI.posStart.y, BRICK_W, BRICK_H);
+						bI.body.subject = bI;
+						Matter.Composite.add(compositeBricks, bI.body);
+					}
+				};
 			};
 
 			var optionsRender_Normal = { wireframes: false, showDebug: false, showAngleIndicator: false, showCollisions: false, showConvexhulls: false, showPositions: false, showVelocity: false };
@@ -114,19 +114,19 @@
 				gradientPaddle.addColorStop(1, "#000000");
 				gradientBrick = contextMain.createLinearGradient(0, -BRICK_H*0.5, 0, BRICK_H*0.5);
 				gradientBrick.addColorStop(0, "#00CC00");
-                gradientBrick.addColorStop(1, "#00FF00");
+				gradientBrick.addColorStop(1, "#00FF00");
 
-                physics = new Physics2D.Engine();
-                physics.AutoRun_Start();
+				physics = new Physics2D.Engine();
+				physics.AutoRun_Start();
 				physics.AutoRender_Start({ options: { background: "#00000000", wireframeBackground: "#00000000" } });
 				optionsRender_RenderMode(optionsRender_Debug);
-                physics.setPlayArea({ width: PlayScreen_Width, height: PlayScreen_Height });
+				physics.setPlayArea({ width: PlayScreen_Width, height: PlayScreen_Height });
 				physics.instance.world.gravity.x = 0;
 				physics.instance.world.gravity.y = 0;
 				
 				bodyPaddle = physics.World.CreateBody_Rectangle((PlayScreen_Width-PaddleWidth)*0.5, PlayScreen_Height-PaddleThickness*4, PaddleWidth, PaddleThickness, {density:10, frictionAir:0.1, restitution:1, inertia:Infinity, collisionFilter:{category:0x1}});
 				let paddlepos = bodyPaddle.instance.position;
-                bodyBall = physics.World.CreateBody_Polygon(paddlepos.x, paddlepos.y-(PaddleThickness*0.5 + BallSize), BallPolygonShape, BallSize,  {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
+				bodyBall = physics.World.CreateBody_Polygon(paddlepos.x, paddlepos.y-(PaddleThickness*0.5 + BallSize), BallPolygonShape, BallSize,  {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
 				PaddleGuard = new Physics2D.Composite(Matter.Composite.create());
 				Matter.World.add(physics.World.instance, PaddleGuard.instance);
 				PaddleGuard.CreateBody_Rectangle(0, bodyPaddle.instance.bounds.max.y, PlayScreen_Width, PaddleThickness, { isStatic: true, render: { visible: false }, collisionFilter: { category: 0x2 } });
@@ -141,37 +141,37 @@
 				stageBottom = physics.World.CreateBody_Rectangle(-PlayScreen_Width*0.5, PlayScreen_Height+wallsize.y, PlayScreen_Width*2, 2*wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
 				stageTop = physics.World.CreateBody_Rectangle(wallinside.x-wallsize.x, -wallsize.y*2, PlayScreen_Width + 2*wallsize.x, wallsize.y*2,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
 
-                aryBricks = [];
-                aryBrickGroups = [];
-                for (let gI = 0; gI < ROWS; gI++) {
+				aryBricks = [];
+				aryBrickGroups = [];
+				for (let gI = 0; gI < ROWS; gI++) {
 					let group = new clsBrickGroup();
 					group.bonus = (gI + 1) * 5;
-                    aryBrickGroups.push(group);
+					aryBrickGroups.push(group);
 				}
 				let BricksStart = (BRICK_H + BRICK_MARGIN) * 2;
-                compositeBricks = Matter.Composites.stack(wallinside.x + BRICK_W*0.5, BricksStart, COLUMNS, ROWS, BRICK_MARGIN, BRICK_MARGIN, function(x, y) {
-                    let objRet = {};
-                    objRet.body = Matter.Bodies.rectangle(x, y, BRICK_W, BRICK_H, {frictionAir: 0.01, restitution:1});
-                    objRet.body.subject = objRet;
-                    objRet.posStart = {x: x, y: y};
-                    let intRow = ROWS - (floor((y - BricksStart) / (BRICK_H+BRICK_MARGIN))+1);
-                    objRet.points = intRow + 1;
-                    objRet.hits = floor(intRow / 2) + 1;
-                    aryBrickGroups[intRow].add(objRet);
-                    aryBricks.push(objRet);
-                    return objRet.body;
-                });
+				compositeBricks = Matter.Composites.stack(wallinside.x + BRICK_W*0.5, BricksStart, COLUMNS, ROWS, BRICK_MARGIN, BRICK_MARGIN, function(x, y) {
+					let objRet = {};
+					objRet.body = Matter.Bodies.rectangle(x, y, BRICK_W, BRICK_H, {frictionAir: 0.01, restitution:1});
+					objRet.body.subject = objRet;
+					objRet.posStart = {x: x, y: y};
+					let intRow = ROWS - (floor((y - BricksStart) / (BRICK_H+BRICK_MARGIN))+1);
+					objRet.points = intRow + 1;
+					objRet.hits = floor(intRow / 2) + 1;
+					aryBrickGroups[intRow].add(objRet);
+					aryBricks.push(objRet);
+					return objRet.body;
+				});
 				Matter.World.add(physics.World.instance, compositeBricks);
 
 				Matter.Events.on(physics.instance, "beforeUpdate", physics_onTick);
 				Matter.Events.on(physics.instance, "collisionStart", physics_onCollisionStart);
 				Matter.Events.on(physics.instance, "collisionEnd", physics_onCollisionEnd);
 				canvasMain.addEventListener("touchstart", canvas_onTouchStart);
-                canvasMain.addEventListener("mousedown", canvas_onTouchStart);
+				canvasMain.addEventListener("mousedown", canvas_onTouchStart);
 				canvasMain.addEventListener("touchmove", canvas_onTouchMoved);
 				canvasMain.addEventListener("mousemove", canvas_onTouchMoved);
-                canvasMain.addEventListener("touchend", canvas_onTouchEnd);
-                canvasMain.addEventListener("mouseup", canvas_onTouchEnd);
+				canvasMain.addEventListener("touchend", canvas_onTouchEnd);
+				canvasMain.addEventListener("mouseup", canvas_onTouchEnd);
 				
 				wavPing_Paddle = new p5.Oscillator();
 				wavPing_Paddle.setType("square");
@@ -259,13 +259,13 @@
 				var tn = new Date(Date.now()).getTime()*0.001;
 				if (pt == 0) { pt = tn; }
 				var t = tn - pt;
-                ct += t;
+				ct += t;
 
-                //physics.StepSimulation(t*1000);
+				//physics.StepSimulation(t*1000);
 				//frameRate(8 + (Math.random()*52));
 				//frameRate(8 + ((0.5+0.5*Math.sin(tn*Math.PI*0.25))*22));
 				let velprops = VectorProps(bodyBall.instance.velocity);
-				if (!constraintPaddle) {
+				if (!constraintPaddle && constraintsBall.length == 0) {
 					if (Math.abs(velprops.norm.y) < 0.75) { velprops.norm.y += Math.sign(velprops.norm.y)*t; }
 					velprops = VectorProps(velprops.norm);
 					let vel = {x: velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed};
@@ -273,9 +273,9 @@
 					BallSpeed += 0.025*t;
 				}
 
-                background("#404040");
+				background("#404040");
 
-                push();
+				push();
 				if (canvasMain.offsetWidth > canvasMain.offsetHeight) {
 					translate(canvasMain.width, 0);
 					rotate(PI / 2);
@@ -283,7 +283,7 @@
 				}
 				if (chkRenderBodies.checked) { physics.RenderDebug(contextMain, { x: 0, y: 0, width: PlayScreen_Width, height: PlayScreen_Height }, true); }
 				if (chkRenderDebug.checked) { physics.RenderDebug(contextMain, { x: 0, y: 0, width: PlayScreen_Width, height: PlayScreen_Height }, false); }
-                pop();
+				pop();
 
 				textSize(32);
 				noFill();
@@ -307,14 +307,21 @@
 				}
 
 				pt = tn;
-            }
+			}
 
-            function clamp(x, a, b) {return Math.max(a, Math.min(x, b))};
+			function bolConstraintHasBall(constraint) {
+				if (!constraint) return false;
+				if (constraint.bodyA == bodyBall.instance) return true;
+				if (constraint.BodyB == bodyBall.instance) return true;
+				return false;
+			}
+
+			function clamp(x, a, b) {return Math.max(a, Math.min(x, b))};
 
 			function physics_onTick(e) {
 				
-            }
-            function physics_onCollisionStart(e) {
+			}
+			function physics_onCollisionStart(e) {
 				for(let cI of e.pairs) {
 					let cI_bodies = [cI.bodyA,cI.bodyB];
 					if(cI_bodies.includes(bodyBall.instance)) {
@@ -342,56 +349,56 @@
 					}
 				}
 			}
-            function onBrickHit(brick) {
+			function onBrickHit(brick) {
 				if (brick.body) {
-                    brick.hits--;								 
-                    if (brick.hits > 0) {
-                        wavPing_Brick.freq(440);
-					    wavPing_Brick.amp(1, 0.05);
-					    wavPing_Brick.amp(0, 0.1);
-                    } else {
-                        wavPing_Brick.freq(512);
-					    wavPing_Brick.amp(1, 0.05);
-                        wavPing_Brick.amp(0, 0.2);
-                        score += brick.points;
-                        Matter.World.remove(compositeBricks, brick.body);
-                        brick.body = null;
-                        if (brick.group.bricksLive().length <= 0) {
+					brick.hits--;								 
+					if (brick.hits > 0) {
+						wavPing_Brick.freq(440);
+						wavPing_Brick.amp(1, 0.05);
+						wavPing_Brick.amp(0, 0.1);
+					} else {
+						wavPing_Brick.freq(512);
+						wavPing_Brick.amp(1, 0.05);
+						wavPing_Brick.amp(0, 0.2);
+						score += brick.points;
+						Matter.World.remove(compositeBricks, brick.body);
+						brick.body = null;
+						if (brick.group.bricksLive().length <= 0) {
 							wavPing_GroupClear.freq(768);
-                            wavPing_GroupClear.amp(1, 0.1);
+							wavPing_GroupClear.amp(1, 0.1);
 							wavPing_GroupClear.amp(0, 0.5);
 							score += brick.group.points();
-                            brick.group.reload();
-                        }
-                    }
-                }
-            }
-            function onBoundsHit() {
-                if(!constraintPaddle) {
-                    wavPing_Bounds.amp(0.25, 0.05);
-				    wavPing_Bounds.amp(0, 0.1);
-                }
-            }
-            function onPaddleHit() {
-                if(!constraintPaddle) {
-                    wavPing_Paddle.amp(0.1, 0.1);
-				    wavPing_Paddle.amp(0, 0.25);
-                    var vecTmp = bodyBall.instance.velocity;
+							brick.group.reload();
+						}
+					}
+				}
+			}
+			function onBoundsHit() {
+				if(!constraintPaddle) {
+					wavPing_Bounds.amp(0.25, 0.05);
+					wavPing_Bounds.amp(0, 0.1);
+				}
+			}
+			function onPaddleHit() {
+				if(!constraintPaddle) {
+					wavPing_Paddle.amp(0.1, 0.1);
+					wavPing_Paddle.amp(0, 0.25);
+					var vecTmp = bodyBall.instance.velocity;
 					var speedTmp = VectorProps(vecTmp).mag;
 					var swing = (bodyBall.instance.position.x-bodyPaddle.instance.position.x)/4;
-                    vecTmp.x += swing;
-                    var normTmp = VectorProps(vecTmp).norm;
-                    Matter.Body.setVelocity(bodyBall.instance, {x:normTmp.x*speedTmp, y:normTmp.y*speedTmp});
-                }
-            }
-            function onBottomHit() {
-                wavPing_Lost.amp(1, 0.1);
+					vecTmp.x += swing;
+					var normTmp = VectorProps(vecTmp).norm;
+					Matter.Body.setVelocity(bodyBall.instance, {x:normTmp.x*speedTmp, y:normTmp.y*speedTmp});
+				}
+			}
+			function onBottomHit() {
+				wavPing_Lost.amp(1, 0.1);
 				wavPing_Lost.amp(0, 0.5);
-                let pos = bodyPaddle.instance.position;
-                Matter.Body.setVelocity(bodyBall.instance, {x:0, y:0});
-                Matter.Body.setPosition(bodyBall.instance, { x: pos.x, y: pos.y - (PaddleThickness*0.5 + BallSize) });
-                Matter.Body.setAngularVelocity(bodyBall.instance, 0);
-                constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, 
+				let pos = bodyPaddle.instance.position;
+				Matter.Body.setVelocity(bodyBall.instance, {x:0, y:0});
+				Matter.Body.setPosition(bodyBall.instance, { x: pos.x, y: pos.y - (PaddleThickness*0.5 + BallSize) });
+				Matter.Body.setAngularVelocity(bodyBall.instance, 0);
+				constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, 
 															pointA:{x:0, y:-(PaddleThickness*0.5 + BallSize)}, 
 															bodyB:bodyBall.instance, pointB:{x:0, y:0}, 
 															render:{visible:true}});
@@ -399,15 +406,15 @@
 				BallSpeed = 0;
 			}
 			function onExitHit() {
-                
-            }
-            function onTopHit() {
-            	if(wallTop.hits) {
-            		//wallTop.hits--;
-            		//if(wallTop.hits <= 0) {
-            		//	Matter.World.remove(physics.World.instance, wallTop.instance);
-            		//}
-            	}
+				
+			}
+			function onTopHit() {
+				if(wallTop.hits) {
+					//wallTop.hits--;
+					//if(wallTop.hits <= 0) {
+					//	Matter.World.remove(physics.World.instance, wallTop.instance);
+					//}
+				}
 				wavPing_GroupClear.freq(768);
 				wavPing_GroupClear.amp(0);
 				wavPing_GroupClear.amp(wavPing_GroupClear_Osc);
@@ -416,33 +423,33 @@
 				for(let gI of aryBrickGroups) {
 					score += gI.bonus;
 				}
-            }
+			}
 			
-            function VectorProps(vec) {
-		        let mvec = (vec.x**2 + vec.y**2)**0.5;
-                let mvecinv = 1.0/mvec;
-                return {value:vec, norm:{x:vec.x*mvecinv, y:vec.y*mvecinv}, mag:mvec, maginv: mvecinv};
+			function VectorProps(vec) {
+				let mvec = (vec.x**2 + vec.y**2)**0.5;
+				let mvecinv = 1.0/mvec;
+				return {value:vec, norm:{x:vec.x*mvecinv, y:vec.y*mvecinv}, mag:mvec, maginv: mvecinv};
 			}
 			function VectorDiffProps(vecA, vecB) {
 				return VectorProps({x:vecB.x - vecA.x, y:vecB.y - vecA.y});
 			}
-            function ClientToPlayField(pos, viewport) {
-                let posRet = {x:pos.x/canvasMain.offsetWidth, y:pos.y/canvasMain.offsetHeight} ;
-                if (canvasMain.offsetWidth > canvasMain.offsetHeight) {
-                    posRet = {x: posRet.y, y: 1.0 - posRet.x };
-                }
-                posRet.x *= viewport.width;
-                posRet.y *= viewport.height;
-                return posRet;
-            }
-            function PlayFieldToClient(pos, viewport) {
-                let posRet = {x:pos.x/viewport.width, y:pos.y/viewport.height} ;
-                if (canvasMain.offsetWidth > canvasMain.offsetHeight) {
-                    posRet = {x: 1.0 - posRet.y, y: posRet.x };
-                }
-                posRet.x *= canvasMain.offsetWidth;
-                posRet.y *= canvasMain.offsetHeight;
-                return posRet;
+			function ClientToPlayField(pos, viewport) {
+				let posRet = {x:pos.x/canvasMain.offsetWidth, y:pos.y/canvasMain.offsetHeight} ;
+				if (canvasMain.offsetWidth > canvasMain.offsetHeight) {
+					posRet = {x: posRet.y, y: 1.0 - posRet.x };
+				}
+				posRet.x *= viewport.width;
+				posRet.y *= viewport.height;
+				return posRet;
+			}
+			function PlayFieldToClient(pos, viewport) {
+				let posRet = {x:pos.x/viewport.width, y:pos.y/viewport.height} ;
+				if (canvasMain.offsetWidth > canvasMain.offsetHeight) {
+					posRet = {x: 1.0 - posRet.y, y: posRet.x };
+				}
+				posRet.x *= canvasMain.offsetWidth;
+				posRet.y *= canvasMain.offsetHeight;
+				return posRet;
 			}
 			function canvas_onTouchStart(event) {
 				if (event.changedTouches) {
@@ -465,6 +472,11 @@
 										objRet.body = aryBodies[0];
 										objRet.constraint = constraintRet;
 										Matter.World.add(physics.World.instance, constraintRet);
+										if (aryBodies[0] == boayBall.instance) {
+											if (!constraintsBall.contains(constraintRet)) {
+												constraintsBall.push(constraintRet);
+											}
+										}
 									}
 								}
 							}
@@ -484,6 +496,9 @@
 									stiffness: 0.25
 								});
 								Matter.World.add(physics.World.instance, constraintMouse);
+								if (!constraintsBall.includes(constraintMouse)) {
+									constraintsBall.push(constraintMouse);
+								}
 							}
 						}
 					}
@@ -515,7 +530,14 @@
 						for (let itm of ary) {
 							aryTouches.splice(aryTouches.indexOf(itm), 1)
 							//if (VectorDiffProps(itm.touch.clientStart, pt).mag <= 4) {onTouchClicked(pt, itm.constraint);}
-							if (itm.constraint) { Matter.World.remove(physics.World.instance, itm.constraint); delete itm.constraint; }
+							if (itm.constraint) {
+								if (bolConstraintHasBall(itm.constraint)) {
+									BallSpeed = VectorProps(bodyBall.instance.velocity).mag;
+									constraintsBall.splice(constraintsBall.indexOf(itm.constraint), 1);
+								}
+								Matter.World.remove(physics.World.instance, itm.constraint); 
+								delete itm.constraint; 
+							}
 							if (itm.body) { delete itm.body; }
 						}							
 					}
@@ -525,6 +547,10 @@
 						if (VectorDiffProps(pointMouseDown, pt).mag <= 4) {onTouchClicked(pt, constraintMouse);}
 					}
 					if (constraintMouse) {
+						if (bolConstraintHasBall(constraintMouse)) {
+							BallSpeed = VectorProps(bodyBall.instance.velocity).mag;
+							constraintsBall.splice(constraintsBall.indexOf(constraintMouse), 1);
+						}
 						Matter.World.remove(physics.World.instance, constraintMouse);
 					}
 					constraintMouse = null;
@@ -554,26 +580,26 @@
 				}
 			}
 			function mouseDragged() {
-                let ppos = ClientToPlayField({ x: pmouseX, y: pmouseY }, { width: PlayScreen_Width, height: PlayScreen_Height });
-                let pos = ClientToPlayField({ x: mouseX, y: mouseY }, { width: PlayScreen_Width, height: PlayScreen_Height });
-                let vel = {x:pos.x-ppos.x, y:pos.y-ppos.y};
-                let velprops = VectorProps(vel);
-                vel.x = clamp(vel.x, -PaddleWidth, PaddleWidth);
-	            if (constraintPaddle) {
-	                if (vel.y < -Ball_InitSpeed) {
-	                	Matter.World.remove(physics.World.instance, constraintPaddle);
-	                	constraintPaddle = null;
-	                	BallSpeed = clamp(velprops.mag, Ball_InitSpeed, MAX_SPEED);
-	                	Matter.Body.setVelocity(bodyBall.instance, {x:velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed});
-	                	vel.x = 0;
-	                }
-                }
-                vel.y = 0;
-                Matter.Body.setVelocity(bodyPaddle.instance, vel);
-            }
-            function mouseMoved() {
-                let pos = ClientToPlayField({ x: mouseX, y: mouseY }, { width: PlayScreen_Width, height: PlayScreen_Height });
-                Matter.Body.setPosition(bodyPaddle.instance, {x:pos.x, y:PlayScreen_Height-PaddleThickness*3});
+				let ppos = ClientToPlayField({ x: pmouseX, y: pmouseY }, { width: PlayScreen_Width, height: PlayScreen_Height });
+				let pos = ClientToPlayField({ x: mouseX, y: mouseY }, { width: PlayScreen_Width, height: PlayScreen_Height });
+				let vel = {x:pos.x-ppos.x, y:pos.y-ppos.y};
+				let velprops = VectorProps(vel);
+				vel.x = clamp(vel.x, -PaddleWidth, PaddleWidth);
+				if (constraintPaddle) {
+					if (vel.y < -Ball_InitSpeed) {
+						Matter.World.remove(physics.World.instance, constraintPaddle);
+						constraintPaddle = null;
+						BallSpeed = clamp(velprops.mag, Ball_InitSpeed, MAX_SPEED);
+						Matter.Body.setVelocity(bodyBall.instance, {x:velprops.norm.x*BallSpeed, y:velprops.norm.y*BallSpeed});
+						vel.x = 0;
+					}
+				}
+				vel.y = 0;
+				Matter.Body.setVelocity(bodyPaddle.instance, vel);
+			}
+			function mouseMoved() {
+				let pos = ClientToPlayField({ x: mouseX, y: mouseY }, { width: PlayScreen_Width, height: PlayScreen_Height });
+				Matter.Body.setPosition(bodyPaddle.instance, {x:pos.x, y:PlayScreen_Height-PaddleThickness*3});
 			}
 
 			function aspectOrientation(aspect) { let fAsp = Math.abs(aspect); return (fAsp >= 0 && fAsp <= 1 ) ? "portrait":"landscape"; }
@@ -581,14 +607,14 @@
 				var szWin = {width: 0, height: 0};
 				if(bolFullscreen) 
 				{szWin.width = displayWidth; szWin.height = displayHeight;
-                let Asp = {device:aspectOrientation(displayWidth/displayHeight), window:aspectOrientation(windowWidth/windowHeight)};
-                console.log(Asp);
+				let Asp = {device:aspectOrientation(displayWidth/displayHeight), window:aspectOrientation(windowWidth/windowHeight)};
+				console.log(Asp);
 				if(Asp.device !== Asp.window) {let tmp = szWin.width; szWin.width = szWin.height; szWin.height = tmp; }
 				} else 
 				{szWin.width = windowWidth; szWin.height = windowHeight}
 				canvasMain.style.width = szWin.width + "px";
-                canvasMain.style.height = szWin.height + "px";
-                resizeCanvas(szWin.width, szWin.height);
+				canvasMain.style.height = szWin.height + "px";
+				resizeCanvas(szWin.width, szWin.height);
 				console.log(szWin);
 			}
 
