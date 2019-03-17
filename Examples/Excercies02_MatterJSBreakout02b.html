@@ -36,13 +36,12 @@
 			var wallinside = {x:wallsize.x / 32, y:wallsize.y / 8};
 			var BRICK_MARGIN = Math.sqrt(PlayScreen_Width **2 +  PlayScreen_Height**2) * 0.002;
 
-			var ROWS = 10; 
+			var ROWS = 10;
 			var COLUMNS = 12;
 			var BRICK_W = ((PlayScreen_Width - 2*wallinside.x) / (COLUMNS+1)) - BRICK_MARGIN;
 			var BRICK_H = PlayScreen_Height * 0.02;
 			var constraintPaddle, constraintMouse; var constraintsBall = [];
-			var bodyPaddle, bodyBall, PaddleGuard, 
-				wallTop, wallLeft, wallRight;
+			var bodyPaddle, bodyBall, PaddleGuard, TopGuard, wallTop, wallLeft, wallRight;
 			var wavPing_Paddle, wavPing_Bounds, wavPing_Brick,
 				wavPing_GroupClear, wavPing_GroupClear_Osc, wavPing_Lost;
 			var gradientBall, gradientPaddle, gradientBrick;
@@ -168,7 +167,7 @@
 				physics.setPlayArea({ width: PlayScreen_Width, height: PlayScreen_Height });
 				physics.instance.world.gravity.x = 0;
 				physics.instance.world.gravity.y = 0;
-				
+
 				bodyPaddle = physics.World.CreateBody_Rectangle((PlayScreen_Width-PaddleWidth)*0.5, PlayScreen_Height-PaddleThickness*4, PaddleWidth, PaddleThickness, {density:10, frictionAir:0.1, restitution:1, inertia:Infinity, collisionFilter:{category:0x1}});
 				let paddlepos = bodyPaddle.instance.position;
 				bodyBall = physics.World.CreateBody_Polygon(paddlepos.x, paddlepos.y-(PaddleThickness*0.5 + BallSize), BallPolygonShape, BallSize,  {density:0.0001, frictionAir:0, restitution:1, collisionFilter:{category:0x1, mask:0x1}});
@@ -178,10 +177,11 @@
 				PaddleGuard.CreateBody_Rectangle(0, bodyPaddle.instance.bounds.min.y - PaddleThickness, PlayScreen_Width, PaddleThickness, { isStatic: true, render: { visible: false }, collisionFilter: { category: 0x2 } });
 				constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, pointA:{x:0, y:-(PaddleThickness*0.5 +BallSize)}, bodyB:bodyBall.instance, pointB:{x:0, y:0}, render:{visible:true}});
 				Matter.World.add(physics.World.instance, constraintPaddle);
-				
+
 				wallTop = physics.World.CreateBody_Rectangle(wallinside.x-wallsize.x, wallinside.y-wallsize.y, PlayScreen_Width + 2*(wallsize.x - wallinside.x), wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
 				wallLeft = physics.World.CreateBody_Rectangle(wallinside.x-wallsize.x, wallinside.y-wallsize.y*2, wallsize.x, PlayScreen_Height + 4*wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
 				wallRight = physics.World.CreateBody_Rectangle(PlayScreen_Width - wallinside.x, wallinside.y-wallsize.y*2, wallsize.x, PlayScreen_Height + 4*wallsize.y,{isStatic:true, restitution:1, collisionFilter:{category:0x1}});
+				TopGuard = physics.World.CreateBody_Rectangle(wallinside.x, wallinside.y, PlayScreen_Width + 2*(wallsize.x - wallinside.x), wallinside.y*2,{render: {visible: false}, isStatic:true, restitution:1, collisionFilter:{category:0x2}});
 
 				aryStages.push(new clsStage(COLUMNS, ROWS, BRICK_W, BRICK_H, BRICK_MARGIN, BRICK_MARGIN, wallinside.x, wallinside.y, 10));
 				SetStage(aryStages[0]);
@@ -195,7 +195,7 @@
 				canvasMain.addEventListener("mousemove", canvas_onTouchMoved);
 				canvasMain.addEventListener("touchend", canvas_onTouchEnd);
 				canvasMain.addEventListener("mouseup", canvas_onTouchEnd);
-				
+
 				wavPing_Paddle = new p5.Oscillator();
 				wavPing_Paddle.setType("square");
 				wavPing_Paddle.start();
@@ -262,7 +262,7 @@
 				spanTmp.innerText = "Debug";
 				divRenderDebug.appendChild(spanTmp);
 				document.body.appendChild(divRenderDebug);
-				
+
 				let divRenderStats = document.createElement("div");
 				chkRenderStats = document.createElement("input");
 				chkRenderStats.id = "chkRenderStats"
@@ -321,7 +321,7 @@
 				let strScore = score.toString();
 				let lenScore = textWidth(strScore);
 				text(strScore, (canvasMain.width - lenScore) / 2, 46);
-				
+
 				if(chkRenderStats.checked) {
 					textSize(16);
 					noStroke();
@@ -368,7 +368,7 @@
 						cI_bodies.splice(cI_bodies.indexOf(bodyBall.instance), 1);
 						if(cI_bodies.includes(wallTop.instance)) {onTopHit();}
 						for(cI_Body of cI_bodies) {
-							
+
 						}
 					}
 				}
@@ -389,7 +389,7 @@
 			}
 			function onBrickHit(brick) {
 				if (brick.body) {
-					brick.hits--;								 
+					brick.hits--;
 					if (brick.hits > 0) {
 						wavPing_Brick.freq(440);
 						wavPing_Brick.amp(1, 0.05);
@@ -450,15 +450,15 @@
 					Matter.Body.setVelocity(bodyBall.instance, {x:0, y:0});
 					Matter.Body.setPosition(bodyBall.instance, { x: pos.x, y: pos.y - (PaddleThickness*0.5 + BallSize) });
 					Matter.Body.setAngularVelocity(bodyBall.instance, 0);
-					constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance, 
-																pointA:{x:0, y:-(PaddleThickness*0.5 + BallSize)}, 
-																bodyB:bodyBall.instance, pointB:{x:0, y:0}, 
+					constraintPaddle = Matter.Constraint.create({bodyA:bodyPaddle.instance,
+																pointA:{x:0, y:-(PaddleThickness*0.5 + BallSize)},
+																bodyB:bodyBall.instance, pointB:{x:0, y:0},
 																render:{visible:true}});
 					Matter.World.add(physics.World.instance, constraintPaddle);
 					BallSpeed = 0;
 					BallCrash = false;
 				}
-				
+
 			}
 			function onExitHit() {
 				wavPing_GroupClear.freq(1024);
@@ -477,7 +477,7 @@
 			}
 			function onTopHit() {
 				CurrentStage.StageHits --;
-				if(CurrentStage.StageHits <= 0) { 
+				if(CurrentStage.StageHits <= 0) {
 					Matter.World.remove(physics.World.instance, wallTop.instance);
 				}
 				wavPing_GroupClear.freq(768);
@@ -489,7 +489,7 @@
 					score += gI.bonus;
 				}
 			}
-			
+
 			function VectorProps(vec) {
 				let mvec = (vec.x**2 + vec.y**2)**0.5;
 				let mvecinv = 1.0/mvec;
@@ -577,14 +577,14 @@
 						for (let itm of ary) {
 							if (itm.constraint) {
 								itm.constraint.pointB = pt;
-							}	
-						}	
+							}
+						}
 					}
 				} else {
 					let pt = ClientToPlayField({ x: event.clientX, y: event.clientY }, { width: PlayScreen_Width, height: PlayScreen_Height });
 					if (constraintMouse) {
 						constraintMouse.pointB = pt;
-					}	
+					}
 				}
 			}
 			function canvas_onTouchEnd(event) {
@@ -600,11 +600,11 @@
 									BallSpeed = VectorProps(bodyBall.instance.velocity).mag;
 									constraintsBall.splice(constraintsBall.indexOf(itm.constraint), 1);
 								}
-								Matter.World.remove(physics.World.instance, itm.constraint); 
-								delete itm.constraint; 
+								Matter.World.remove(physics.World.instance, itm.constraint);
+								delete itm.constraint;
 							}
 							if (itm.body) { delete itm.body; }
-						}							
+						}
 					}
 				} else {
 					let pt = ClientToPlayField({ x: event.clientX, y: event.clientY }, { width: PlayScreen_Width, height: PlayScreen_Height });
@@ -670,12 +670,12 @@
 			function aspectOrientation(aspect) { let fAsp = Math.abs(aspect); return (fAsp >= 0 && fAsp <= 1 ) ? "portrait":"landscape"; }
 			function windowResized() {
 				var szWin = {width: 0, height: 0};
-				if(bolFullscreen) 
+				if(bolFullscreen)
 				{szWin.width = displayWidth; szWin.height = displayHeight;
 				let Asp = {device:aspectOrientation(displayWidth/displayHeight), window:aspectOrientation(windowWidth/windowHeight)};
 				console.log(Asp);
 				if(Asp.device !== Asp.window) {let tmp = szWin.width; szWin.width = szWin.height; szWin.height = tmp; }
-				} else 
+				} else
 				{szWin.width = windowWidth; szWin.height = windowHeight}
 				canvasMain.style.width = szWin.width + "px";
 				canvasMain.style.height = szWin.height + "px";
