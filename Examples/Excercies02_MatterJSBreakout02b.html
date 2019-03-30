@@ -301,7 +301,7 @@
 				push();
 				if (canvasMain.offsetWidth > canvasMain.offsetHeight) {
 					translate(canvasMain.width, 0);
-					rotate(PI / 2);
+					rotate(PI * 0.5);
 					scale(canvasMain.height / canvasMain.width, canvasMain.width / canvasMain.height);
 				}
 				//scale(1/4, 1/4);
@@ -352,7 +352,7 @@
 				if(pos.y >= PlayScreen_Height + wallsize.y*2) { onBottomHit(); return;}
 				if(pos.y <= -wallsize.y) { onExitHit(); return;}
 				if(BallProgressed) {
-					if(pos.y <= bodyPaddle.instance.position.y-BallSize) {
+					if(pos.y <= bodyPaddle.instance.position.y-(PaddleThickness+BallSize)) {
 						BallProgressed = false;
 					} else {
 						bodyPaddle.instance.collisionFilter.category = 0x2;
@@ -537,7 +537,7 @@
 										objRet.body = aryBodies[0];
 										objRet.constraint = constraintRet;
 										Matter.World.add(physics.World.instance, constraintRet);
-										if (aryBodies[0] == boayBall.instance) {
+										if (aryBodies[0] == bodyBall.instance) {
 											if (!constraintsBall.contains(constraintRet)) {
 												constraintsBall.push(constraintRet);
 											}
@@ -561,8 +561,10 @@
 									stiffness: 0.25
 								});
 								Matter.World.add(physics.World.instance, constraintMouse);
-								if (!constraintsBall.includes(constraintMouse)) {
-									constraintsBall.push(constraintMouse);
+								if(aryBodies[0] == bodyBall.instance) {
+									if (!constraintsBall.includes(constraintMouse)) {
+										constraintsBall.push(constraintMouse);
+									}
 								}
 							}
 						}
