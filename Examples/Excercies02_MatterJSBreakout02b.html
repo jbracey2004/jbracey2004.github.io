@@ -37,7 +37,7 @@
 			var BRICK_MARGIN = Math.sqrt(PlayScreen_Width**2 +  PlayScreen_Height**2) * 0.002;
 
 			var ROWS = 8;
-			var COLUMNS = 8;
+			var COLUMNS = 10;
 			var constraintPaddle, constraintMouse; var constraintsBall = [];
 			var bodyPaddle, bodyBall, PaddleGuard, TopGuard, wallTop, wallLeft, wallRight;
 			var wavPing_Paddle, wavPing_Bounds, wavPing_Brick,
@@ -47,6 +47,13 @@
 			var pointMouseDown = null;
 			var aryTouches = [];
 			var minVertical = 0.85;
+			
+			function InitStage(stage) {
+				stage.addBricksStack(undefined, COLUMNS, ROWS,
+																		wallinside.x + (PlayScreen_Width-wallinside.x)*0.05, wallinside.y + (PlayScreen_Height-wallinside.y)*0.125,
+																		BRICK_MARGIN, BRICK_MARGIN,
+																		(PlayScreen_Width-wallinside.x*2)*0.9, (PlayScreen_Height-wallinside.y*2)*0.25);
+			}
 
 			var clsStage = function(StageHits) {
 				this.StageHits = StageHits;
@@ -155,10 +162,7 @@
 
 				let newStage = new clsStage(10);
 				aryStages.push(newStage);
-				newStage.addBricksStack(undefined, COLUMNS, ROWS,
-																		wallinside.x + (PlayScreen_Width-wallinside.x)*0.1, wallinside.y + (PlayScreen_Height-wallinside.y)*0.125,
-																		BRICK_MARGIN, BRICK_MARGIN,
-																		(PlayScreen_Width-wallinside.x*2)*0.8, (PlayScreen_Height-wallinside.y*2)*0.25);
+				InitStage(newStage);
 				SetStage(newStage);
 
 				Matter.Events.on(physics.instance, "beforeUpdate", physics_onTick);
@@ -446,10 +450,7 @@
 					if(stage>=aryStages.length) {
 						let newStage = new clsStage(10);
 						aryStages.push(newStage);
-						newStage.addBricksStack(undefined, COLUMNS, ROWS,
-																				wallinside.x + (PlayScreen_Width-wallinside.x)*0.1, wallinside.y + (PlayScreen_Height-wallinside.y)*0.125,
-																				BRICK_MARGIN, BRICK_MARGIN,
-																				(PlayScreen_Width-wallinside.x*2)*0.8, (PlayScreen_Height-wallinside.y*2)*0.25);
+						InitStage(newStage);										
 						SetStage(newStage);
 					}
 					SetStage(aryStages[stage]);
