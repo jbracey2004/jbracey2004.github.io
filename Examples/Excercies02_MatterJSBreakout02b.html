@@ -47,12 +47,33 @@
 			var pointMouseDown = null;
 			var aryTouches = [];
 			var minVertical = 0.85;
-			
+
 			function InitStage(stage) {
-				stage.addBricksStack(undefined, COLUMNS, ROWS,
-																		wallinside.x + (PlayScreen_Width-wallinside.x)*0.05, wallinside.y + (PlayScreen_Height-wallinside.y)*0.125,
-																		BRICK_MARGIN, BRICK_MARGIN,
-																		(PlayScreen_Width-wallinside.x*2)*0.9, (PlayScreen_Height-wallinside.y*2)*0.25);
+				for(let i = 0; i < ROWS; i ++) {
+					let group = new clsBrickGroup(stage);
+					group.bonus = (i+1)*5;
+					stage.aryBrickGroups.push(group);
+				}
+				stage.addBricksStack(InitBrickBodyFxn, COLUMNS, ROWS,
+														wallinside.x + (PlayScreen_Width-wallinside.x)*0.05,
+														wallinside.y + (PlayScreen_Height-wallinside.y)*0.125,
+														BRICK_MARGIN, BRICK_MARGIN,
+														(PlayScreen_Width-wallinside.x*2)*0.9,
+														(PlayScreen_Height-wallinside.y*2)*0.2);
+			}
+			function InitBrickBodyFxn(objBody, countX, countY) {
+				let idxGroup = (countY-1) - objBody.idxStart.y;
+				objBody.bodyCreate = function() {
+					return Matter.Bodies.rectangle(this.posStart.x, this.posStart.y,
+																				 this.sizeStart.w, this.sizeStart.h,
+																				 {frictionAir: 0.01, restitution:1});
+				}
+				objBody.body = objBody.bodyCreate();
+				objBody.body.subject = objBody;
+				objBody.points = 2**idxGroup;
+				objBody.hitsStart = Math.floor(idxGroup*0.5) + 1;
+				objBody.hits = objBody.hitsStart;
+				objBody.stage.aryBrickGroups[idxGroup].add(objBody);
 			}
 
 			var clsStage = function(StageHits) {
@@ -60,24 +81,23 @@
 				this.aryBricks = [];
 				this.aryBrickGroups = [];
 				this.compositeBricks = Matter.Composite.create();
-				this.addBricksStack = function(group, countX, countY, posX, posY, GapX, GapY, StackW, StackH) {
-					if(!group) {
-						group = new clsBrickGroup(this);
-						this.aryBrickGroups.push(group);
-					}
+				this.addBricksStack = function(fxnCreateBody, countX, countY, posX, posY, GapX, GapY, StackW, StackH) {
 					let BrickW = (StackW/countX)-GapX;
 					let BrickH = (StackH/countY)-GapY;
+					let invBrickW = countX/StackW;
+					let invBrickH = countY/StackH;
 					let ary = this.aryBricks;
+					let thisStage = this;
 					Matter.Composite.add(this.compositeBricks,
 						Matter.Composites.stack(posX, posY, countX, countY, GapX, GapY, function(x,y) {
 							let objRet = {};
-							objRet.body = Matter.Bodies.rectangle(x, y, BrickW, BrickH, {frictionAir: 0.01, restitution:1});
-							objRet.body.subject = objRet;
-							objRet.posStart = {x: x, y: y};
-							objRet.sizeStart = {w:BrickW, h:BrickH}
-							objRet.points = 1;
-							objRet.hits = 1;
-							group.add(objRet);
+							let idx = {x:Math.round((x-posX)*invBrickW),
+												 y:Math.round((y-posY)*invBrickH)};
+							objRet.stage = thisStage;
+							objRet.idxStart = idx;
+					 		objRet.posStart = {x: x, y: y};
+							objRet.sizeStart = {w:BrickW, h:BrickH};
+							fxnCreateBody(objRet, countX, countY);
 							ary.push(objRet);
 							return objRet.body;
 						}).bodies
@@ -95,8 +115,9 @@
 				this.bricksLive = function () { return this.bricks.filter(function (itm) { return itm.body; }); };
 				this.reload = function () {
 					for (let bI of this.bricks) {
-						bI.body = Matter.Bodies.rectangle(bI.posStart.x, bI.posStart.y, bI.sizeStart.w, bI.sizeStart.h);
+						bI.body = bI.bodyCreate();
 						bI.body.subject = bI;
+						bI.hits = bI.hitsStart;
 						Matter.Composite.add(this.stage.compositeBricks, bI.body);
 					}
 				};
@@ -437,7 +458,6 @@
 					BallSpeed = 0;
 					BallCrash = false;
 				}
-
 			}
 			function onExitHit() {
 				if(!BallCrash) {
@@ -450,7 +470,7 @@
 					if(stage>=aryStages.length) {
 						let newStage = new clsStage(10);
 						aryStages.push(newStage);
-						InitStage(newStage);										
+						InitStage(newStage);
 						SetStage(newStage);
 					}
 					SetStage(aryStages[stage]);
@@ -528,7 +548,7 @@
 										objRet.constraint = constraintRet;
 										Matter.World.add(physics.World.instance, constraintRet);
 										if (aryBodies[0] == bodyBall.instance) {
-											if (!constraintsBall.contains(constraintRet)) {
+											if (!constraintsBall.includes(constraintRet)) {
 												constraintsBall.push(constraintRet);
 											}
 										}
