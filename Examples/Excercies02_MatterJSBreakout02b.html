@@ -65,8 +65,8 @@
 				let idxGroup = (countY-1) - objBody.idxStart.y;
 				objBody.bodyCreate = function() {
 					return Matter.Bodies.rectangle(this.posStart.x, this.posStart.y,
-																				 this.sizeStart.w, this.sizeStart.h,
-																				 {frictionAir: 0.01, restitution:1});
+												this.sizeStart.w, this.sizeStart.h,
+												{frictionAir: 0.01, restitution:1});
 				}
 				objBody.body = objBody.bodyCreate();
 				objBody.body.subject = objBody;
@@ -77,6 +77,7 @@
 			}
 
 			var clsStage = function(StageHits) {
+				this.StageHitsStart = StageHits;
 				this.StageHits = StageHits;
 				this.aryBricks = [];
 				this.aryBrickGroups = [];
@@ -90,12 +91,12 @@
 					let thisStage = this;
 					Matter.Composite.add(this.compositeBricks,
 						Matter.Composites.stack(posX, posY, countX, countY, GapX, GapY, function(x,y) {
-							let objRet = {};
+							let objRet = new clsBrick();
 							let idx = {x:Math.round((x-posX)*invBrickW),
-												 y:Math.round((y-posY)*invBrickH)};
+										y:Math.round((y-posY)*invBrickH)};
 							objRet.stage = thisStage;
 							objRet.idxStart = idx;
-					 		objRet.posStart = {x: x, y: y};
+							objRet.posStart = {x: x, y: y};
 							objRet.sizeStart = {w:BrickW, h:BrickH};
 							fxnCreateBody(objRet, countX, countY);
 							ary.push(objRet);
@@ -103,6 +104,26 @@
 						}).bodies
 					);
 				};
+				this.draw = function(ctx) {
+					noStroke();
+					fill(0);
+					rect(0,0,wallinside.x, PlayScreen_Height);
+					rect(PlayScreen_Width - wallinside.x,0, wallinside.x, PlayScreen_Height);
+					if(this.StageHits >= 0) {
+						let stageEndWallThickness = wallinside.y*(this.StageHits/this.StageHitsStart);
+						rect(wallinside.x, wallinside.y - stageEndWallThickness, PlayScreen_Width - wallinside.x*2, stageEndWallThickness);
+						fill("#00000080");
+						rect(wallinside.x, 0, PlayScreen_Width - wallinside.x*2, wallinside.y - stageEndWallThickness);
+					}
+					for(let gI of this.aryBrickGroups) {
+						if(gI.draw) gI.draw(ctx);
+					}
+				}
+				this.drawBricks = function(ctx) {
+					for(let bI of this.aryBricks) {
+						if(bI.draw) bI.draw(ctx);
+					}
+				}
 			}
 			var clsBrickGroup = function(objStage) {
 				this.stage = objStage;
@@ -121,7 +142,60 @@
 						Matter.Composite.add(this.stage.compositeBricks, bI.body);
 					}
 				};
+				this.draw = function(ctx) {
+					for(let bI of this.bricks) {
+						if(bI.draw) bI.draw(ctx);
+					}
+				}
 			};
+			var clsBrick = function() {
+				this.draw = function(ctx) {
+					if(this.body) {
+						let pos = this.body.position;
+						let ang = this.body.angle;
+						push();
+						translate(pos.x, pos.y);
+						rotate(ang);
+						strokeWeight(1);
+						stroke(this.body.render.strokeStyle);
+						fill(this.body.render.fillStyle);
+						rect(-0.5*this.sizeStart.w,-0.5*this.sizeStart.h,1*this.sizeStart.w, 1*this.sizeStart.h);
+						let invHH = 1/this.hits;
+						for(let HH = 1; HH < this.hits; HH ++) {
+							let posHH = HH*invHH * (this.sizeStart.w*0.9) -0.5* this.sizeStart.w;
+							fill("#00000080");
+							rect(posHH, -1, 2, 2);
+						}
+						pop();
+					}
+				}
+			};
+			var drawPaddle = function(ctx, viewport) {
+				let pos = bodyPaddle.instance.position;
+				let ang = bodyPaddle.instance.angle;
+				push();
+				translate(pos.x, pos.y);
+				rotate(ang);
+				strokeWeight(1);
+				stroke(bodyPaddle.instance.render.strokeStyle);
+				fill(bodyPaddle.instance.render.fillStyle);
+				rect(-0.5*PaddleWidth,-0.5*PaddleThickness,1*PaddleWidth, 1*PaddleThickness);
+				pop();
+			}
+			var drawBall = function(ctx, viewport) {
+				let pos = bodyBall.instance.position;
+				let ang = bodyBall.instance.angle;
+				let vertices = bodyBall.instance.vertices;
+				strokeWeight(1);
+				stroke(bodyBall.instance.render.strokeStyle);
+				fill(bodyBall.instance.render.fillStyle);
+				beginShape();
+				for(let vrt of vertices) {
+					vertex(vrt.x, vrt.y);
+				}
+				endShape(CLOSE);
+			}
+
 			function SetStage(Stage) {
 				if(!Stage) return;
 				if(CurrentStage) {
@@ -306,8 +380,20 @@
 				}
 				//scale(1/4, 1/4);
 				//translate(canvasMain.width*2, canvasMain.height*2);
-				if (chkRenderBodies.checked) { physics.RenderDebug(contextMain, { x: 0, y: 0, width: PlayScreen_Width, height: PlayScreen_Height }, true); }
-				if (chkRenderDebug.checked) { physics.RenderDebug(contextMain, { x: 0, y: 0, width: PlayScreen_Width, height: PlayScreen_Height }, false); }
+				let view = { x: 0, y: 0, width: PlayScreen_Width, height: PlayScreen_Height };
+				//if (chkRenderBodies.checked) { physics.RenderDebug(contextMain, view, true); }
+				if (chkRenderBodies.checked) { 
+					if(CurrentStage) {
+						push();
+						scale(contextMain.canvas.width / view.width, contextMain.canvas.height / view.height);
+						translate(-view.x, -view.y);
+						drawBall();
+						drawPaddle();
+						CurrentStage.draw();
+						pop();
+					} 
+				}
+				if (chkRenderDebug.checked) { physics.RenderDebug(contextMain, view, false); }
 				//noFill();
 				//strokeWeight(4);
 				//stroke(255);
@@ -688,6 +774,7 @@
 				console.log(Asp);
 				if(Asp.device !== Asp.window) {let tmp = szWin.width; szWin.width = szWin.height; szWin.height = tmp; }
 				} else
+
 				{szWin.width = windowWidth; szWin.height = windowHeight}
 				canvasMain.style.width = szWin.width + "px";
 				canvasMain.style.height = szWin.height + "px";
