@@ -106,17 +106,24 @@
 				};
 				this.draw = function(ctx) {
 					noStroke();
-					fill(0);
+					fill(BallCrash?"#F00":0);
 					rect(0,0,wallinside.x, PlayScreen_Height);
 					rect(PlayScreen_Width - wallinside.x,0, wallinside.x, PlayScreen_Height);
 					if(this.StageHits >= 0) {
 						let stageEndWallThickness = wallinside.y*(this.StageHits/this.StageHitsStart);
 						rect(wallinside.x, wallinside.y - stageEndWallThickness, PlayScreen_Width - wallinside.x*2, stageEndWallThickness);
-						fill("#00000080");
+						fill("#00400040");
 						rect(wallinside.x, 0, PlayScreen_Width - wallinside.x*2, wallinside.y - stageEndWallThickness);
 					}
 					for(let gI of this.aryBrickGroups) {
 						if(gI.draw) gI.draw(ctx);
+					}
+					if(BallCrash) {
+						fill("#F008");
+						rect(0,0,PlayScreen_Width, PlayScreen_Height);
+					} else if(stage < aryStages.length - 1) {
+						fill("#22F4");
+						rect(0,0,PlayScreen_Width, PlayScreen_Height);
 					}
 				}
 				this.drawBricks = function(ctx) {
