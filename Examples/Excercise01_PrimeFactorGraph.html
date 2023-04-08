@@ -115,7 +115,14 @@
 			var matxView = new DOMMatrix([1, 0, 0, 1, 0, 0]);
 
 			function page_onload() {
-				let elem = document.getElementById("txtNumber");
+				canvasMain = document.getElementById("canvasMain");
+				ctxMainDraw = canvasMain.getContext("2d");
+				timeCurrent = 0;
+				timeDelta = 0;
+				rotateMain = 0;
+				aryPointers = [];
+				matxView = new DOMMatrix([1, 0, 0, 1, 0, 0]);
+				elem = document.getElementById("txtNumber");
 				elem.value = "65536";
 				number_update(elem.value);
 				InitVisualizationCanvas();
