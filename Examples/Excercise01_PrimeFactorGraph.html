@@ -106,6 +106,14 @@
 				return ret;
 			}
 
+			var canvasMain = document.getElementById("canvasMain");
+			var ctxMainDraw = canvasMain.getContext("2d");
+			var timeCurrent = 0;
+			var timeDelta = 0;
+			var rotateMain = 0;
+			var aryPointers = [];
+			var matxView = new DOMMatrix([1, 0, 0, 1, 0, 0]);
+
 			function page_onload() {
 				let elem = document.getElementById("txtNumber");
 				elem.value = "65536";
@@ -243,14 +251,6 @@
 				strRet += `</div>`;
 				return strRet;
 			}
-
-			var canvasMain = document.getElementById("canvasMain");
-			var ctxMainDraw = canvasMain.getContext("2d");
-			var timeCurrent = 0;
-			var timeDelta = 0;
-			var rotateMain = 0;
-			var aryPointers = [];
-			var matxView = new DOMMatrix([1, 0, 0, 1, 0, 0]);
 
 			function InitVisualizationCanvas()
 			{
