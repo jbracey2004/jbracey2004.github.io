@@ -63,29 +63,29 @@
                     elementList.style = "display: flex; flex-flow: wrap;";
                     aryDiv.divElem.appendChild(elementList);
                     for (var i = 0; i < aryDiv.lstFiles.length; i++) {
-					    console.log("Reference"+i.toString());
-                        var args = {};
+                        var objArgs = {};
                         var str = aryDiv.lstFiles[i];
+						console.log("Reference"+i.toString()+" \t "+str);
 					    var strmatch = {};
 					    strmatch = str.match(/\b\w+\.\w+/);
 					    if (strmatch == null) { continue; }
-                        args["name"] = strmatch[0];
+                        objArgs["name"] = strmatch[0];
                         str = str.replace(strmatch, "");
 					    strmatch = str.match(/\b\d{2}\/\d{2}\/\d{4}\s+\d{2}\:\d{2}\s\w{2}/);
 					    if (strmatch == null) { continue; }
-                        args["date"] = strmatch;
+                        objArgs["date"] = strmatch;
                         str = str.replace(strmatch, "");
-                        args["date"] = new Date(args["date"]);
-                        args["path"] = aryDiv.divElem.id + "/" + args["name"];
-                        args["size"] = parseFloat(str.match(/\b(\d+(\,)?)+\b/g).toString().replace(",", ""));
-                        args["toString"] = args["name"] + "\t" + args["date"] + "\t" + args["size"] + " bytes"
-                        console.log(args);
+                        objArgs["date"] = new Date(objArgs["date"]);
+                        objArgs["path"] = aryDiv.divElem.id + "/" + objArgs["name"];
+                        objArgs["size"] = parseFloat(str.match(/\b(\d+(\,)?)+\b/g).toString().replace(",", ""));
+                        objArgs["toString"] = objArgs["name"] + "\t" + objArgs["date"] + "\t" + objArgs["size"] + " bytes"
+                        console.log(objArgs);
 					    intCount++;
                         var elementListItem = createElement("div", "");
 					    elementListItem.style("padding","8px");
-						var elementButtonItem = createDiv(args["name"].toString()+"<br/>");
+						var elementButtonItem = createDiv(objArgs["name"].toString()+"<br/>");
 						elementButtonItem.attribute("class", "button");
-						var elementButton = createA(args["path"].toString(), "Play");
+						var elementButton = createA(objArgs["path"].toString(), "Play");
 						elementButton.style("font-size","1.5em");
 						var elementPreview = createElement("iframe");
 						elementPreview.attribute("class", "buttonPreview");
@@ -94,7 +94,7 @@
 						var elementButtonPrev = createInput();
 						elementButtonPrev.attribute("type", "checkbox");
 						elementButtonPrev.attribute("id", "chkPreview");
-						elementButtonPrev.elt.onchange = chkPreview_OnChange(elementPreview, args["path"].toString());
+						elementButtonPrev.elt.onchange = chkPreview_OnChange(elementPreview, objArgs["path"].toString());
 						var elementButtonPrevLabel = createElement("label");
 						elementButtonPrevLabel.html("\rPreview");
 						elementButtonPrevLabel.attribute("for", "chkPreview");
