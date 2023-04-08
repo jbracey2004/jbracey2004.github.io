@@ -1,37 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>XML File Viewer</title>
+	<head>
+		<meta charset="utf-8" />
+		<title>XML File Viewer</title>
 		<style>
 			.clsDiv {
 				border: solid 4px;
 				padding: 4px;
 				margin: 0px 4px 4px 4px;
-			  }
-			  .clsDivItem {
+			}
+			.clsDivItem {
 				display: block;
 				border: dashed 2px;
 				padding: 4px;
 				margin: 0px 4px 4px 4px;
-			  }
-			  .clsDivItem :not(.clsTagHeader, .clsTagHeader *, .clsAttrName, .clsAttrValue, div, .clsDivElement, .clsDivElement *, progress) {
+			}
+			.clsDivItem
+				:not(
+					.clsTagHeader,
+					.clsTagHeader *,
+					.clsAttrName,
+					.clsAttrValue,
+					div,
+					.clsDivElement,
+					.clsDivElement *,
+					progress
+				) {
 				display: block;
 				border: solid blue 2px;
 				margin: 0px 4px 4px 4px;
 				padding: 4px;
 				overflow: auto;
-			  }
-			  
-			  .clsAttrName {
-				display:inline;
+			}
+
+			.clsAttrName {
+				display: inline;
 				background: #aaf;
-			  }
-			  .clsAttrValue {
-				display:inline;
+			}
+			.clsAttrValue {
+				display: inline;
 				background: #cce;
-			  }
-			  .clsTagHeader {
+			}
+			.clsTagHeader {
 				display: block;
 				background: #ccc;
 				font-size: medium;
@@ -39,21 +49,21 @@
 				margin: 4px 4px 0px 4px;
 				padding: 4px;
 				overflow: hidden;
-			  }
-			  .clsTagHeader .clsExpandButton {
-				font-size:  large;
-			  }
-			  .clsTitleField.usrInput {
+			}
+			.clsTagHeader .clsExpandButton {
+				font-size: large;
+			}
+			.clsTitleField.usrInput {
 				background: none;
 				border: none;
 				width: 100%;
 				ont-size: medium;
 				color: #004;
 				box-sizing: border-box;
-			  }
+			}
 		</style>
-        <script>
-            var aryXMLDOM = [];
+		<script>
+			var aryXMLDOM = [];
 
 			function Main() {
 				let elemDiv = document.getElementById("divFiles");
@@ -63,32 +73,34 @@
 				let elemWidgetTypes = document.getElementById("lstWidgetTypes");
 				let elemAddWidget = document.getElementById("comAddWidget");
 				elemWidgetTypes.selectedIndex = 0;
-				elemAddWidget.onclick = new Function('event', elemWidgetTypes.options[elemWidgetTypes.selectedIndex].value);
+				elemAddWidget.onclick = new Function(
+					"event",
+					elemWidgetTypes.options[elemWidgetTypes.selectedIndex].value
+				);
 			}
 
 			function FilesPicked(args) {
 				let elemDlg = document.getElementById("dlgFiles");
 				let aryFiles = elemDlg.files;
-				for(let f of aryFiles) {
+				for (let f of aryFiles) {
 					let fileRead = new FileReader();
 					fileRead.file = f;
 					fileRead.readAsText(f);
-					fileRead.onloadend = function(args) {
-					let tmpFileRead = args.target;
-					let tmpFile = tmpFileRead.file;
-					tmpFile.str = tmpFileRead.result;
-					AddFileElement(tmpFile.str, tmpFile.name);
-					}
+					fileRead.onloadend = function (args) {
+						let tmpFileRead = args.target;
+						let tmpFile = tmpFileRead.file;
+						tmpFile.str = tmpFileRead.result;
+						AddFileElement(tmpFile.str, tmpFile.name);
+					};
 				}
 				elemDlg.value = "";
 			}
 
 			function AddFileElement(strData, strName) {
-				let domData = new DOMParser()
-					.parseFromString(strData,"text/xml");
-				AddFileElementFromDoc({title:strName, dom:domData});
-				}
-				function AddFileElementFromDoc(doc) {
+				let domData = new DOMParser().parseFromString(strData, "text/xml");
+				AddFileElementFromDoc({ title: strName, dom: domData });
+			}
+			function AddFileElementFromDoc(doc) {
 				let strName = doc.title;
 				let strData = doc.dom.documentElement.outerHTML;
 				let domData = doc.dom;
@@ -130,11 +142,18 @@
 				elemProgress.className = "clsDivElement";
 				elemProgress.style = "width: 100%;";
 				divProgress.appendChild(elemProgress);
-				let strQEx = ":not(.clsTagHeader, .clsTagHeader *, .clsAttrName, .clsAttrValue, div, table, table *, .clsDivItem, .clsDivElement, progress";
+				let strQEx =
+					":not(.clsTagHeader, .clsTagHeader *, .clsAttrName, .clsAttrValue, div, table, table *, .clsDivItem, .clsDivElement, progress";
 				let aryDom = elemDoc.querySelectorAll(strQEx);
 				elemProgress.max = aryDom.length;
 				elemProgress.value = 0;
-				let argsDocDOM = {progress: divProgress, elemDoc:elemDoc, elemDiv: elemDiv, elemHead: elemHead, ary: aryDom};
+				let argsDocDOM = {
+					progress: divProgress,
+					elemDoc: elemDoc,
+					elemDiv: elemDiv,
+					elemHead: elemHead,
+					ary: aryDom,
+				};
 				argsDocDOM.elemProgress = argsDocDOM.progress.querySelector("progress");
 				argsDocDOM.lblProgress = argsDocDOM.progress.querySelector("span");
 				setTimeout(UpdateDocSubElements, 0, argsDocDOM);
@@ -145,45 +164,47 @@
 				let aryDom = args.ary;
 				let len = elemProgress.max;
 				let itr = elemProgress.value;
-				if(itr < len) {
+				if (itr < len) {
 					let elem = aryDom[itr];
-					if(!elem.className.includes("clsTagHeader")) {
-					let intDelim = elem.tagName.lastIndexOf(":");
-					let strTag = elem.tagName.substring(intDelim+1);
-					lblProgress.innerHTML = `XML Item (${itr} of ${len}) ${strTag}`;
-					if(elem.attributes) {
-						if(elem.attributes.length > 0) {
-						let ary = [...elem.attributes]
-							.map(itm => 
-								`<span class='clsAttrName'>${itm.name}</span> 
-								<span class='clsAttrValue'>${itm.value}</span>`);
-						if(ary.length > 0) {
-							let aryStr = "";
-							for(let itm of ary) {
-							aryStr += `<div>${itm}</div>`;
+					if (!elem.className.includes("clsTagHeader")) {
+						let intDelim = elem.tagName.lastIndexOf(":");
+						let strTag = elem.tagName.substring(intDelim + 1);
+						lblProgress.innerHTML = `XML Item (${itr} of ${len}) ${strTag}`;
+						if (elem.attributes) {
+							if (elem.attributes.length > 0) {
+								let ary = [...elem.attributes].map(
+									(itm) =>
+										`<span class='clsAttrName'>${itm.name}</span> 
+								<span class='clsAttrValue'>${itm.value}</span>`
+								);
+								if (ary.length > 0) {
+									let aryStr = "";
+									for (let itm of ary) {
+										aryStr += `<div>${itm}</div>`;
+									}
+									let elemAttr = document.createElement("div");
+									elemAttr.innerHTML = aryStr;
+									elem.prepend(elemAttr);
+								}
 							}
-							let elemAttr = document.createElement("div");
-							elemAttr.innerHTML = aryStr;
-							elem.prepend(elemAttr);
 						}
-						}
-					}
-					AddHeaderElement(elem, elem.tagName, false, false, true);
+						AddHeaderElement(elem, elem.tagName, false, false, true);
 					}
 					elemProgress.value++;
 					setTimeout(UpdateDocSubElements, 0, args);
 					return;
 				}
 				args.progress.remove();
-				args.elemDoc.style.display = (args.elemHead.checked)?("block"):("none");
+				args.elemDoc.style.display = args.elemHead.checked ? "block" : "none";
 				args.elemDiv.outerHTML = args.elemDoc.outerHTML;
 			}
 
 			function HeaderTitle_File_onchange() {
 				let elemGadget = args.target;
 				let strGadgetValue = elemGadget.value;
-				let elemHead = [...document.querySelectorAll(".clsTagHeader")]
-				.find(itm => [...itm.querySelectorAll("*")].includes(elemGadget) );
+				let elemHead = [...document.querySelectorAll(".clsTagHeader")].find(
+					(itm) => [...itm.querySelectorAll("*")].includes(elemGadget)
+				);
 				let elem = elemHead.nextSibling;
 				let doc = elemGadget.subject;
 				let dl = elem.querySelector("#comDownload");
@@ -202,7 +223,10 @@
 			function WidgetTypePicked(args) {
 				let elemLst = args.target;
 				let elem = document.getElementById("comAddWidget");
-				elem.onclick = new Function('event', elemLst.options[elemLst.selectedIndex].value);
+				elem.onclick = new Function(
+					"event",
+					elemLst.options[elemLst.selectedIndex].value
+				);
 			}
 
 			function AddCombineGPXWidget() {
@@ -229,7 +253,7 @@
 					</div>
 				`;
 				elemDiv.appendChild(elemWidget);
-				for(let itm of aryXMLDOM) {
+				for (let itm of aryXMLDOM) {
 					let elem = document.getElementById("lstBaseFile");
 					let opt = document.createElement("option");
 					opt.value = aryXMLDOM.indexOf(itm);
@@ -242,7 +266,7 @@
 					elem.appendChild(opt);
 				}
 				let elem = document.getElementById("comCombineGPXFiles");
-				elem.onclick = args => {
+				elem.onclick = (args) => {
 					args.target.enabled = false;
 					let elemTo = document.getElementById("lstBaseFile");
 					let idxTo = elemTo.selectedIndex;
@@ -263,11 +287,17 @@
 					elemProgress.className = "clsDivElement";
 					elemProgress.style = "width: 100%;";
 					divProgress.appendChild(elemProgress);
-					let argsDocDOM = {docTo: objTo.dom, docFrom: objFrom.dom, strName: strName, progress: divProgress};
-					argsDocDOM.elemProgress =         argsDocDOM.progress.querySelector("progress");
-				argsDocDOM.lblProgress = argsDocDOM.progress.querySelector("span");
+					let argsDocDOM = {
+						docTo: objTo.dom,
+						docFrom: objFrom.dom,
+						strName: strName,
+						progress: divProgress,
+					};
+					argsDocDOM.elemProgress =
+						argsDocDOM.progress.querySelector("progress");
+					argsDocDOM.lblProgress = argsDocDOM.progress.querySelector("span");
 					setTimeout(combineGPX, 0, argsDocDOM);
-				}
+				};
 				AddHeaderElement(elemWidget, "CombineGPX Widget", false, true, true);
 			}
 			function AddCombineWidget() {
@@ -275,35 +305,58 @@
 				let elemWidget = document.createElement("div");
 				elemWidget.className = "clsDivItem";
 				elemDiv.appendChild(elemWidget);
-				
+
 				AddHeaderElement(elemWidget, "Combine Widget", false, true, true);
 			}
 
-			function AddHeaderElement(ToElement, strName, bolTitleEditable, bolCloseGadget, bolExpanded) {
+			function AddHeaderElement(
+				ToElement,
+				strName,
+				bolTitleEditable,
+				bolCloseGadget,
+				bolExpanded
+			) {
 				let ret = {};
 				let elemHeader = document.createElement("div");
 				elemHeader.className = "clsTagHeader";
 				elemHeader.title = strName;
-				elemHeader.innerHTML = strHeaderTitleContent(elemHeader.title, (bolExpanded == true), bolTitleEditable, bolCloseGadget);
-				elemHeader.checked = (bolExpanded == true);
+				elemHeader.innerHTML = strHeaderTitleContent(
+					elemHeader.title,
+					bolExpanded == true,
+					bolTitleEditable,
+					bolCloseGadget
+				);
+				elemHeader.checked = bolExpanded == true;
 				elemHeader.bolTitleEditable = bolTitleEditable;
 				elemHeader.ShowCloseGadget = bolCloseGadget;
 				ToElement.insertAdjacentElement("beforebegin", elemHeader);
-				ToElement.style.display = (elemHeader.checked)?("block"):("none");
+				ToElement.style.display = elemHeader.checked ? "block" : "none";
 				ret.head = elemHeader;
 				ret.chk = elemHeader.querySelector(".clsExpandButton");
 				ret.txt = elemHeader.querySelector(".clsTitleField");
 				ret.close = elemHeader.querySelector(".clsCloseButton");
 				return ret;
 			}
-			function strHeaderTitleContent(str, bolExpanded, bolTitleEditable, bolCloseGadget) {
+			function strHeaderTitleContent(
+				str,
+				bolExpanded,
+				bolTitleEditable,
+				bolCloseGadget
+			) {
 				let strDispTitle = `<div class='clsTitleField'>${str}</div>`;
-				let strDispExpandButton = `<div class='clsExpandButton' style='cursor:default;' onclick='ExpandCollapseGadget_onclick(event);'>${(bolExpanded)?("&#x25bc"):("&#x25b6")}</div>`;
-				let strDispCloseGadget = `${(bolCloseGadget)?(`<input type='button' class='clsCloseButton' value='&#x2715' onclick='CloseGadget_onclick(event);' />`):(" ")}`;
-				if(bolTitleEditable) {
+				let strDispExpandButton = `<div class='clsExpandButton' style='cursor:default;' onclick='ExpandCollapseGadget_onclick(event);'>${
+					bolExpanded ? "&#x25bc" : "&#x25b6"
+				}</div>`;
+				let strDispCloseGadget = `${
+					bolCloseGadget
+						? `<input type='button' class='clsCloseButton' value='&#x2715' onclick='CloseGadget_onclick(event);' />`
+						: " "
+				}`;
+				if (bolTitleEditable) {
 					strDispTitle = `<input type='text' class='clsTitleField usrInput' value='${str}'/>`;
 				}
-				let strDispGotoParentGadget = "<div style='cursor:pointer;' onclick='ScrollToParentGadget_onclick(event);'>\t↑\t<div>";
+				let strDispGotoParentGadget =
+					"<div style='cursor:pointer;' onclick='ScrollToParentGadget_onclick(event);'>\t↑\t<div>";
 				return `<table style="width:100%;">
 					<tr>
 					<td style="width:auto;">${strDispExpandButton}</td>
@@ -314,33 +367,42 @@
 				</table>`;
 			}
 			function ScrollToParentGadget_onclick(args) {
-				let elemHead = [...document.querySelectorAll(".clsTagHeader")]
-				.find(itm => [...itm.querySelectorAll("*")].includes(args.target) );
-				if(!elemHead) return;
+				let elemHead = [...document.querySelectorAll(".clsTagHeader")].find(
+					(itm) => [...itm.querySelectorAll("*")].includes(args.target)
+				);
+				if (!elemHead) return;
 				let elemParent = elemHead.parentElement;
-				if(!elemParent) return;
+				if (!elemParent) return;
 				elemHead = elemParent.previousSibling;
-				if(!elemHead) return;
-				if(elemHead.scrollIntoView) elemHead.scrollIntoView();
+				if (!elemHead) return;
+				if (elemHead.scrollIntoView) elemHead.scrollIntoView();
 			}
 			function ExpandCollapseGadget_onclick(args) {
-				let elemHead = [...document.querySelectorAll(".clsTagHeader")]
-				.find(itm => [...itm.querySelectorAll("*")].includes(args.target) );
-				if(!elemHead) return;
+				let elemHead = [...document.querySelectorAll(".clsTagHeader")].find(
+					(itm) => [...itm.querySelectorAll("*")].includes(args.target)
+				);
+				if (!elemHead) return;
 				let elem = elemHead.nextSibling;
-				if(!elem) return;
-				if(elemHead.checked == undefined) {elemHead.checked = false;} else {elemHead.checked = !elemHead.checked;}
-				elem.style.display = (elemHead.checked)?("block"):("none");
-				let strExpandButton = `<div class='clsExpandButton' style='cursor:default;' onclick='ExpandCollapseGadget_onclick(event);'>${(elemHead.checked)?("&#x25bc"):("&#x25b6")}</div>`;
+				if (!elem) return;
+				if (elemHead.checked == undefined) {
+					elemHead.checked = false;
+				} else {
+					elemHead.checked = !elemHead.checked;
+				}
+				elem.style.display = elemHead.checked ? "block" : "none";
+				let strExpandButton = `<div class='clsExpandButton' style='cursor:default;' onclick='ExpandCollapseGadget_onclick(event);'>${
+					elemHead.checked ? "&#x25bc" : "&#x25b6"
+				}</div>`;
 				let elemExpandButton = elemHead.querySelector(".clsExpandButton");
 				elemExpandButton.innerHTML = strExpandButton;
 			}
 			function CloseGadget_onclick(args) {
-				let elemHead = [...document.querySelectorAll(".clsTagHeader")]
-				.find(itm => [...itm.querySelectorAll("*")].includes(args.target) );
-				if(!elemHead) return;
+				let elemHead = [...document.querySelectorAll(".clsTagHeader")].find(
+					(itm) => [...itm.querySelectorAll("*")].includes(args.target)
+				);
+				if (!elemHead) return;
 				let elem = elemHead.nextSibling;
-				if(!elem) return;
+				if (!elem) return;
 				elem.remove();
 				elemHead.remove();
 			}
@@ -362,76 +424,106 @@
 				let lblProgress = args.lblProgress;
 				let len = elemProgress.max;
 				let itr = elemProgress.value;
-				if(itr < len) {
+				if (itr < len) {
 					let itmA = args.aryXMLTo[itr];
-					let idx = args.aryXMLFrom.findIndex(itmB => {
-					let diff = [
-						Math.abs(new Number(itmA.attributes["lat"].value) - 
-								new Number(itmB.attributes["lat"].value)),
-						Math.abs(new Number(itmA.attributes["lon"].value) - 
-								new Number(itmB.attributes["lon"].value)),
-						Math.abs(new Number(itmA.querySelector("ele").innerHTML) - 
-								new Number(itmB.querySelector("ele").innerHTML)),
-						Math.abs(new Date(itmA.querySelector("time").innerHTML) - 
-								new Date(itmB.querySelector("time").innerHTML)),
-					];
-					return (diff[0] < 0.0005 &&
+					let idx = args.aryXMLFrom.findIndex((itmB) => {
+						let diff = [
+							Math.abs(
+								new Number(itmA.attributes["lat"].value) -
+									new Number(itmB.attributes["lat"].value)
+							),
+							Math.abs(
+								new Number(itmA.attributes["lon"].value) -
+									new Number(itmB.attributes["lon"].value)
+							),
+							Math.abs(
+								new Number(itmA.querySelector("ele").innerHTML) -
+									new Number(itmB.querySelector("ele").innerHTML)
+							),
+							Math.abs(
+								new Date(itmA.querySelector("time").innerHTML) -
+									new Date(itmB.querySelector("time").innerHTML)
+							),
+						];
+						return (
+							diff[0] < 0.0005 &&
 							diff[1] < 0.0005 &&
 							diff[2] < 0.5 &&
-							diff[3] < 2000);
+							diff[3] < 2000
+						);
 					});
-					if(idx >= 0) {
-					let elemTo = args.aryXMLRet[itr].querySelector("TrackPointExtension");
-					let elemFrom = args.aryXMLFrom[idx].querySelector("TrackPointExtension");
-					for(let itm of elemFrom.children) {
-						elemTo.appendChild(itm);
-					}
-					args.aryXMLFrom.splice(idx, 1);
+					if (idx >= 0) {
+						let elemTo = args.aryXMLRet[itr].querySelector(
+							"TrackPointExtension"
+						);
+						let elemFrom = args.aryXMLFrom[idx].querySelector(
+							"TrackPointExtension"
+						);
+						for (let itm of elemFrom.children) {
+							elemTo.appendChild(itm);
+						}
+						args.aryXMLFrom.splice(idx, 1);
 					}
 					elemProgress.value++;
 					setTimeout(combineGPX_CompareCombine, 0, args);
 					return;
 				}
-				let elem = [...document.querySelectorAll(".clsDivItem")]
-				.find(itm => [...itm.querySelectorAll("*")].includes(args.progress) );
+				let elem = [...document.querySelectorAll(".clsDivItem")].find((itm) =>
+					[...itm.querySelectorAll("*")].includes(args.progress)
+				);
 				let elemHead = elem.previousSibling;
 				args.progress.remove();
 				elemHead.remove();
 				elem.remove();
-				setTimeout(AddFileElementFromDoc, 0, {dom: args.docRet, title: args.strName});
+				setTimeout(AddFileElementFromDoc, 0, {
+					dom: args.docRet,
+					title: args.strName,
+				});
 			}
-        </script>
-    </head>
+		</script>
+	</head>
 
-    <BODY onload="Main();">
-		<H1>XML Loader</H1>
-		<DIV id="divFiles" class="clsDiv">
-			<TABLE>
-				<TR>
-					<TD style="width:100%;">
-						<INPUT style="width:100%;" type="file" id="dlgFiles" multiple />
-					</TD>
-					<TD style="width:auto;">
-						<INPUT type="button" id="comAddFiles" value="Add Files" onclick="FilesPicked(event);" />
-					</TD>
-				</TR>
-			</TABLE>
-		</DIV>
-		<DIV id="divWidgets" class="clsDiv">
-			<TABLE>
-				<TR>
-					<TD style="width:100%;">
-						<LABEL for="WidgetTypes">Widget Type</LABEL>
-						<SELECT style="width:100%;" name="WidgetTypes" id="lstWidgetTypes" onchange="WidgetTypePicked(event);">
-							<OPTION value="AddCombineGPXWidget(event);">CombineGPX Widget</OPTION>
-							<OPTION value="AddCombineWidget(event);">Combine Widget</OPTION>
-						</SELECT>
-					</TD>
-					<TD style="width:auto;">
-						<INPUT type="button" id="comAddWidget" value="Add Widget" />
-					</TD>
-				</TR>
-			</TABLE>
-		</DIV>
-	</BODY>
+	<body onload="Main();">
+		<h1>XML Loader</h1>
+		<div id="divFiles" class="clsDiv">
+			<table>
+				<tr>
+					<td style="width: 100%">
+						<input style="width: 100%" type="file" id="dlgFiles" multiple />
+					</td>
+					<td style="width: auto">
+						<input
+							type="button"
+							id="comAddFiles"
+							value="Add Files"
+							onclick="FilesPicked(event);"
+						/>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div id="divWidgets" class="clsDiv">
+			<table>
+				<tr>
+					<td style="width: 100%">
+						<label for="WidgetTypes">Widget Type</label>
+						<select
+							style="width: 100%"
+							name="WidgetTypes"
+							id="lstWidgetTypes"
+							onchange="WidgetTypePicked(event);"
+						>
+							<option value="AddCombineGPXWidget(event);">
+								CombineGPX Widget
+							</option>
+							<option value="AddCombineWidget(event);">Combine Widget</option>
+						</select>
+					</td>
+					<td style="width: auto">
+						<input type="button" id="comAddWidget" value="Add Widget" />
+					</td>
+				</tr>
+			</table>
+		</div>
+	</body>
 </html>

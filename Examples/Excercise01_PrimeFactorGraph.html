@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+		<meta charset="utf-8">
+		<title>Portfolio - Prime Factor Graph</title>
+		<style>
+			:root {
+				--colorMain:#80C080;
+			}
+
+			body {
+				background-color:#000000;
+				overflow: none;
+			}
+			.text {
+				background-color:#00000000;
+				color:var(--colorMain);
+				font-size:2pc;
+			}
+			.primes {
+				font-size:4pc;
+			}
+			.tree {
+				display:flex;
+				flex-direction: column;
+				align-items: center;
+				align-self: flex-start;
+				margin: 0 0 5px 0;
+			}
+			.bracket {
+				width: 50%;
+				height: 16px;
+				border: solid var(--colorMain) 1px;
+				border-bottom: none;
+			}
+			.clsPrime {
+				padding: 4px;
+				border: solid var(--colorMain) 1px;
+				border-radius: 50%;
+			}
+			.clsPrimeFactorElement {
+				touch-action: none;
+				display: inline;
+				border: dotted #787;
+			}
+			.clsPrimeFactorElement sup {
+				font-size: 60%;
+				display: inline;
+			}
+			canvas {
+				touch-action: none;
+				border: solid #020;
+				width:100%;
+				height:600px;
+				display: block;
+			}
+		</style>
+		<script>
+			function isPrime(num) {
+				if(num <= 2) return true;
+				for(let n = 2; n <= Math.sqrt(num); n++) {
+					if(num % n == 0) return false;
+				}
+				return true;
+			}
+			function primeFactors(num) {
+				let ret = {primes:[]};
+				let n = num;
+				//let dnm = Math.max(Math.round(Math.sqrt(n)), 1); 
+				let dnm = (n**0.5 > 2)?Math.round(n**0.5):Math.floor(n/2);
+				while(dnm > 1) {
+					if(n % dnm == 0) {
+						let nretA = primeFactors(n/dnm);
+						let nretB = primeFactors(dnm);
+						ret.factors = {};
+						ret.factors.itm = n;
+						ret.factors.str = `${n/dnm} \u00d7 ${dnm}`;
+						ret.factors.factorsA = nretA.factors;
+						ret.factors.factorsB = nretB.factors;
+						ret.primes.push(...nretA.primes);
+						ret.primes.push(...nretB.primes);
+						dnm = 0;
+					} else {
+						dnm --;
+					}
+				}
+				if(ret.primes.length == 0) ret.primes.push(n);
+				if(!ret.factors) {
+					ret.factors = {}; 
+					ret.factors.itm = n; 
+					ret.factors.str = `${n} \u00d7 1`;
+				}
+				return ret;
+			}
+			function occuranceArray(ary) {
+				let ret = {};
+				for(let itm of ary) {
+					if(itm) {
+						if(Object.keys(ret).includes(itm.toString())) {
+							ret[itm] ++;
+						} else {
+							ret[itm] = 1;
+						}
+					}
+				}
+				return ret;
+			}
+
+			function page_onload() {
+				let elem = document.getElementById("txtNumber");
+				elem.value = "65536";
+				number_update(elem.value);
+				InitVisualizationCanvas();
+			}
+
+			function eval_onclick(e) {
+				let elemEval = e.srcElement;
+				let elemTxt = document.getElementById("txtNumber");
+				elemTxt.value = eval(elemTxt.value);
+			}
+			function number_onchange(e) {
+				let txt = e.srcElement.value;
+				number_update(txt);
+			}
+
+			var intNumber;
+			var aryPrimeElements;
+
+			function number_update(txt) {
+				let elemEval = document.getElementById("btnEval");
+				let elemTree = document.getElementById("divTree");
+				aryPrimeElements = [];
+				elemTree.innerHTML = "";
+				elemEval.value = "";
+				if(txt == "") txt = "0";
+				if(Number.isNaN(txt)) txt = "0";
+				let num = eval(txt);
+				elemEval.value = num;
+				intNumber = num;
+				let ret = primeFactors(num);
+				let objExp = occuranceArray(ret.primes);
+				ret.occExp = objExp;
+				aryPrimeElements = ret.primes.sort((a, b) => b-a);
+				UpdatePrimeElements(ctxMainDraw, aryPrimeElements);
+				UpdatePrimeFactorTree(elemTree, ret.factors);
+				UpdatePrimeFactorGraphPath(aryPrimeElements);
+			}
+			function UpdatePrimeFactorGraphPath(ary) {
+				//var winSz = {w:canvasMain.width, h:canvasMain.height};
+			//var win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
+			//if(win.w != winSz.w) canvasMain.width = win.w;
+			//if(win.h != winSz.h) canvasMain.height = win.h;
+			//let R = Math.sqrt(winSz.w**2 + winSz.h**2)*0.2;
+				//nodes = 0;
+				//pathGraph = pathDrawFrameFactorGraph(ary, {x:0, y:0}, 400, 0);
+			}
+			function UpdatePrimeElements(ctx, ary)
+			{
+				let n = aryPrimeElements.length-1;
+				let itmE = 1;
+				let itmI = 0;
+				let itmX = 8;
+				aryPrimeElem = [];
+				let elemItm = {};
+				elemItm.itemAryIdx = 0;
+				elemItm.itemWidth = 0;
+				elemItm.itemExpandedWidth = 0;
+				ctx.save();
+				for(let itm = 0; itm <= n; itm++) {
+					let str = "";
+					elemItm.itemX = itmX;
+					if(itm < n)
+					{
+						ctx.font = strFont_PrimeFactorItem;
+						str = aryPrimeElements[itm];
+						elemItm.itemExpandedWidth += ctx.measureText(str).width;
+						if(aryPrimeElements[itm] == aryPrimeElements[itm+1]) {
+							if(itm < n) {
+								str = "\u00d7";
+								elemItm.itemExpandedWidth += ctx.measureText(str).width;
+							}
+							itmE++;
+							continue;
+						}
+					}
+					elemItm.itemExpanded = false;
+					ctx.font = strFont_PrimeFactorItem;
+					str = aryPrimeElements[itm];
+					elemItm.itemValue = aryPrimeElements[itm];
+					elemItm.itemWidth += ctx.measureText(str).width;
+					ctx.font = strFont_PrimeFactorExponent;
+					str = itmE;
+					elemItm.itemExp = itmE;
+					if(itmE > 1) {
+						elemItm.itemWidth += ctx.measureText(str).width;
+					}
+					itmX += elemItm.itemWidth;
+					if(itm < n) {
+						ctx.font = strFont_PrimeFactorItem;
+						str = "\u00d7";
+						itmX += ctx.measureText(str).width;
+					}
+					aryPrimeElem.push({...elemItm});
+					elemItm = {};
+					elemItm.itemAryIdx = itm+1;
+					elemItm.itemWidth = 0;
+					elemItm.itemExpandedWidth = 0;
+					itmE = 1;
+					itmI ++;
+				}
+				ctx.restore();
+			}
+			function UpdatePrimeFactorTree(elem, factors) {
+				elem.innerHTML = htmlTree(factors);
+			}
+			function htmlTree(obj) {
+				let strRet = "";
+				strRet += `<div id="div${obj.itm}" class="tree">`;
+				strRet += `<div ${(obj.factorsA || obj.factorsB)?"":'class="clsPrime"'}>${(obj.itm).toLocaleString()}</div>`;
+				if(obj.factorsA || obj.factorsB) {
+					strRet += htmlBoxBracket();
+					//strRet += htmlLineBracket();
+					strRet += `<div class="tree" style="flex-direction:row; align-items: flex-start; font-size:90%; width:100%;">`;
+					if(obj.factorsA) {
+							strRet += htmlTree(obj.factorsA);
+					}
+					if(obj.factorsB) {
+							strRet += htmlTree(obj.factorsB);
+					}
+					strRet += `</div>`;
+				}
+				strRet += `</div>`;
+				return strRet;
+			}
+			function htmlBoxBracket() {return `<div class="bracket"></div>`;}
+			function htmlLineBracket() {
+				let strRet = "";
+				strRet += `<div style="width: 50%; height:32px">`;
+				strRet += `<svg width="100%" height="100%">`
+				strRet += `<line x1="0%" y1="100%" x2="50%" y2="0%" style="stroke:#80C080;stroke-width:2" />`
+				strRet += `<line x1="50%" y1="0%" x2="100%" y2="100%" style="stroke:#80C080;stroke-width:2" />`
+				strRet += `</svg>`;
+				strRet += `</div>`;
+				return strRet;
+			}
+
+			var canvasMain = document.getElementById("canvasMain");
+			var ctxMainDraw = canvasMain.getContext("2d");
+			var timeCurrent = 0;
+			var timeDelta = 0;
+			var rotateMain = 0;
+			var aryPointers = [];
+			var matxView = new DOMMatrix([1, 0, 0, 1, 0, 0]);
+
+			function InitVisualizationCanvas()
+			{
+				canvasMain.onpointerdown = args => {
+					let pos = FromCanvasSpace(args.pageX, args.pageY);
+					let ret = {};
+					ret.pointerId = args.pointerId;
+					ret.pointerType = args.pointerType;
+					ret.buttons = args.buttons;
+					ret.shiftKey = args.shiftKey;
+					ret.x = pos.x;
+					ret.y = pos.y;
+					ret.prevX = pos.x;
+					ret.prevY = pos.y;
+					ret.startX = pos.x;
+					ret.startY = pos.y;
+					ret.elapseX = 0;
+					ret.elapseY = 0;
+					ret.elapseDist = 0;
+					if(ret.startY < 128) {
+						ret.region = "FactorElements";
+						Canvas_HandlePointerStartFactorization(ret);
+					} else {
+						ret.region = "FactorGraph";
+					}
+					aryPointers.push(ret);
+				};
+				canvasMain.ondblclick = args => {
+					args.preventDefault();
+					args.stopPropagation();
+					let pos = FromCanvasSpace(args.pageX, args.pageY);
+					if(pos.y < 128) {
+						pos.x -= offsetPrimeElements;
+						for(let itr = 0; itr < aryPrimeElem.length; itr++) {
+							let itrElem = aryPrimeElem[itr];
+							let st = itrElem.itemX;
+							let ed = st + lengthPrimeElem(itrElem);
+							if((pos.x >= st && pos.x <= ed) &&
+								(pos.y >= 65 && pos.y <= 120)) {
+								if(itrElem.itemExpanded) {
+									let ElemExpLen = (ed-st)/itrElem.itemExp;
+									let ElemExpIdx = Math.floor((pos.x-st)/ElemExpLen);
+									if(ElemExpIdx > 0) splitPrimeElem(itr, ElemExpIdx);
+									itrElem.itemExpanded = false;
+								} else {
+									if(itrElem.itemExp > 1) {
+										ctxMainDraw.save();
+										ctxMainDraw.font = strFont_PrimeFactorItem;
+										let baseLen = ctxMainDraw.measureText(itrElem.itemValue).width;
+										ctxMainDraw.restore();
+										if(pos.x > st + baseLen) {
+											itrElem.itemValue = itrElem.itemValue**itrElem.itemExp;
+											itrElem.itemExp = 1;
+											ctxMainDraw.save();
+											ctxMainDraw.font = strFont_PrimeFactorItem;
+											itrElem.itemWidth = ctxMainDraw.measureText(itrElem.itemValue).width;
+											itrElem.itemExpandedWidth = itrElem.itemWidth;
+											ctxMainDraw.restore();
+											UpdatePrimeFactorGraphElements();
+											UpdatePrimeFactorGraphPath(aryPrimeElements);
+										} else {
+											itrElem.itemExpanded = true;
+										}
+									} else {
+										if(!isPrime(itrElem.itemValue)) {
+											let ary = primeFactors(itrElem.itemValue)
+												.primes.sort((a, b) => b-a);
+											aryPrimeElements.splice(itrElem.itemAryIdx, 1, ...ary);
+											UpdatePrimeElements(ctxMainDraw, aryPrimeElements);
+											UpdatePrimeFactorGraphPath(aryPrimeElements);
+										}
+									}
+								}
+								break;
+							}
+						}
+					}
+				};
+				canvasMain.onwheel = args => {
+					args.preventDefault();
+					let pos = FromCanvasSpace(args.pageX, args.pageY);
+					if(pos.y < 128) return;
+					let centroidCurrent = {x:pos.x, y:pos.y-128};
+					var matxScl = new DOMMatrix();
+				matxScl.scaleSelf(1.1**(-args.deltaY/160));
+				matxScl.preMultiplySelf(new DOMMatrix([1, 0, 0, 1, centroidCurrent.x-winGraph.win.w*0.5, centroidCurrent.y-winGraph.win.h*0.5]));
+				matxScl.multiplySelf(new DOMMatrix([1, 0, 0, 1, -(centroidCurrent.x-winGraph.win.w*0.5), -(centroidCurrent.y-winGraph.win.h*0.5)]));
+				matxView.preMultiplySelf(matxScl);
+				};
+				canvasMain.onpointermove = args => {
+					args.preventDefault();
+					args.stopPropagation();
+					let idx = -1;
+				for(let itr = 0; itr < aryPointers.length; itr++) {
+					if(args.pointerId == aryPointers[itr].pointerId) {
+					aryPointers[itr] = CopyPointerEvent(args, aryPointers[itr]);
+							idx = itr;
+							break;
+					}
+				}
+					if(idx >= 0) {
+						if(aryPointers[idx].region == "FactorElements") {
+								Canvas_HandlePointerOnFactorization();
+							}
+							if(aryPointers[idx].region == "FactorGraph") {
+								Canvas_HandlePointerOnGraph();
+							}
+					}
+				};
+				canvasMain.onpointerup = args => {
+					aryPointers = aryPointers.filter(itm => (itm.pointerId != args.pointerId));
+				};
+				canvasMain.onpointercancel = canvasMain.onpointerup;
+				canvasMain.onpointerleave = canvasMain.onpointerup;
+				
+				ctxMainDraw.strokeStyle = 'green';
+				requestAnimationFrame(OnFrame);
+			}
+			function GetPointerCentroid(ary) {
+				let ret = {};
+				ret.centroidCurrent = {x:0, y:0};
+			ret.centroidPrev = {x:0, y:0};
+				let itrlen = ary.length;
+				let invlen = 1/itrlen;
+				for(let itr = 0; itr < itrlen; itr++) {
+				ret.centroidCurrent.x += ary[itr].x*invlen;
+				ret.centroidCurrent.y += ary[itr].y*invlen;
+				ret.centroidPrev.x += ary[itr].prevX*invlen;
+				ret.centroidPrev.y += ary[itr].prevY*invlen;
+			}
+			ret.centroidMov = {x:ret.centroidCurrent.x - ret.centroidPrev.x,
+								y:ret.centroidCurrent.y - ret.centroidPrev.y};
+				return ret;
+			}
+			function Canvas_HandlePointerStartFactorization(itm)
+			{
+				itm.startX -= offsetPrimeElements;
+				for(let itr = 0; itr < aryPrimeElem.length; itr++) {
+					let itrElem = aryPrimeElem[itr];
+					let itrLen = lengthPrimeElem(itrElem);
+					let st = itrElem.itemX;
+					let ed = st + itrLen;
+					if((itm.startX >= st && itm.startX <= ed) &&
+						(itm.startY >= 65 && itm.startY <= 120)) {
+						if(itrElem.itemExpanded) {
+							let ElemExpLen = (ed-st)/itrElem.itemExp;
+							let ElemExpIdx = Math.floor((itm.startX-st)/ElemExpLen);
+							let newElem = splitPrimeElem(itr, ElemExpIdx);
+							UpdatePrimeFactorGraphPath(aryPrimeElements);
+						}
+						itrElem.onRelease = args => {
+							if(itm.pointerId != args.pointerId) return;
+							canvasMain.removeEventListener("pointerup", itrElem.onRelease);
+							delete itrElem.onRelease;
+							let ptrPos = FromCanvasSpace(args.pageX, args.pageY);
+							ptrPos.x -= offsetPrimeElements;
+							let itmIdx = aryPrimeElem.indexOf(itrElem);
+							let bolCondenseDrop = false;
+							for(let itrD = 0; itrD < aryPrimeElem.length; itrD++) {
+								if(itrD == itmIdx) continue;
+								let itrElemD = aryPrimeElem[itrD];
+								let itrLenD = lengthPrimeElem(itrElemD);
+								let stD = itrElemD.itemX + 0.25*itrLenD;
+								let edD = itrElemD.itemX + 0.75*itrLenD;
+								if((ptrPos.x >= stD && ptrPos.x <= edD) &&
+									(ptrPos.y >= 65 && ptrPos.y <= 120)) {
+									condenseMultPrimeElem(itrD, itmIdx);
+									bolCondenseDrop = true;
+									break;
+								}
+							}
+							if(!bolCondenseDrop) {
+								ctxMainDraw.save();
+								ctxMainDraw.font = strFont_PrimeFactorItem;
+								let baseLen = ctxMainDraw.measureText(itrElem.itemValue).width;
+								ctxMainDraw.restore();
+								if(ptrPos.x < itrElem.itemX + baseLen) {
+									condensePrimeElem(itmIdx);
+								}
+							}
+							UpdatePrimeFactorGraphElements();
+							UpdatePrimeFactorGraphPath(aryPrimeElements);
+						};
+						canvasMain.addEventListener("pointerup", itrElem.onRelease);
+						itm.Elem = itrElem;
+						itm.ElemOffX = itm.startX - st;
+						itm.ElemOffY = itm.startY - 65;
+						break;
+					}
+				}
+			}
+			function condenseMultPrimeElem(atIdx, Idx) {
+				let itrElem = aryPrimeElem[atIdx];
+				let itrElemD = aryPrimeElem[Idx];
+				itrElem.itemValue = (itrElem.itemValue**itrElem.itemExp)*
+														(itrElemD.itemValue**itrElemD.itemExp);
+				itrElem.itemExp = 1;
+				ctxMainDraw.save();
+				ctxMainDraw.font = strFont_PrimeFactorItem;
+				itrElem.itemWidth = ctxMainDraw.measureText(`${itrElem.itemValue}`).width;
+				itrElem.itemExpandedWidth = itrElem.itemWidth;
+				ctxMainDraw.restore();
+				itrElem.itemExpanded = false;
+				aryPrimeElem.splice(Idx, 1);
+			}
+			function condensePrimeElem(atIdx) {
+				let itrElem = aryPrimeElem[atIdx];
+				let st = atIdx; let ed = atIdx;
+				let stM = true; let edM = true;
+				while(stM || edM) {
+					stM = stM && (st > 0 && aryPrimeElem[st-1].itemValue == aryPrimeElem[atIdx].itemValue) && aryPrimeElem[st-1].itemExpanded;
+					edM = edM && (ed < aryPrimeElem.length-1 && aryPrimeElem[ed+1].itemValue == aryPrimeElem[atIdx].itemValue) && aryPrimeElem[ed+1].itemExpanded;
+					if(stM) st -= 1;
+					if(edM) ed += 1;
+				}
+				let aggrElem = {...aryPrimeElem[st]};
+				let lenAggr = 0;
+				for(let aggrItr = st; aggrItr <= ed; aggrItr++) {
+					lenAggr += aryPrimeElem[aggrItr].itemExp;
+				}
+				let strAggr = Array(lenAggr)
+					.fill(itrElem.itemValue)
+					.join("\u00d7");
+				ctxMainDraw.save();
+				ctxMainDraw.font = strFont_PrimeFactorItem;
+				aggrElem.itemExpandedWidth = ctxMainDraw.measureText(strAggr).width;
+				ctxMainDraw.restore();
+				aggrElem.itemExp = lenAggr;
+				aryPrimeElem.splice(st, ed-st+1, aggrElem);
+			}
+			function splitPrimeElem(itr, idx) {
+				let itrElem = aryPrimeElem[itr];
+				if(idx+1 >= itrElem.itemExp) return null;
+				let newElem = {...itrElem};
+				let strA = Array(idx+1)
+				.fill(itrElem.itemValue)
+				.join("\u00d7");
+				let strB = Array(itrElem.itemExp - (idx+1))
+				.fill(itrElem.itemValue)
+				.join("\u00d7");
+				ctxMainDraw.save();
+				ctxMainDraw.font = strFont_PrimeFactorItem;
+				itrElem.itemExpandedWidth = ctxMainDraw.measureText(strA).width;
+				newElem.itemExpandedWidth = ctxMainDraw.measureText(strB).width;
+				ctxMainDraw.restore();
+				newElem.itemX = itrElem.itemX + itrElem.itemExpandedWidth;
+				newElem.itemExp = itrElem.itemExp - (idx+1);
+				itrElem.itemExp = idx+1;
+				aryPrimeElem.splice(itr+1, 0, newElem);
+				return itrElem;
+			}
+			function comparePrimeElem(itmA, itmB) {
+				let xA = itmA.x + lengthPrimeElem(itmA)*0.5; 
+				let xB = itmB.x + lengthPrimeElem(itmB)*0.5;
+				let ptrA = aryPointers.find(p => (p.Elem == itmA));
+				let ptrB = aryPointers.find(p => (p.Elem == itmB));
+				if(ptrA != undefined) xA = ptrA.x - offsetPrimeElements;
+				if(ptrB != undefined) xB = ptrB.x - offsetPrimeElements;
+				return xA-xB;
+			}
+			function lengthPrimeElem(itm) {
+				return (itm.itemExpanded)?(itm.itemExpandedWidth):(itm.itemWidth);
+			}
+			function Canvas_HandlePointerOnFactorization()
+			{
+				let winSz = {w:canvasMain.width, h:canvasMain.height};
+			let win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
+				let aryPtr = [];
+				let aryPtrDrag = [];
+				for(let itm of aryPointers) {
+					if(itm.region == "FactorElements") {
+						let pItm = {...itm};
+						if(pItm.Elem != null) {
+							pItm.idxElem = aryPrimeElem.indexOf(pItm.Elem);
+							aryPtrDrag.push(pItm);
+							continue;
+						} 
+						pItm.x -= offsetPrimeElements;
+						pItm.prevX -= offsetPrimeElements;
+						aryPtr.push(pItm);
+					}
+				}
+				if(aryPtrDrag.length > 0) {
+					let arySort = [...aryPrimeElem].sort((itmA, itmB) => comparePrimeElem(itmA, itmB));
+					for(let itm of aryPtrDrag) {
+						if(itm.idxElem != arySort.indexOf(itm.Elem)) {
+							aryPrimeElem.sort((itmA, itmB) => comparePrimeElem(itmA, itmB));
+							UpdatePrimeFactorGraphElements();
+							UpdatePrimeFactorGraphPath(aryPrimeElements);
+							break;
+						}
+					}
+				}
+				let argsCentroid = GetPointerCentroid(aryPtr);
+				let itmEnd = aryPrimeElem[aryPrimeElem.length-1];
+				let strlen = itmEnd.itemX + lengthPrimeElem(itmEnd);
+				let strlenWid = strlen - winSz.w + 8;
+				offsetPrimeElements += argsCentroid.centroidMov.x;
+				if(strlen > winSz.w) {
+					if(offsetPrimeElements > 0) offsetPrimeElements = 0;
+					if(offsetPrimeElements < -strlenWid) offsetPrimeElements = -strlenWid;
+				} else {
+					offsetPrimeElements = 0;
+				}
+			}
+			function UpdatePrimeFactorGraphElements() {
+				let ary = [];
+				let aryidx = 0;
+				for(let itr = 0; itr < aryPrimeElem.length; itr++) {
+					let itrItm = aryPrimeElem[itr];
+					itrItm.itemAryIdx = aryidx;
+					ary.push(...Array(itrItm.itemExp).fill(itrItm.itemValue));
+					aryidx += itrItm.itemExp;
+				}
+				aryPrimeElements = ary;
+			}
+			function Canvas_HandlePointerOnGraph()
+			{
+				let winSz = {w:canvasMain.width, h:canvasMain.height};
+			let win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
+				let aryPtr = [];
+				for(let itm of aryPointers) {
+					if(itm.region == "FactorGraph") {
+						if(itm.pointerType == "mouse" && itm.shiftKey) {
+							itm.mouseFrame = true;
+						} else {
+							itm.mouseFrame = false;
+							let pItm = {...itm};
+							pItm.y -= 128;
+							pItm.prevY -= 128;
+							aryPtr.push(pItm);
+						}
+					}
+				}
+				let argsCentroid = GetPointerCentroid(aryPtr);
+				matxView.preMultiplySelf(new DOMMatrix([1, 0, 0, 1, argsCentroid.centroidMov.x, argsCentroid.centroidMov.y]));
+			if(aryPtr.length >= 2) {
+				var matxScl = new DOMMatrix();
+				p00 = {x:aryPtr[0].prevX, y:aryPtr[0].prevY};
+				p01 = {x:aryPtr[0].x, y:aryPtr[0].y};
+				p10 = {x:aryPtr[1].prevX, y:aryPtr[1].prevY};
+				p11 = {x:aryPtr[1].x, y:aryPtr[1].y};
+					var d0 = Math.sqrt((p10.x - p00.x)**2 + (p10.y - p00.y)**2);
+					var d1 = Math.sqrt((p11.x - p01.x)**2 + (p11.y - p01.y)**2);
+					var dq = d1/d0;
+					matxScl.scaleSelf(dq);
+					matxScl.preMultiplySelf(new DOMMatrix([1, 0, 0, 1, argsCentroid.centroidCurrent.x-win.w*0.5, argsCentroid.centroidCurrent.y-win.h*0.5]));
+					matxScl.multiplySelf(new DOMMatrix([1, 0, 0, 1, -(argsCentroid.centroidCurrent.x-win.w*0.5), -(argsCentroid.centroidCurrent.y-win.h*0.5)]));
+					matxView.preMultiplySelf(matxScl);
+				var vec0 = {x:p11.x - p01.x, y:p11.y - p01.y};
+				var vec1 = {x:p10.x - p00.x, y:p10.y - p00.y};
+				var l0 = Math.sqrt(vec0.x**2 + vec0.y**2);
+				var l1 = Math.sqrt(vec1.x**2 + vec1.y**2);
+				var lr = l0*l1;
+				if(lr != 0) {
+				var dir = -Math.sign((vec0.x * vec1.y) - (vec1.x * vec0.y));
+				var dot = (vec0.x * vec1.x) + (vec0.y * vec1.y);
+				var rq = dot / lr;
+				if(rq > 1) rq = 1;
+				if(rq < -1) rq = -1;
+				var ang = dir * Math.acos(rq) * 100/Math.PI;
+				var matxRot = new DOMMatrix();
+				matxRot.rotateSelf(ang);
+				matxRot.preMultiplySelf(new DOMMatrix([1, 0, 0, 1, argsCentroid.centroidCurrent.x-win.w*0.5, argsCentroid.centroidCurrent.y-win.h*0.5]));
+				matxRot.multiplySelf(new DOMMatrix([1, 0, 0, 1, -(argsCentroid.centroidCurrent.x-win.w*0.5), -(argsCentroid.centroidCurrent.y-win.h*0.5)]));
+				matxView.preMultiplySelf(matxRot);
+				}
+			}
+			}
+
+			function OnFrame(t) {
+			var timePrev = timeCurrent
+			timeCurrent = t * 0.001;
+			timeDelta = timeCurrent - timePrev;
+			
+				ProcessFrameEvents(aryPointers, timeDelta);
+			DrawFrame(ctxMainDraw);
+			
+			requestAnimationFrame(OnFrame);
+			}
+
+			function ProcessFrameEvents(aryEvents, dt) {
+				let ary = [...aryEvents].filter(itmPtr => itmPtr.mouseFrame);
+				let winSz = {w:canvasMain.width, h:canvasMain.height};
+			let win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
+				for(let itmPtr of ary) {
+					let itm = {...itmPtr};
+					itm.y -= 128;
+					itm.startY -= 128;
+					var matxScl = new DOMMatrix();
+					matxScl.scaleSelf(10**((itm.startY - itm.y)*(1/win.h)*dt));
+					matxScl.preMultiplySelf(new DOMMatrix([1, 0, 0, 1, itm.startX-win.w*0.5, itm.startY-win.h*0.5]));
+					matxScl.multiplySelf(new DOMMatrix([1, 0, 0, 1, -(itm.startX-win.w*0.5), -(itm.startY-win.h*0.5)]));
+					matxView.preMultiplySelf(matxScl);
+				var matxRot = new DOMMatrix();
+				matxRot.rotateSelf((itm.startX - itm.x)*(-Math.PI*2)*(128/win.w)*dt);
+				matxRot.preMultiplySelf(new DOMMatrix([1, 0, 0, 1, itm.startX-win.w*0.5, itm.startY-win.h*0.5]));
+				matxRot.multiplySelf(new DOMMatrix([1, 0, 0, 1, -(itm.startX-win.w*0.5), -(itm.startY-win.h*0.5)]));
+				matxView.preMultiplySelf(matxRot);
+				}
+			}
+
+			function FromCanvasSpace(x, y)
+			{
+			let winSz = {w:canvasMain.width, h:canvasMain.height};
+			let win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
+			let pos = new DOMPoint((x-canvasMain.offsetLeft)*(winSz.w/win.w), 
+									(y-canvasMain.offsetTop)*(winSz.h/win.h));
+			return {x:pos.x, y:pos.y};
+			}
+			function CopyPointerEvent(args, srcItm)
+			{
+			let ret = {...srcItm};
+			let pos = FromCanvasSpace(args.pageX, args.pageY);
+				ret.pointerId = args.pointerId;
+				ret.pinterType = args.ponterType;
+				ret.buttons = args.buttons;
+				ret.shiftKey = args.shiftKey;
+			let mov = {x:pos.x - srcItm.x, 
+						y:pos.y - srcItm.y};
+			let st = {x:srcItm.startX, y:srcItm.startY};
+			let prev = {x:srcItm.x, y:srcItm.y};
+			let totmov = {x:srcItm.elapseX + mov.x, y:srcItm.elapseY + mov.y};
+			let d = srcItm.elapseDist + Math.sqrt(mov.x**2 + mov.y**2);
+			ret.x = pos.x; ret.y = pos.y;
+			ret.startX = st.x; ret.startY = st.y;
+			ret.moveX = mov.x; ret.moveY = mov.y;
+			ret.prevX = prev.x; ret.prevY = prev.y;
+			ret.elapseX = totmov.x; ret.elapseY = totmov.y;
+			ret.elapseDist = d;
+			return ret;
+			}
+
+			var strFont_PrimeFactorItem = '3rem Arial';
+			var strFont_PrimeFactorExponent = '2rem Arial';
+			var strFont_PrimeFactorMini = '1rem Arial';
+			var strFont_Header = '2.25rem Arial Bold';
+			function DrawFrame(ctx) {
+			var winSz = {w:canvasMain.width, h:canvasMain.height};
+			var win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
+				let bolchWin = false;
+			if(win.w != winSz.w) {bolchWin=true;canvasMain.width = win.w;}
+			if(win.h != winSz.h) {bolchWin=true;canvasMain.height = win.h;}
+			let R = Math.sqrt(winSz.w**2 + winSz.h**2)*0.2;
+				//if(bolchWin) UpdatePrimeFactorGraphPath(aryPrimeElements);
+			ctx.clearRect(0, 0, winSz.w, winSz.h);
+				ctx.save();
+				ctx.beginPath();
+				ctx.rect(0, 0, winSz.w, 128);
+				ctx.clip();
+				DrawFramePrimeElements(ctx, aryPrimeElements);
+				ctx.restore();
+				ctx.save();
+				ctx.beginPath();
+				ctx.rect(0, 128, winSz.w, winSz.h-128);
+				ctx.clip();
+				ctx.transform(1, 0, 0, 1, 0, 64);
+				ctx.save();
+			ctx.transform(1, 0, 0, 1, winSz.w*0.5, winSz.h*0.5);
+				//ctx.scale(2,2);
+			ctx.transform(...['a', 'b', 'c', 'd', 'e', 'f'].map(k => matxView[k]));
+			ctx.strokeStyle = 'green';
+			ctx.lineWidth = 2/(Math.sqrt(matxView.a**2 + matxView.b**2)+
+							Math.sqrt(matxView.c**2 + matxView.d**2));
+				winGraph = GetGraphParams(matxView);
+				nodes = 0;
+				ctx.beginPath();
+			DrawFrameFactorGraph(ctx, aryPrimeElements, {x:0, y:0}, R, 0);
+				ctx.stroke();
+				//ctx.stroke(pathGraph);
+				ctx.restore();
+				ctx.font = strFont_Header;
+				ctx.textBaseline = 'top';
+				ctx.fillStyle = '#80C080';
+				ctx.fillText(`Graph ${nodes}`, 0, 72);
+				//ctx.fillText("Graph", 0, 72);
+				ctx.restore();
+			ctx.restore();
+			}
+
+			function GetCircumscribedCircles(intNumCircles, center = {x:0, y:0}, radius = 1, offsetAngle = 0) 
+			{
+				let ret = [];
+			let R = radius;
+			let invN = 1/intNumCircles;
+			let invA = 2*Math.PI*invN;
+			let itrR;
+			if(intNumCircles<3){
+				itrR = R/intNumCircles;
+			} else {
+				let itrD = R*Math.tan(invA*0.5);
+				itrR = itrD*Math.tan(0.25*(Math.PI-invA));
+			}
+			for(var itr = 0; itr < intNumCircles; itr++) {
+				let ang = itr*invA + invA*0.5 + offsetAngle;
+				let pt = {
+				x:(R-itrR)*Math.cos(ang),
+				y:-(R-itrR)*Math.sin(ang)
+				};
+				ret.push({x:center.x+pt.x, y:center.y+pt.y, r:itrR});
+			}
+				return ret;
+			}
+
+			function GetGraphParams(matxIn)
+			{
+				var winSz = {w:canvasMain.width, h:canvasMain.height};
+			var win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
+				let matx = new DOMMatrix(matxIn);
+				matx.invertSelf();
+				matx = new DOMMatrix(['a', 'b', 'c', 'd', 'e', 'f'].map(k => matx[k]));
+				let pt00 = new DOMPoint(-winSz.w*0.5,-winSz.h*0.5).matrixTransform(matx);
+				let pt10 = new DOMPoint(winSz.w*0.5,-winSz.h*0.5).matrixTransform(matx);
+				let pt01 = new DOMPoint(-winSz.w*0.5,winSz.h*0.5).matrixTransform(matx);
+				let pt11 = new DOMPoint(winSz.w*0.5,winSz.h*0.5).matrixTransform(matx);
+				let ret = {}
+				ret.winSz = winSz;
+				ret.win = win;
+				ret.matx = matxIn;
+				ret.matxImv = matx;
+				ret.TopLeft = {x:pt00.x, y:pt00.y};
+				ret.TopRight = {x:pt10.x, y:pt10.y};
+				ret.BottomLeft = {x:pt01.x, y:pt01.y};
+				ret.BottomRight = {x:pt11.x, y:pt11.y};
+				ret.Width = Math.sqrt((pt10.x - pt00.x)**2 + (pt10.y - pt00.y)**2);
+				ret.Height = Math.sqrt((pt01.x - pt00.x)**2 + (pt01.y - pt00.y)**2);
+				ret.Axis = {x:{x:pt10.x-pt00.x, y:pt10.y-pt00.y}, 
+										y:{x:pt01.x-pt00.x, y:pt01.y-pt00.y}};
+				return ret;
+			}
+
+			var nodes = 0;
+			var winGraph = {};
+			var pathGraph = new Path2D();
+			function DrawFrameFactorGraph(ctx, aryNumCircles, center = {x:0, y:0}, radius = 1, offsetAngle = 0)
+			{
+				let ptC = new DOMPoint(center.x,center.y).matrixTransform(matxView);
+				let ptlen = new DOMPoint(winGraph.BottomRight.x - winGraph.TopLeft.x, winGraph.BottomRight.y - winGraph.TopLeft.y);
+				let ptlenR = Math.sqrt(ptlen.x**2 + ptlen.y**2);
+				let winlenR = Math.sqrt(winGraph.winSz.w**2 + winGraph.winSz.h**2);
+				let rr = radius * (winlenR/ptlenR);
+				if(rr < 2) return;
+				if(ptC.x+rr < -winGraph.winSz.w*0.5) return;
+				if(ptC.y+rr < 64-winGraph.winSz.h*0.5) return;
+				if(ptC.x-rr > winGraph.winSz.w*0.5) return;
+				if(ptC.y-rr > -64+winGraph.winSz.h*0.5) return;
+				if(ptC.x-rr > -winGraph.winSz.w*0.6 ||
+					ptC.x+rr < winGraph.winSz.w*0.6 ||
+					ptC.y-rr > 64-winGraph.winSz.h*0.6 ||
+					ptC.y+rr < -64+winGraph.winSz.h*0.6) {
+					ctx.moveTo(center.x + radius, center.y);
+					ctx.beginPath();
+					ctx.arc(center.x, center.y, radius, 0, Math.PI*2);
+					if(aryNumCircles.length == 0) {
+						ctx.save();
+						let grd = ctx.createRadialGradient(center.x, center.y, 
+																							Math.max(radius-ctx.lineWidth*32, 0),
+																							center.x, center.y,
+																							radius);
+						grd.addColorStop(0, 'black');
+						grd.addColorStop(1, 'green');
+						//ctx.lineWidth *= 4;
+						ctx.fillStyle = grd;
+						ctx.fill();
+						ctx.stroke();
+						ctx.restore();
+						delete grd;
+					} else {
+						ctx.stroke();
+					}
+					//if(ctx.fillStyle != '') ctx.fill();
+					//if(ctx.stokeStyle != '') ctx.stroke();
+					nodes++;
+				}
+				let aryCircles = GetCircumscribedCircles(aryNumCircles[0], center, radius, offsetAngle);
+				let ary = [...aryNumCircles];
+				ary.splice(0,1);
+				for(let itr = 0; itr < aryCircles.length; itr++) {
+					let itm = aryCircles[itr];
+					let itrAngle = ((itr+0.5)/aryCircles.length)*Math.PI*2;
+					let offsetAngleNext = offsetAngle + itrAngle;
+					DrawFrameFactorGraph(ctx, ary, {x:itm.x, y:itm.y}, itm.r, offsetAngleNext);
+				}
+			}
+			function pathDrawFrameFactorGraph(aryNumCircles, center = {x:0, y:0}, radius = 1, offsetAngle = 0)
+			{
+				let path = new Path2D();
+				path.moveTo(center.x+radius, center.y);
+				path.arc(center.x, center.y, radius, 0, Math.PI*2);
+				let aryCircles = GetCircumscribedCircles(aryNumCircles[0], center, radius, offsetAngle);
+				let ary = [...aryNumCircles];
+				let aryN = [...ary];
+				aryN.splice(0,1);
+				if(aryN.length > 0) 
+				{
+					let pathItm = pathDrawFrameFactorGraph(aryN, {x:0, y:0}, aryCircles[0].r, offsetAngle);
+					for(let itr = 0; itr < aryCircles.length; itr++) {
+						let itm = aryCircles[itr];
+						let itrAngle = ((itr+0.5)/aryCircles.length)*Math.PI*2;
+						let itrCos = Math.cos(itrAngle);
+						let itrSin = Math.sin(itrAngle);
+						path.addPath(pathItm, new DOMMatrix([itrCos,itrSin,-itrSin,itrCos,itm.x, itm.y]));
+					}
+				} else {
+					for(let itr = 0; itr < aryCircles.length; itr++) {
+						let itm = aryCircles[itr];
+						path.moveTo(itm.x+itm.r, itm.y);
+						path.arc(itm.x, itm.y, itm.r, 0, Math.PI*2);
+					}
+				}
+				nodes++
+				return path;
+			}
+			var aryPrimeElem = [];
+			var offsetPrimeElements = 0;
+			function DrawFramePrimeElements(ctx, ary)
+			{
+				var winSz = {w:canvasMain.width, h:canvasMain.height};
+			var win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
+				ctx.strokeStyle = 'green';
+				ctx.lineWidth = 1;
+				ctx.beginPath();
+				ctx.moveTo(0, 128);
+				ctx.lineTo(win.w, 128);
+				ctx.stroke();
+				ctx.save();
+				ctx.translate(offsetPrimeElements, 0);
+				ctx.fillStyle='#60C060';
+				ctx.textBaseline = "bottom";
+				let n = aryPrimeElements.length-1;
+				let itmI = 0;
+				let itmX = 8;
+				for(let itm = 0; itm < aryPrimeElem.length; itm++) {
+					aryPrimeElem[itm].itemX = itmX;
+					aryPrimeElem[itm].x = itmX;
+					let itmXlen = lengthPrimeElem(aryPrimeElem[itm]);
+					let str = "";		
+					let ptr = aryPointers.find(p => (p.Elem == aryPrimeElem[itm]));
+					let bol = (ptr != undefined);
+					if(bol) aryPrimeElem[itm].x = ptr.x-ptr.ElemOffX-offsetPrimeElements;
+					ctx.font = strFont_PrimeFactorItem;
+					if(aryPrimeElem[itm].itemExpanded) {
+						str = Array(aryPrimeElem[itm].itemExp)
+							.fill(aryPrimeElem[itm].itemValue)
+							.join("\u00d7");
+						if(bol) 
+							{ctx.strokeText(str, ptr.x-ptr.ElemOffX-offsetPrimeElements, ptr.y-ptr.ElemOffY+55)} else 
+							{ctx.fillText(str, itmX, 120)};
+					} else {
+						str = aryPrimeElem[itm].itemValue;
+						if(bol) 
+							{ctx.strokeText(str, ptr.x-ptr.ElemOffX-offsetPrimeElements, ptr.y-ptr.ElemOffY+55)} else 
+							{ctx.fillText(str, itmX, 120)};
+						if(aryPrimeElem[itm].itemExp > 1) {
+							let tmp = ctx.measureText(str).width;
+							ctx.font = strFont_PrimeFactorExponent;
+							if(bol)
+								{ctx.strokeText(aryPrimeElem[itm].itemExp, ptr.x-ptr.ElemOffX+tmp-offsetPrimeElements, ptr.y-ptr.ElemOffY+30)} else
+								{ctx.fillText(aryPrimeElem[itm].itemExp, itmX+tmp, 95)};
+						}
+					}
+					if(!bol) {
+						if(!aryPrimeElem[itm].itemExpanded || aryPrimeElem[itm].itemExp == 1) {
+							let bolProdAcc = false;
+							let strH = `${aryPrimeElem[itm].itemValue**aryPrimeElem[itm].itemExp}`;
+							for(let itrPtrElem = 0; itrPtrElem < aryPrimeElem.length; itrPtrElem++) {
+								if(itrPtrElem == itm) continue;
+								let ptrElem = aryPointers.find(p => (p.Elem == aryPrimeElem[itrPtrElem]));
+								if(ptrElem == undefined) continue;
+								if((ptrElem.x >= itmX+0.25*itmXlen && ptrElem.x <= itmX+0.75*itmXlen) &&
+									(ptrElem.y >= 65 && ptrElem.y <= 120)) {
+									bolProdAcc = true;
+									strH += `\u00d7${aryPrimeElem[itrPtrElem].itemValue**aryPrimeElem[itrPtrElem].itemExp}`;
+								}
+							}
+							if(bolProdAcc) {
+								ctx.font = strFont_PrimeFactorMini;
+								ctx.fillStyle='#C0C060';
+								let strHLen = ctx.measureText(strH).width;
+								ctx.fillText(strH, Math.max(0, itmX+(itmXlen-strHLen)*0.5), 65)
+								ctx.fillStyle='#60C060';
+								ctx.font = strFont_PrimeFactorExponent;
+							}
+						}
+					}
+					itmX += itmXlen;
+					if(itm < aryPrimeElem.length-1) {
+						str = "\u00d7";
+						ctx.font = strFont_PrimeFactorItem;
+						ctx.fillText(str, itmX, 120);
+						itmX += ctx.measureText(str).width;
+					}
+				}
+				ctx.restore();
+				ctx.font = strFont_Header;
+				ctx.textBaseline = 'top';
+				ctx.fillStyle='#80C080';
+				ctx.fillText("Prime Factorization", 0, 8);
+			}
+		</script>
+	</head>
+
+	<body onload="page_onload()">
+		<h1 class="text">Number To Factor</h1>
+		<input id="txtNumber" class="text" type="number" oninput="number_onchange(event)" />
+		<input id="btnEval" class="text" type="button" onclick="eval_onclick(event)" />
+		<h1 class="text">Factor Tree</h1>
+		<div style="width: 100%; height: auto; overflow:auto;">
+			<div id="divTree" class="text tree"></div>
+		</div>
+		<canvas id="canvasMain" />
+	</body>
+</html>
