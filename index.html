@@ -71,7 +71,7 @@
 					    if (strmatch == null) { continue; }
                         objArgs["name"] = strmatch[0];
                         str = str.replace(strmatch, "");
-					    strmatch = str.match(/\b\d{2}\/\d{2}\/\d{4}\s+\d{2}\:\d{2}\s\w{2}/);
+					    strmatch = str.match(/\b\d{2}\/\d{2}\/\d{4}\s+\d{2}\:\d{2}/);
 					    if (strmatch == null) { continue; }
                         objArgs["date"] = strmatch;
                         str = str.replace(strmatch, "");
