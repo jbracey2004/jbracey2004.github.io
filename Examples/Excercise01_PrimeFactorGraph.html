@@ -106,13 +106,27 @@
 				return ret;
 			}
 
-			var canvasMain = document.getElementById("canvasMain");
-			var ctxMainDraw = canvasMain.getContext("2d");
+			var canvasMain;
+			var ctxMainDraw;
 			var timeCurrent = 0;
 			var timeDelta = 0;
 			var rotateMain = 0;
 			var aryPointers = [];
 			var matxView = new DOMMatrix([1, 0, 0, 1, 0, 0]);
+
+			var strFont_PrimeFactorItem = '3rem Arial';
+			var strFont_PrimeFactorExponent = '2rem Arial';
+			var strFont_PrimeFactorMini = '1rem Arial';
+			var strFont_Header = '2.25rem Arial Bold';
+
+			var nodes = 0;
+			var winGraph = {};
+			var pathGraph = new Path2D();
+
+			var intNumber;
+			var aryPrimeElements;
+			var aryPrimeElem = [];
+			var offsetPrimeElements = 0;
 
 			function page_onload() {
 				canvasMain = document.getElementById("canvasMain");
@@ -137,9 +151,6 @@
 				let txt = e.srcElement.value;
 				number_update(txt);
 			}
-
-			var intNumber;
-			var aryPrimeElements;
 
 			function number_update(txt) {
 				let elemEval = document.getElementById("btnEval");
@@ -342,29 +353,29 @@
 					if(pos.y < 128) return;
 					let centroidCurrent = {x:pos.x, y:pos.y-128};
 					var matxScl = new DOMMatrix();
-				matxScl.scaleSelf(1.1**(-args.deltaY/160));
-				matxScl.preMultiplySelf(new DOMMatrix([1, 0, 0, 1, centroidCurrent.x-winGraph.win.w*0.5, centroidCurrent.y-winGraph.win.h*0.5]));
-				matxScl.multiplySelf(new DOMMatrix([1, 0, 0, 1, -(centroidCurrent.x-winGraph.win.w*0.5), -(centroidCurrent.y-winGraph.win.h*0.5)]));
-				matxView.preMultiplySelf(matxScl);
+					matxScl.scaleSelf(1.1**(-args.deltaY/160));
+					matxScl.preMultiplySelf(new DOMMatrix([1, 0, 0, 1, centroidCurrent.x-winGraph.win.w*0.5, centroidCurrent.y-winGraph.win.h*0.5]));
+					matxScl.multiplySelf(new DOMMatrix([1, 0, 0, 1, -(centroidCurrent.x-winGraph.win.w*0.5), -(centroidCurrent.y-winGraph.win.h*0.5)]));
+					matxView.preMultiplySelf(matxScl);
 				};
 				canvasMain.onpointermove = args => {
 					args.preventDefault();
 					args.stopPropagation();
 					let idx = -1;
-				for(let itr = 0; itr < aryPointers.length; itr++) {
-					if(args.pointerId == aryPointers[itr].pointerId) {
-					aryPointers[itr] = CopyPointerEvent(args, aryPointers[itr]);
-							idx = itr;
-							break;
+					for(let itr = 0; itr < aryPointers.length; itr++) {
+						if(args.pointerId == aryPointers[itr].pointerId) {
+						aryPointers[itr] = CopyPointerEvent(args, aryPointers[itr]);
+								idx = itr;
+								break;
+						}
 					}
-				}
 					if(idx >= 0) {
 						if(aryPointers[idx].region == "FactorElements") {
-								Canvas_HandlePointerOnFactorization();
-							}
-							if(aryPointers[idx].region == "FactorGraph") {
-								Canvas_HandlePointerOnGraph();
-							}
+							Canvas_HandlePointerOnFactorization();
+						}
+						if(aryPointers[idx].region == "FactorGraph") {
+							Canvas_HandlePointerOnGraph();
+						}
 					}
 				};
 				canvasMain.onpointerup = args => {
@@ -379,17 +390,17 @@
 			function GetPointerCentroid(ary) {
 				let ret = {};
 				ret.centroidCurrent = {x:0, y:0};
-			ret.centroidPrev = {x:0, y:0};
+				ret.centroidPrev = {x:0, y:0};
 				let itrlen = ary.length;
 				let invlen = 1/itrlen;
 				for(let itr = 0; itr < itrlen; itr++) {
-				ret.centroidCurrent.x += ary[itr].x*invlen;
-				ret.centroidCurrent.y += ary[itr].y*invlen;
-				ret.centroidPrev.x += ary[itr].prevX*invlen;
-				ret.centroidPrev.y += ary[itr].prevY*invlen;
-			}
-			ret.centroidMov = {x:ret.centroidCurrent.x - ret.centroidPrev.x,
-								y:ret.centroidCurrent.y - ret.centroidPrev.y};
+					ret.centroidCurrent.x += ary[itr].x*invlen;
+					ret.centroidCurrent.y += ary[itr].y*invlen;
+					ret.centroidPrev.x += ary[itr].prevX*invlen;
+					ret.centroidPrev.y += ary[itr].prevY*invlen;
+				}
+				ret.centroidMov = {x:ret.centroidCurrent.x - ret.centroidPrev.x,
+									y:ret.centroidCurrent.y - ret.centroidPrev.y};
 				return ret;
 			}
 			function Canvas_HandlePointerStartFactorization(itm)
@@ -524,7 +535,7 @@
 			function Canvas_HandlePointerOnFactorization()
 			{
 				let winSz = {w:canvasMain.width, h:canvasMain.height};
-			let win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
+				let win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
 				let aryPtr = [];
 				let aryPtrDrag = [];
 				for(let itm of aryPointers) {
@@ -577,7 +588,7 @@
 			function Canvas_HandlePointerOnGraph()
 			{
 				let winSz = {w:canvasMain.width, h:canvasMain.height};
-			let win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
+				let win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
 				let aryPtr = [];
 				for(let itm of aryPointers) {
 					if(itm.region == "FactorGraph") {
@@ -594,12 +605,12 @@
 				}
 				let argsCentroid = GetPointerCentroid(aryPtr);
 				matxView.preMultiplySelf(new DOMMatrix([1, 0, 0, 1, argsCentroid.centroidMov.x, argsCentroid.centroidMov.y]));
-			if(aryPtr.length >= 2) {
-				var matxScl = new DOMMatrix();
-				p00 = {x:aryPtr[0].prevX, y:aryPtr[0].prevY};
-				p01 = {x:aryPtr[0].x, y:aryPtr[0].y};
-				p10 = {x:aryPtr[1].prevX, y:aryPtr[1].prevY};
-				p11 = {x:aryPtr[1].x, y:aryPtr[1].y};
+				if(aryPtr.length >= 2) {
+					var matxScl = new DOMMatrix();
+					p00 = {x:aryPtr[0].prevX, y:aryPtr[0].prevY};
+					p01 = {x:aryPtr[0].x, y:aryPtr[0].y};
+					p10 = {x:aryPtr[1].prevX, y:aryPtr[1].prevY};
+					p11 = {x:aryPtr[1].x, y:aryPtr[1].y};
 					var d0 = Math.sqrt((p10.x - p00.x)**2 + (p10.y - p00.y)**2);
 					var d1 = Math.sqrt((p11.x - p01.x)**2 + (p11.y - p01.y)**2);
 					var dq = d1/d0;
@@ -607,42 +618,42 @@
 					matxScl.preMultiplySelf(new DOMMatrix([1, 0, 0, 1, argsCentroid.centroidCurrent.x-win.w*0.5, argsCentroid.centroidCurrent.y-win.h*0.5]));
 					matxScl.multiplySelf(new DOMMatrix([1, 0, 0, 1, -(argsCentroid.centroidCurrent.x-win.w*0.5), -(argsCentroid.centroidCurrent.y-win.h*0.5)]));
 					matxView.preMultiplySelf(matxScl);
-				var vec0 = {x:p11.x - p01.x, y:p11.y - p01.y};
-				var vec1 = {x:p10.x - p00.x, y:p10.y - p00.y};
-				var l0 = Math.sqrt(vec0.x**2 + vec0.y**2);
-				var l1 = Math.sqrt(vec1.x**2 + vec1.y**2);
-				var lr = l0*l1;
-				if(lr != 0) {
-				var dir = -Math.sign((vec0.x * vec1.y) - (vec1.x * vec0.y));
-				var dot = (vec0.x * vec1.x) + (vec0.y * vec1.y);
-				var rq = dot / lr;
-				if(rq > 1) rq = 1;
-				if(rq < -1) rq = -1;
-				var ang = dir * Math.acos(rq) * 100/Math.PI;
-				var matxRot = new DOMMatrix();
-				matxRot.rotateSelf(ang);
-				matxRot.preMultiplySelf(new DOMMatrix([1, 0, 0, 1, argsCentroid.centroidCurrent.x-win.w*0.5, argsCentroid.centroidCurrent.y-win.h*0.5]));
-				matxRot.multiplySelf(new DOMMatrix([1, 0, 0, 1, -(argsCentroid.centroidCurrent.x-win.w*0.5), -(argsCentroid.centroidCurrent.y-win.h*0.5)]));
-				matxView.preMultiplySelf(matxRot);
+					var vec0 = {x:p11.x - p01.x, y:p11.y - p01.y};
+					var vec1 = {x:p10.x - p00.x, y:p10.y - p00.y};
+					var l0 = Math.sqrt(vec0.x**2 + vec0.y**2);
+					var l1 = Math.sqrt(vec1.x**2 + vec1.y**2);
+					var lr = l0*l1;
+					if(lr != 0) {
+						var dir = -Math.sign((vec0.x * vec1.y) - (vec1.x * vec0.y));
+						var dot = (vec0.x * vec1.x) + (vec0.y * vec1.y);
+						var rq = dot / lr;
+						if(rq > 1) rq = 1;
+						if(rq < -1) rq = -1;
+						var ang = dir * Math.acos(rq) * 100/Math.PI;
+						var matxRot = new DOMMatrix();
+						matxRot.rotateSelf(ang);
+						matxRot.preMultiplySelf(new DOMMatrix([1, 0, 0, 1, argsCentroid.centroidCurrent.x-win.w*0.5, argsCentroid.centroidCurrent.y-win.h*0.5]));
+						matxRot.multiplySelf(new DOMMatrix([1, 0, 0, 1, -(argsCentroid.centroidCurrent.x-win.w*0.5), -(argsCentroid.centroidCurrent.y-win.h*0.5)]));
+						matxView.preMultiplySelf(matxRot);
+					}
 				}
-			}
 			}
 
 			function OnFrame(t) {
-			var timePrev = timeCurrent
-			timeCurrent = t * 0.001;
-			timeDelta = timeCurrent - timePrev;
+				var timePrev = timeCurrent
+				timeCurrent = t * 0.001;
+				timeDelta = timeCurrent - timePrev;
 			
 				ProcessFrameEvents(aryPointers, timeDelta);
-			DrawFrame(ctxMainDraw);
+				DrawFrame(ctxMainDraw);
 			
-			requestAnimationFrame(OnFrame);
+				requestAnimationFrame(OnFrame);
 			}
 
 			function ProcessFrameEvents(aryEvents, dt) {
 				let ary = [...aryEvents].filter(itmPtr => itmPtr.mouseFrame);
 				let winSz = {w:canvasMain.width, h:canvasMain.height};
-			let win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
+				let win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
 				for(let itmPtr of ary) {
 					let itm = {...itmPtr};
 					itm.y -= 128;
@@ -652,58 +663,54 @@
 					matxScl.preMultiplySelf(new DOMMatrix([1, 0, 0, 1, itm.startX-win.w*0.5, itm.startY-win.h*0.5]));
 					matxScl.multiplySelf(new DOMMatrix([1, 0, 0, 1, -(itm.startX-win.w*0.5), -(itm.startY-win.h*0.5)]));
 					matxView.preMultiplySelf(matxScl);
-				var matxRot = new DOMMatrix();
-				matxRot.rotateSelf((itm.startX - itm.x)*(-Math.PI*2)*(128/win.w)*dt);
-				matxRot.preMultiplySelf(new DOMMatrix([1, 0, 0, 1, itm.startX-win.w*0.5, itm.startY-win.h*0.5]));
-				matxRot.multiplySelf(new DOMMatrix([1, 0, 0, 1, -(itm.startX-win.w*0.5), -(itm.startY-win.h*0.5)]));
-				matxView.preMultiplySelf(matxRot);
+					var matxRot = new DOMMatrix();
+					matxRot.rotateSelf((itm.startX - itm.x)*(-Math.PI*2)*(128/win.w)*dt);
+					matxRot.preMultiplySelf(new DOMMatrix([1, 0, 0, 1, itm.startX-win.w*0.5, itm.startY-win.h*0.5]));
+					matxRot.multiplySelf(new DOMMatrix([1, 0, 0, 1, -(itm.startX-win.w*0.5), -(itm.startY-win.h*0.5)]));
+					matxView.preMultiplySelf(matxRot);
 				}
 			}
 
 			function FromCanvasSpace(x, y)
 			{
-			let winSz = {w:canvasMain.width, h:canvasMain.height};
-			let win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
-			let pos = new DOMPoint((x-canvasMain.offsetLeft)*(winSz.w/win.w), 
-									(y-canvasMain.offsetTop)*(winSz.h/win.h));
-			return {x:pos.x, y:pos.y};
+				let winSz = {w:canvasMain.width, h:canvasMain.height};
+				let win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
+				let pos = new DOMPoint((x-canvasMain.offsetLeft)*(winSz.w/win.w), 
+										(y-canvasMain.offsetTop)*(winSz.h/win.h));
+				return {x:pos.x, y:pos.y};
 			}
 			function CopyPointerEvent(args, srcItm)
 			{
-			let ret = {...srcItm};
-			let pos = FromCanvasSpace(args.pageX, args.pageY);
+				let ret = {...srcItm};
+				let pos = FromCanvasSpace(args.pageX, args.pageY);
 				ret.pointerId = args.pointerId;
 				ret.pinterType = args.ponterType;
 				ret.buttons = args.buttons;
 				ret.shiftKey = args.shiftKey;
-			let mov = {x:pos.x - srcItm.x, 
-						y:pos.y - srcItm.y};
-			let st = {x:srcItm.startX, y:srcItm.startY};
-			let prev = {x:srcItm.x, y:srcItm.y};
-			let totmov = {x:srcItm.elapseX + mov.x, y:srcItm.elapseY + mov.y};
-			let d = srcItm.elapseDist + Math.sqrt(mov.x**2 + mov.y**2);
-			ret.x = pos.x; ret.y = pos.y;
-			ret.startX = st.x; ret.startY = st.y;
-			ret.moveX = mov.x; ret.moveY = mov.y;
-			ret.prevX = prev.x; ret.prevY = prev.y;
-			ret.elapseX = totmov.x; ret.elapseY = totmov.y;
-			ret.elapseDist = d;
-			return ret;
+				let mov = {x:pos.x - srcItm.x, 
+							y:pos.y - srcItm.y};
+				let st = {x:srcItm.startX, y:srcItm.startY};
+				let prev = {x:srcItm.x, y:srcItm.y};
+				let totmov = {x:srcItm.elapseX + mov.x, y:srcItm.elapseY + mov.y};
+				let d = srcItm.elapseDist + Math.sqrt(mov.x**2 + mov.y**2);
+				ret.x = pos.x; ret.y = pos.y;
+				ret.startX = st.x; ret.startY = st.y;
+				ret.moveX = mov.x; ret.moveY = mov.y;
+				ret.prevX = prev.x; ret.prevY = prev.y;
+				ret.elapseX = totmov.x; ret.elapseY = totmov.y;
+				ret.elapseDist = d;
+				return ret;
 			}
 
-			var strFont_PrimeFactorItem = '3rem Arial';
-			var strFont_PrimeFactorExponent = '2rem Arial';
-			var strFont_PrimeFactorMini = '1rem Arial';
-			var strFont_Header = '2.25rem Arial Bold';
 			function DrawFrame(ctx) {
-			var winSz = {w:canvasMain.width, h:canvasMain.height};
-			var win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
+				var winSz = {w:canvasMain.width, h:canvasMain.height};
+				var win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
 				let bolchWin = false;
-			if(win.w != winSz.w) {bolchWin=true;canvasMain.width = win.w;}
-			if(win.h != winSz.h) {bolchWin=true;canvasMain.height = win.h;}
-			let R = Math.sqrt(winSz.w**2 + winSz.h**2)*0.2;
-				//if(bolchWin) UpdatePrimeFactorGraphPath(aryPrimeElements);
-			ctx.clearRect(0, 0, winSz.w, winSz.h);
+				if(win.w != winSz.w) {bolchWin=true;canvasMain.width = win.w;}
+				if(win.h != winSz.h) {bolchWin=true;canvasMain.height = win.h;}
+				let R = Math.sqrt(winSz.w**2 + winSz.h**2)*0.2;
+					//if(bolchWin) UpdatePrimeFactorGraphPath(aryPrimeElements);
+				ctx.clearRect(0, 0, winSz.w, winSz.h);
 				ctx.save();
 				ctx.beginPath();
 				ctx.rect(0, 0, winSz.w, 128);
@@ -716,16 +723,16 @@
 				ctx.clip();
 				ctx.transform(1, 0, 0, 1, 0, 64);
 				ctx.save();
-			ctx.transform(1, 0, 0, 1, winSz.w*0.5, winSz.h*0.5);
-				//ctx.scale(2,2);
-			ctx.transform(...['a', 'b', 'c', 'd', 'e', 'f'].map(k => matxView[k]));
-			ctx.strokeStyle = 'green';
-			ctx.lineWidth = 2/(Math.sqrt(matxView.a**2 + matxView.b**2)+
-							Math.sqrt(matxView.c**2 + matxView.d**2));
+				ctx.transform(1, 0, 0, 1, winSz.w*0.5, winSz.h*0.5);
+					//ctx.scale(2,2);
+				ctx.transform(...['a', 'b', 'c', 'd', 'e', 'f'].map(k => matxView[k]));
+				ctx.strokeStyle = 'green';
+				ctx.lineWidth = 2/(Math.sqrt(matxView.a**2 + matxView.b**2)+
+								Math.sqrt(matxView.c**2 + matxView.d**2));
 				winGraph = GetGraphParams(matxView);
 				nodes = 0;
 				ctx.beginPath();
-			DrawFrameFactorGraph(ctx, aryPrimeElements, {x:0, y:0}, R, 0);
+				DrawFrameFactorGraph(ctx, aryPrimeElements, {x:0, y:0}, R, 0);
 				ctx.stroke();
 				//ctx.stroke(pathGraph);
 				ctx.restore();
@@ -735,37 +742,37 @@
 				ctx.fillText(`Graph ${nodes}`, 0, 72);
 				//ctx.fillText("Graph", 0, 72);
 				ctx.restore();
-			ctx.restore();
+				ctx.restore();
 			}
 
 			function GetCircumscribedCircles(intNumCircles, center = {x:0, y:0}, radius = 1, offsetAngle = 0) 
 			{
 				let ret = [];
-			let R = radius;
-			let invN = 1/intNumCircles;
-			let invA = 2*Math.PI*invN;
-			let itrR;
-			if(intNumCircles<3){
-				itrR = R/intNumCircles;
-			} else {
-				let itrD = R*Math.tan(invA*0.5);
-				itrR = itrD*Math.tan(0.25*(Math.PI-invA));
-			}
-			for(var itr = 0; itr < intNumCircles; itr++) {
-				let ang = itr*invA + invA*0.5 + offsetAngle;
-				let pt = {
-				x:(R-itrR)*Math.cos(ang),
-				y:-(R-itrR)*Math.sin(ang)
-				};
-				ret.push({x:center.x+pt.x, y:center.y+pt.y, r:itrR});
-			}
+				let R = radius;
+				let invN = 1/intNumCircles;
+				let invA = 2*Math.PI*invN;
+				let itrR;
+				if(intNumCircles<3){
+					itrR = R/intNumCircles;
+				} else {
+					let itrD = R*Math.tan(invA*0.5);
+					itrR = itrD*Math.tan(0.25*(Math.PI-invA));
+				}
+				for(var itr = 0; itr < intNumCircles; itr++) {
+					let ang = itr*invA + invA*0.5 + offsetAngle;
+					let pt = {
+					x:(R-itrR)*Math.cos(ang),
+					y:-(R-itrR)*Math.sin(ang)
+					};
+					ret.push({x:center.x+pt.x, y:center.y+pt.y, r:itrR});
+				}
 				return ret;
 			}
 
 			function GetGraphParams(matxIn)
 			{
 				var winSz = {w:canvasMain.width, h:canvasMain.height};
-			var win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
+				var win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
 				let matx = new DOMMatrix(matxIn);
 				matx.invertSelf();
 				matx = new DOMMatrix(['a', 'b', 'c', 'd', 'e', 'f'].map(k => matx[k]));
@@ -789,9 +796,6 @@
 				return ret;
 			}
 
-			var nodes = 0;
-			var winGraph = {};
-			var pathGraph = new Path2D();
 			function DrawFrameFactorGraph(ctx, aryNumCircles, center = {x:0, y:0}, radius = 1, offsetAngle = 0)
 			{
 				let ptC = new DOMPoint(center.x,center.y).matrixTransform(matxView);
@@ -871,12 +875,11 @@
 				nodes++
 				return path;
 			}
-			var aryPrimeElem = [];
-			var offsetPrimeElements = 0;
+			
 			function DrawFramePrimeElements(ctx, ary)
 			{
 				var winSz = {w:canvasMain.width, h:canvasMain.height};
-			var win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
+				var win = {w:canvasMain.offsetWidth, h:canvasMain.offsetHeight};
 				ctx.strokeStyle = 'green';
 				ctx.lineWidth = 1;
 				ctx.beginPath();
