@@ -108,16 +108,16 @@
 
 			var canvasMain;
 			var ctxMainDraw;
-			var timeCurrent = 0;
-			var timeDelta = 0;
-			var rotateMain = 0;
-			var aryPointers = [];
-			var matxView = new DOMMatrix([1, 0, 0, 1, 0, 0]);
+			var timeCurrent;
+			var timeDelta;
+			var rotateMain;
+			var aryPointers;
+			var matxView;
 
-			var strFont_PrimeFactorItem = '3rem Arial';
-			var strFont_PrimeFactorExponent = '2rem Arial';
-			var strFont_PrimeFactorMini = '1rem Arial';
-			var strFont_Header = '2.25rem Arial Bold';
+			var strFont_PrimeFactorItem;
+			var strFont_PrimeFactorExponent;
+			var strFont_PrimeFactorMini;
+			var strFont_Header;
 
 			var nodes = 0;
 			var winGraph = {};
@@ -136,6 +136,12 @@
 				rotateMain = 0;
 				aryPointers = [];
 				matxView = new DOMMatrix([1, 0, 0, 1, 0, 0]);
+
+				strFont_PrimeFactorItem = '3rem Arial';
+				strFont_PrimeFactorExponent = '2rem Arial';
+				strFont_PrimeFactorMini = '1rem Arial';
+				strFont_Header = '2.25rem Arial Bold';
+
 				elem = document.getElementById("txtNumber");
 				elem.value = "65536";
 				number_update(elem.value);
