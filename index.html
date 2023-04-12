@@ -1,22 +1,22 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="utf-8" />
+	<head>
+		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, minimum-scale=1, maximum-scale=4" />
-        <title>Github Host - Portfolio</title>
+		<title>Github Host - Portfolio</title>
 		<style>
 			body {
 				background-color: #804010;
 				color: #FFFFFF;
 			}
 			#Info {
-	            display: block;
-                padding: 2%;
-	            background: url(InfoHeader.png);
-                background-repeat: no-repeat;
-                background-position: center center;
-                background-size: 100% 100%;
-            }
+				display: block;
+				padding: 2%;
+				background: url(InfoHeader.png);
+				background-repeat: no-repeat;
+				background-position: center center;
+				background-size: 100% 100%;
+			}
 			a {
 				color: #40CCFF;
 			}
@@ -37,52 +37,52 @@
 				height: 200px;
 			}
 		</style>
-        <script src="libref/p5/p5.min.js"></script>
-        <script src="libref/p5/p5.dom.min.js"></script>
-        <script>
-            var aryStrfiles = [];
-            var elementList;
+		<script src="libref/p5/p5.min.js"></script>
+		<script src="libref/p5/p5.dom.min.js"></script>
+		<script>
+			var aryStrfiles = [];
+			var elementList;
 
-            function preload() {
-                var dirContent = document.getElementById("contentMain");
-                var aryDirContent = dirContent.children;
-                for (var dirElem of aryDirContent) {
-                    var strFileListPath = dirElem.id + "/List.txt";
-                    var strFileList = loadStrings(strFileListPath);
-                    aryStrfiles.push({ divElem:dirElem, lstFiles:strFileList });
-                }
-                console.log("Loading File References");
-            }
+			function preload() {
+				var dirContent = document.getElementById("contentMain");
+				var aryDirContent = dirContent.children;
+				for (var dirElem of aryDirContent) {
+					var strFileListPath = dirElem.id + "/List.txt";
+					var strFileList = loadStrings(strFileListPath);
+					aryStrfiles.push({ divElem:dirElem, lstFiles:strFileList });
+				}
+				console.log("Loading File References");
+			}
 
-            function setup() {
+			function setup() {
 				var intCount = 0;
-                noCanvas();
-                console.log(aryStrfiles);
-                for (var aryDiv of aryStrfiles) {
-                    var elementList = document.createElement("div", "div" + aryDiv.divElem);
-                    elementList.style = "display: flex; flex-flow: wrap;";
-                    aryDiv.divElem.appendChild(elementList);
-                    for (var i = 0; i < aryDiv.lstFiles.length; i++) {
-                        var objArgs = {};
-                        var str = aryDiv.lstFiles[i];
+				noCanvas();
+				console.log(aryStrfiles);
+				for (var aryDiv of aryStrfiles) {
+					var elementList = document.createElement("div", "div" + aryDiv.divElem);
+					elementList.style = "display: flex; flex-flow: wrap;";
+					aryDiv.divElem.appendChild(elementList);
+					for (var i = 0; i < aryDiv.lstFiles.length; i++) {
+						var objArgs = {};
+						var str = aryDiv.lstFiles[i];
 						console.log("Reference"+i.toString()+" \t "+str);
-					    var strmatch = {};
-					    strmatch = str.match(/\b\w+\.\w+/);
-					    if (strmatch == null) { continue; }
-                        objArgs["name"] = strmatch[0];
-                        str = str.replace(strmatch, "");
-					    strmatch = str.match(/\b\d{2}\/\d{2}\/\d{4}\s+\d{2}\:\d{2}/);
-					    if (strmatch == null) { continue; }
-                        objArgs["date"] = strmatch;
-                        str = str.replace(strmatch, "");
-                        objArgs["date"] = new Date(objArgs["date"]);
-                        objArgs["path"] = aryDiv.divElem.id + "/" + objArgs["name"];
-                        objArgs["size"] = parseFloat(str.match(/\b(\d+(\,)?)+\b/g).toString().replace(",", ""));
-                        objArgs["toString"] = objArgs["name"] + "\t" + objArgs["date"] + "\t" + objArgs["size"] + " bytes"
-                        console.log(objArgs);
-					    intCount++;
-                        var elementListItem = createElement("div", "");
-					    elementListItem.style("padding","8px");
+						var strmatch = {};
+						strmatch = str.match(/\b\w+\.\w+/);
+						if (strmatch == null) { continue; }
+						objArgs["name"] = strmatch[0];
+						str = str.replace(strmatch, "");
+						strmatch = str.match(/\b\d{2}\/\d{2}\/\d{4}\s+\d{2}\:\d{2}/);
+						if (strmatch == null) { continue; }
+						objArgs["date"] = strmatch;
+						str = str.replace(strmatch, "");
+						objArgs["date"] = new Date(objArgs["date"]);
+						objArgs["path"] = aryDiv.divElem.id + "/" + objArgs["name"];
+						objArgs["size"] = parseFloat(str.match(/\b(\d+(\,)?)+\b/g).toString().replace(",", ""));
+						objArgs["toString"] = objArgs["name"] + "\t" + objArgs["date"] + "\t" + objArgs["size"] + " bytes"
+						console.log(objArgs);
+						intCount++;
+						var elementListItem = createElement("div", "");
+						elementListItem.style("padding","8px");
 						var elementButtonItem = createDiv(objArgs["name"].toString()+"<br/>");
 						elementButtonItem.attribute("class", "button");
 						var elementButton = createA(objArgs["path"].toString(), "Play");
@@ -101,11 +101,11 @@
 						elementButton.parent(elementButtonItem);
 						elementButtonPrevLabel.parent(elementButtonItem);
 						elementButtonPrev.parent(elementButtonItem);
-					    elementButtonItem.parent(elementListItem);
-                        elementListItem.parent(elementList);
-                    }
-				    console.log(intCount.toString() + " References Loaded")
-                }
+						elementButtonItem.parent(elementListItem);
+						elementListItem.parent(elementList);
+					}
+					console.log(intCount.toString() + " References Loaded")
+				}
 			}
 			function chkPreview_OnChange(iframe, src) {
 				return function (e) {
@@ -113,9 +113,9 @@
 					iframe.attribute("src", (e.target.checked) ? (src) : (""));
 				}
 			}
-        </script>
-    </head>
-    <body>
+		</script>
+	</head>
+	<body>
 		<div id="Info">
 			<h1>Github Host - Site Index</h1>
 			<h2>Jason Bracey</h2>
@@ -123,7 +123,7 @@
 				<ul style="list-style-type:none">
 					<li>jbracey2004@gmail.com</li>
 					<li><a href="https://www.linkedin.com/in/jason-bracey-22223476">Jason Bracey - Linkedin</a></li>
-                    <li><a href="https://github.com/jbracey2004">jbracey2004 - Github</a></li>
+					<li><a href="https://github.com/jbracey2004">jbracey2004 - Github</a></li>
 					<li><a href="https://codepen.io/jbracey2004">@jbracey2004 - Codepen</a></li>
 					<li><a href="https://www.youtube.com/user/jviper2004">jviper2004 - Youtube</a></li>
 					<li><a href="https://twitter.com/jbracey2004">@jbracey2004 - Twitter</a></li>
@@ -132,11 +132,11 @@
 			<h2>Resources</h2>
 			<div id="divResources">
 				<ul>
-                    <li><a href="https://www.freecodecamp.org">FreeCodeCamp.org</a></li>
+					<li><a href="https://www.freecodecamp.org">FreeCodeCamp.org</a></li>
 					<li><a href="https://www.w3schools.com/">w3Schools.com</a></li>
 					<li><a href="https://p5js.org">P5js.org</a></li>
 					<li><a href="https://threejs.org">THREEjs.org</a></li>
-                    <li><a href="http://brm.io/matter-js/">Matter.js</a></li>
+					<li><a href="http://brm.io/matter-js/">Matter.js</a></li>
 					<li><a href="https://www.youtube.com/channel/UCvjgXvBlbQiydffZU7m1_aw">The Coding Train - Youtube</a></li>
 					<li><a href="https://www.youtube.com/channel/UC4a-Gbdw7vOaccHmFo40b9g">The Khan Academy - Youtube</a></li>
 					<li><a href="https://www.youtube.com/channel/UCYO_jab_esuFRV4b17AJtAw">3Blue1Brown - Youtube</a></li>
@@ -149,8 +149,8 @@
 			</div>
 		</div>
 		<div id="contentMain">
-            <div id="FreeCodeCamp"><h2>FreeCodeCamp - Projects</h2></div>
+			<div id="FreeCodeCamp"><h2>FreeCodeCamp - Projects</h2></div>
 			<div id="Examples"><h2>Examples - P5/Three/JS/HTML</h2></div>
 		</div>
-    </body>
+	</body>
 </html>
