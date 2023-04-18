@@ -53,7 +53,7 @@
 
 			.cellStatusItem {
 				display: inline;
-				font-size: 12px;
+				font-size: 10px;
 				padding: 2px;
 				text-align: center;
 				vertical-align: middle;
@@ -118,15 +118,6 @@
                     return ret;
                 }
             };
-
-            function main(args) {
-                UpdateFrameHeaders();
-                UpdateNumberElementsArray();
-                UpdatePuzzleConfigure();
-                UpdateBoardCellArray();
-                GraphCrawler.Reset();
-            }
-
             function getPosibleOptions(cellIdx) {
                 let lstOptions = [...Array(intNumberElements * 1).keys()];
                 let aryValuesInGraph = aryCellFunctionGetGroupMembers["SameGraph"](
@@ -152,43 +143,10 @@
             }
             GraphCrawler.RandomizeIdxAry = function (AtIdx) {
                 if (!AtIdx) AtIdx = 0;
-                /*for(let itr = AtIdx; itr < this.IdxAry.length; itr++) {
-                    this.IdxAry[itr] = -1;
-                    this.IdxUsed[itr] = [];
-                }
-                let idx = AtIdx;
-                let idxValue = AtIdx+Math.floor(Math.random() * (aryCellValues.length-AtIdx));
-                while(idx >= AtIdx && idx < this.IdxAry.length) {
-                    this.IdxAry[idx] = -1;
-                    let aryCellsInGraph = aryCellFunctionGetGroupMembers["SameGraph"](
-                        idxValue
-                    );*/
-                /*let [col, row] = getCellColRow(idxValue);
-                let aryCellsInGraph = [
-                    getCellColRowIndex((col+1)%intNumberElements, row),
-                    getCellColRowIndex(((col>0)?(col-1):(intNumberElements-1))%intNumberElements, row),
-                    getCellColRowIndex(col, (row+1)%intNumberElements),
-                    getCellColRowIndex(col, ((row>0)?(row-1):(intNumberElements-1))%intNumberElements)
-                ]*/
-                /*aryCellsInGraph = aryCellsInGraph
-                    .filter((itm) => !this.IdxUsed[idx].includes(itm))
-                    .filter((itm) => !this.IdxAry.includes(itm));
-                if(aryCellsInGraph.length > 0) {
-                    let rndIdx = Math.floor(Math.random() * aryCellsInGraph.length);
-                    idxValue = aryCellsInGraph[rndIdx];
-                    this.IdxAry[idx] = idxValue;
-                    this.IdxUsed[idx].push(idxValue);
-                    idx++
-                } else {
-                    this.IdxAry[idx] = -1;
-                    this.IdxUsed[idx] = []
-                    idxValue = this.IdxAry[idx-1];
-                    this.IdxAry[idx-1] = -1;
-                    idx--;
-                }
-            }*/
                 this.IdxUsed = [];
                 let ary = [...this.IdxAry.keys()];
+                this.IdxAry = [...ary];
+                return;
                 for (let idx = 0; idx < AtIdx; idx++) {
                     let rndIdx = ary.indexOf(this.IdxAry[idx]);
                     ary.splice(rndIdx, 1);
@@ -225,8 +183,7 @@
                 }
                 if (this.Idx < 0) return;
                 if (this.Idx >= aryCellValues.length) return;
-                let intIdx = this.Idx;
-                //let intIdx = this.IdxAry[this.Idx];
+                let intIdx = this.IdxAry[this.Idx];
                 if (!aryFixedCellIdx.includes(intIdx)) {
                     if (!this.OptionsUsedAtIdx[this.Idx]) this.OptionsUsedAtIdx[this.Idx] = [];
                     let aryCellsInGraph = aryCellFunctionGetGroupMembers["SameGraph"](
@@ -254,12 +211,15 @@
                                 if (!aryitr.includes(aryCellValues[aryCellsInGraph[itr]] - 1)) aryitr = [];
                             }
                             if (aryitr.length <= 0) {
+                                //let cidx = this.IdxAry.indexOf(aryCellsInGraph[itr]);
+                                //if(aryCellsInGraph[itr] < intIdx) {
                                 this.IdxMov = 0;
                                 //this.OptionsUsedAtIdx[this.Idx] = [];
                                 //aryCellValues[intIdx] = 0;
                                 //this.RandomizeIdxAry(this.Idx+1);
                                 //this.IdxMov = -1;
                                 break;
+                                //}
                             }
                         }
                     } else {
@@ -283,44 +243,31 @@
                         //this.IdxMov = 0;
                     }
                 }
-                let elemItm = document.getElementById("divPuzzleConfigStatus");
-                elemItm.style.display = "grid";
-                elemItm.style.gridTemplateColumns = `repeat(${intNumberElements}, auto)`;
-                elemItm.style.gridTemplateRows = `repeat(${intNumberElements}, auto)`;
-                let [rW, rH] = getCellRegionSize(intNumberElements);
-                let strStyle = `display:grid; 
-		grid-template-columns:repeat(${rW}, auto);
-		grid-template-rows:repeat(${rH}, auto);`;
-                if (elemItm) {
-                    let str = "";
-                    for (let itr = 0; itr < aryCellValues.length; itr++) {
-                        str += `<DIV class='cellStatus' 
-				style='${strStyle}'>` +
-                            //this.OptionsUsedAtIdx[itr]??reduce((itmAccm, itmValue) => 
-                            getPosibleOptions(itr).reduce((itmAccm, itmValue) =>
-                                `${itmAccm}<DIV class='cellStatusItem'>
-					${aryElementLabels[itmValue]}
-					</DIV>`
-                                , "") +
-                            `</DIV>`;
-                    }
-                    str += `${this.Idx} => ${intIdx}`;
-                    elemItm.innerHTML = str;
-                }
                 this.Idx += new Number(this.IdxMov);
                 //console.log(`${this.Idx-1} => ${intIdx}`);
             };
 
+            function main(args) {
+                UpdateFrameHeaders();
+                UpdateNumberElementsArray();
+                UpdatePuzzleConfigure();
+                UpdateBoardCellArray();
+                GraphCrawler.Reset();
+            }
+
             function UpdateFrameHeaders() {
                 for (let itm of document.querySelectorAll(".DivHeader input[type=checkbox]")) {
-                    itm.indeterminate = true;
-                    itm.onchange = (args) => {
-                        let elemItm = args.srcElement;
-                        let elem = elemItm.parentElement.nextElementSibling;
-                        elemItm.indeterminate = elemItm.checked;
-                        elem.style.display = elemItm.checked ? "block" : "none";
-                    };
+                    let elem = itm.parentElement.nextElementSibling;
+                    itm.indeterminate = itm.checked;
+                    elem.style.display = itm.checked ? "block" : "none";
+                    itm.onchange = FrameHeader_onChange;
                 }
+            }
+            function FrameHeader_onChange(args) {
+                let elemItm = args.srcElement;
+                let elem = elemItm.parentElement.nextElementSibling;
+                elemItm.indeterminate = elemItm.checked;
+                elem.style.display = elemItm.checked ? "block" : "none";
             }
             function UpdateNumberElementsArray() {
                 let elem = document.getElementById("divContent_NumberElements");
@@ -354,14 +301,24 @@
             }
             function SelectNextIdx(ary, seed) { return seed % ary.length; }
             function AdvanceCrawlerAnimation(fnComplete) {
+                let elemDelay = document.getElementById("sliderPuzzleConfigDelay");
+                let numDelay = elemDelay.value;
                 if (GraphCrawler.Idx >= 0 && GraphCrawler.Idx < aryCellValues.length) {
                     GraphCrawler.ProcessCurrent();
                     UpdateBoardCells();
-                    setTimeout(() => AdvanceCrawlerAnimation(fnComplete), 20);
+                    setTimeout(() => AdvanceCrawlerAnimation(fnComplete), numDelay);
                 } else {
                     GraphCrawler.Reset();
                     if (fnComplete) fnComplete();
                 }
+            }
+            function sliderPuzzleConfigDelay_onchange(args) {
+                let elem = args.target;
+                if (!elem) return;
+                if (!elem.labels) return;
+                let lblElement = elem.labels[0];
+                if (!lblElement) return;
+                lblElement.innerHTML = `Delay: ${elem.value} ms`;
             }
 
             function UpdatePuzzleConfigure() {
@@ -477,9 +434,41 @@
                     UpdateBoardCells();
                 };
                 elem.appendChild(elemItm);
-                elemItm = document.createElement("div");
-                elemItm.id = "divPuzzleConfigStatus";
-                elem.appendChild(elemItm);
+            }
+            function UpdatePuzzleConfigStatus() {
+                let elemItm = document.getElementById("divPuzzleConfigStatus");
+                if (elemItm) {
+                    let [rW, rH] = getCellRegionSize(intNumberElements);
+                    let strStyle = `display:grid; 
+		grid-template-columns:repeat(${intNumberElements}, ${rW * 15}px);
+		grid-template-rows:repeat(${intNumberElements}, ${rH * 16}px);`;
+                    let str = "";
+                    str += `<DIV style='${strStyle}'>`;
+                    strStyle = `display:grid; 
+		grid-template-columns:repeat(${rW}, auto);
+		grid-template-rows:repeat(${rH}, auto);`;
+                    for (let itr = 0; itr < aryCellValues.length; itr++) {
+                        let aryOpt = getPosibleOptions(itr);
+                        str += `<DIV class='cellStatus' 
+				style='${strStyle} border:${(aryOpt.length > 0) ? ("solid 1pt black") : ("solid red")};'>` +
+                            aryOpt.reduce((itmAccm, itmValue) =>
+                                `${itmAccm}<DIV class='cellStatusItem' 
+					style='border:${(aryCellValues[itr] == itmValue + 1) ? ("solid 1px blue") : ("none")}'>
+					${aryElementLabels[itmValue]}
+					</DIV>`
+                                , "") +
+                            `</DIV>`;
+                    }
+                    str += "</DIV>";
+                    if (GraphCrawler) {
+                        if (GraphCrawler.IdxAry && GraphCrawler.Idx) {
+                            if (GraphCrawler.Idx >= 0 && GraphCrawler.IdxAry[GraphCrawler.Idx]) {
+                                str += `<DIV>${GraphCrawler.Idx} => ${GraphCrawler.IdxAry[GraphCrawler.Idx]}</DIV>`;
+                            }
+                        }
+                    }
+                    elemItm.innerHTML = str;
+                }
             }
             function UpdateBoardCellArray() {
                 let aryTmp = aryCellValues;
@@ -589,6 +578,7 @@
                     UpdateBoardCell(itr);
                 }
                 UpdateCellGraph();
+                UpdatePuzzleConfigStatus();
             }
             function UpdateBoardCell(idx, elemItr) {
                 if (!elemItr) elemItr = document.getElementById(`cell${idx}`);
@@ -623,8 +613,8 @@
                 elemItr.style.backgroundColor = colorCell;
                 elemItr.style.border =
                     `2px 
-		${colorBorder} 
-		${bolFixedCell
+		            ${colorBorder} 
+		            ${bolFixedCell
                         ? "outset"
                         : "inset"}`;
                 if (aryCellValues[idx] > 0) {
@@ -719,7 +709,7 @@
         </script>
 	</head>
 
-    <body onload="main(event);">
+	<body onload="main(event);">
         <h1>Sudoku Graph</h1>
         <div class="DivSection" id="divNumberElements">
             <h4 class="DivHeader" id="divHeader_NumberElements">
@@ -734,6 +724,19 @@
                 Configure Puzzle
             </h4>
             <div class="DivContent" id="divContent_ConfigurePuzzle"></div>
+        </div>
+        <div class="DivSection" id="divConfigurePuzzle_Status">
+            <h4 class="DivHeader" id="divHeader_ConfigurePuzzle_Status">
+                <input type="checkbox" id="chkShow_ConfigurePuzzle_Status" />
+                Puzzle Configuration Status
+            </h4>
+            <div class="DivContent" id="divContent_ConfigurePuzzle_Status">
+                <div id="divPuzzleConfigStatus"></div>
+                <div id="divPuzzleConfigStatus_Controls">
+                    <input type="range" min="0" max="1000" value="10" id="sliderPuzzleConfigDelay" oninput="sliderPuzzleConfigDelay_onchange(event);" />
+                    <label for="sliderPuzzleConfigDelay">Delay: 10 ms</label>
+                </div>
+            </div>
         </div>
         <div class="DivSection" id="divBoard">
             <h3 class="DivHeader" id="divHeader_Board">
